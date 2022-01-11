@@ -40,14 +40,17 @@ import React, {
 } from 'react';
 import { IconBaseProps } from 'react-icons';
 import {
-  IoArrowForwardSharp,
+  IoArrowForwardOutline,
   IoCheckmark,
+  IoCheckmarkSharp,
   IoChevronDown,
+  IoCode,
   IoEllipsisHorizontalOutline,
   IoEnter,
   IoHourglass,
   IoPersonAdd,
   IoPlay,
+  IoQrCode,
   IoQrCodeOutline,
   IoSettingsOutline,
 } from 'react-icons/io5';
@@ -75,7 +78,9 @@ import {
 } from '../../utils/card';
 import { CurrentRoundCardModal } from './modals/CurrentRoundCardModal';
 
+import { BsPencil } from 'react-icons/bs';
 import { LiveTimeAgo } from 'src/components/LiveTimeAgo';
+import { AddPlayerModal } from 'src/screens/game/modals/AddPlayerModal';
 import { getDurationText } from 'src/utils/time';
 import { CurrentRoundCard, useCurrentRoundCardState } from './CurrentRoundCard';
 import './Game.css';
@@ -83,7 +88,6 @@ import { ChangeGameNameModal } from './modals/ChangeGameNameModal';
 import { JoinGameModal } from './modals/JoinGameModal';
 import { RecordPointsModal } from './modals/RecordPointsModal';
 import { TransferOwnershipModal } from './modals/TransferOwnershipModal';
-import { AddPlayerModal } from 'src/screens/game/modals/AddPlayerModal';
 
 interface PlayerAvatarProps extends AvatarProps {
   player: PlayerAugmented;
@@ -711,7 +715,7 @@ export function GameScreen() {
                               <Button
                                 colorScheme="blue"
                                 onClick={() => finishRoundModal.onOpen()}
-                                leftIcon={<IoArrowForwardSharp />}
+                                leftIcon={<IoCheckmarkSharp />}
                               >
                                 Record Points
                               </Button>
@@ -731,11 +735,13 @@ export function GameScreen() {
                             {currentPlayer?.isHost && (
                               <>
                                 <MenuItem
+                                  icon={<BsPencil />}
                                   onClick={() => changeNameModal.onOpen()}
                                 >
                                   Edit Name
                                 </MenuItem>
                                 <MenuItem
+                                  icon={<IoArrowForwardOutline />}
                                   onClick={() =>
                                     transferOwnershipModal.onOpen()
                                   }
@@ -746,12 +752,14 @@ export function GameScreen() {
                             )}
 
                             <MenuItem
+                              icon={<IoQrCode />}
                               onClick={() => setShowQrCode(!showQrCode)}
                             >
                               {showQrCode ? 'Hide QR Code' : 'Show QR Code'}
                             </MenuItem>
 
                             <MenuItem
+                              icon={<IoCode />}
                               onClick={() => setShowJsonData(!showJsonData)}
                             >
                               Toggle JSON
@@ -820,7 +828,7 @@ export function GameScreen() {
                             `${player.points} points`,
                             player.isWinner ? '- First Place!' : '',
                           ]
-                            .filter(Boolean)
+                            .filter((x) => x)
                             .join(' ')}
                           shouldWrapChildren
                         >
