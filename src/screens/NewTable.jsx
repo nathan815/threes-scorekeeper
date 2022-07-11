@@ -24,7 +24,7 @@ export default function NewTable() {
           </FormControl>
           <FormControl isRequired>
             <FormLabel>Give this table a name</FormLabel>
-            <Input id="first-name" placeholder="Table name" size="lg" />
+            <Input id="first-name" placeholder="Table Name" size="lg" />
           </FormControl>
         </Stack>
         <Button

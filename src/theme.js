@@ -14,6 +14,13 @@ const theme = extendTheme({
   config,
   colors: {
     primary: colors.blue
+  },
+  components: {
+    Link: {
+      baseStyle: {
+        textDecoration: 'underline'
+      }
+    }
   }
 });
 

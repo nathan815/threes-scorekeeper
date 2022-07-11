@@ -16,14 +16,16 @@ import {
   MdDarkMode,
   MdLightMode,
 } from "react-icons/md";
-import Link from "./components/Link";
+import InternalLink from "./components/InternalLink";
 
 function Logo(props) {
   return (
     <Box {...props}>
-      <Link to="/">
-        <Text fontSize="lg" fontWeight="bold">Threes Score Keeper</Text>
-      </Link>
+      <InternalLink to="/">
+        <Text fontSize="xl" fontWeight="bold">
+          Threes Scorekeeper
+        </Text>
+      </InternalLink>
     </Box>
   );
 }
@@ -38,7 +40,7 @@ const MenuToggle = ({ toggle, isOpen }) => {
 
 const MenuItem = ({ children, isLast = false, to = "/", ...rest }) => {
   return (
-    <Button to={to} as={Link}>
+    <Button to={to} as={InternalLink}>
       <Text display="block" {...rest}>
         {children}
       </Text>
@@ -85,7 +87,9 @@ const MenuLinks = ({ isOpen, colorMode, toggleColorMode }) => {
 
         <IconButton
           onClick={toggleColorMode}
-          icon={colorMode === "light" ? <MdLightMode /> : <MdDarkMode />} aria-label={"Toggle Dark Mode"} />
+          icon={colorMode === "light" ? <MdLightMode /> : <MdDarkMode />}
+          aria-label={"Toggle Dark Mode"}
+        />
       </Stack>
     </Box>
   );
@@ -98,7 +102,7 @@ const NavBar = (props) => {
   const toggle = () => setIsOpen(!isOpen);
 
   return (
-    <NavBarContainer {...props}>
+    <NavBarContainer {...props} sx={{ '& a': { textDecoration: 'initial'}}}>
       <Logo color={["white", "white", "primary.500", "primary.500"]} />
       <MenuToggle toggle={toggle} isOpen={isOpen} />
       <MenuLinks {...{ isOpen, colorMode, toggleColorMode }} />
