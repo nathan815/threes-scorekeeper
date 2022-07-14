@@ -10,15 +10,21 @@ import {
   Link,
   SimpleGrid,
   Stack,
+  Flex,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { IoArrowForward } from 'react-icons/io5';
 import InternalLink from '../components/InternalLink';
+import config from '../config';
+
 
 export default function JoinTable() {
+  const bg = useColorModeValue('whiteAlpha.900', 'blackAlpha.100');
   return (
-    <SimpleGrid columns={3} spacing={1}>
-      <GridItem colSpan={{ sm: 3, md: 2 }}>
-        <Heading>Join a table</Heading>
+    <Flex justifyContent="center" direction="column" alignItems="center" marginTop={20}>
+    <Heading>{config.appName}</Heading>
+      <Box bg={bg} padding={10} borderRadius={10} maxWidth={600} marginTop={20}>
+        <Heading size="lg">Join a table</Heading>
         <br />
         <Stack spacing={5}>
           <FormControl isRequired>
@@ -27,7 +33,8 @@ export default function JoinTable() {
             </FormLabel>
             <Input id="display-name" placeholder="Your Name" size="lg" />
             <FormHelperText>
-              To save your game history, <InternalLink to="/login">sign in or create account</InternalLink>
+              To save your game history,{' '}
+              <InternalLink to="/login">sign in or create account</InternalLink>
             </FormHelperText>
           </FormControl>
           <FormControl isRequired>
@@ -40,7 +47,7 @@ export default function JoinTable() {
         </Stack>
         <Button
           mt={4}
-          colorScheme="teal"
+          colorScheme="green"
           isLoading={false}
           type="submit"
           size="lg"
@@ -48,8 +55,7 @@ export default function JoinTable() {
         >
           Join
         </Button>
-      </GridItem>
-      <GridItem colSpan={1}></GridItem>
-    </SimpleGrid>
+      </Box>
+    </Flex>
   );
 }

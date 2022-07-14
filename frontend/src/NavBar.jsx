@@ -23,7 +23,7 @@ function Logo(props) {
     <Box {...props}>
       <InternalLink to="/">
         <Text fontSize="xl" fontWeight="bold">
-          Threes Scorekeeper
+          3s Scorekeeper
         </Text>
       </InternalLink>
     </Box>
