@@ -1,5 +1,5 @@
 const config = {
-  appName: '3s Rummy Scorer',
+  appName: process.env.REACT_APP_NAME,
 };
 
 export default config;
