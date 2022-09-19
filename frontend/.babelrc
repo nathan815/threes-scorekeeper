@@ -1,10 +1,10 @@
 {
-    "presets": [
-        [
-            "@babel/preset-react",
-            {
-                "throwIfNamespace": false
-            }
-        ]
+  "presets": [
+    [
+      "@babel/preset-react",
+      {
+        "throwIfNamespace": false
+      }
     ]
+  ]
 }

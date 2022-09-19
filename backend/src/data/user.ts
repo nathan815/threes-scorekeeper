@@ -6,8 +6,8 @@ import { User } from '../domain/User';
 export class UserEntity implements Base {
   public static Model = getModelForClass(UserEntity, {
     options: {
-      customName: 'User'
-    }
+      customName: 'User',
+    },
   });
 
   _id: mongoose.Types.ObjectId;

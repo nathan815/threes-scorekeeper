@@ -3,7 +3,7 @@ import { GameTableEntity } from './data/gameTable';
 
 const tableShortIdGenerator = new ShortUniqueId({
   dictionary: 'alphanum_upper',
-  length: 6
+  length: 6,
 });
 
 export async function createTable({ name, createdBy }) {
@@ -12,7 +12,7 @@ export async function createTable({ name, createdBy }) {
     name,
     shortId,
     createdBy,
-    host: createdBy
+    host: createdBy,
   });
   await table.save();
   return table;

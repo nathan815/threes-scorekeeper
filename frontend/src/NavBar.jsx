@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Box,
   Button,
@@ -9,14 +9,14 @@ import {
   Stack,
   Text,
   useColorMode,
-} from "@chakra-ui/react";
+} from '@chakra-ui/react';
 import {
   MdMenu as MenuIcon,
   MdClose as CloseIcon,
   MdDarkMode,
   MdLightMode,
-} from "react-icons/md";
-import InternalLink from "./components/InternalLink";
+} from 'react-icons/md';
+import InternalLink from './components/InternalLink';
 
 function Logo(props) {
   return (
@@ -32,13 +32,13 @@ function Logo(props) {
 
 const MenuToggle = ({ toggle, isOpen }) => {
   return (
-    <Button display={{ base: "block", md: "none" }} onClick={toggle}>
+    <Button display={{ base: 'block', md: 'none' }} onClick={toggle}>
       {isOpen ? <CloseIcon /> : <MenuIcon />}
     </Button>
   );
 };
 
-const MenuItem = ({ children, isLast = false, to = "/", ...rest }) => {
+const MenuItem = ({ children, isLast = false, to = '/', ...rest }) => {
   return (
     <Button to={to} as={InternalLink}>
       <Text display="block" {...rest}>
@@ -60,7 +60,7 @@ const NavBarContainer = ({ children, ...props }) => {
           mb={8}
           pt={4}
           pb={4}
-          color={["white", "white", "primary.700", "primary.700"]}
+          color={['white', 'white', 'primary.700', 'primary.700']}
           {...props}
         >
           <DarkMode>{children}</DarkMode>
@@ -73,22 +73,22 @@ const NavBarContainer = ({ children, ...props }) => {
 const MenuLinks = ({ isOpen, colorMode, toggleColorMode }) => {
   return (
     <Box
-      display={{ base: isOpen ? "block" : "none", md: "block" }}
-      flexBasis={{ base: "100%", md: "auto" }}
+      display={{ base: isOpen ? 'block' : 'none', md: 'block' }}
+      flexBasis={{ base: '100%', md: 'auto' }}
     >
       <Stack
         spacing={2}
         align="center"
-        justify={{ sm: "center", md: "space-between", lg: "flex-end" }}
-        direction={["column", "column", "row", "row"]}
+        justify={{ sm: 'center', md: 'space-between', lg: 'flex-end' }}
+        direction={['column', 'column', 'row', 'row']}
         pt={[4, 4, 0, 0]}
       >
         <MenuItem to="/">Home</MenuItem>
 
         <IconButton
           onClick={toggleColorMode}
-          icon={colorMode === "light" ? <MdLightMode /> : <MdDarkMode />}
-          aria-label={"Toggle Dark Mode"}
+          icon={colorMode === 'light' ? <MdLightMode /> : <MdDarkMode />}
+          aria-label={'Toggle Dark Mode'}
         />
       </Stack>
     </Box>
@@ -102,8 +102,8 @@ const NavBar = (props) => {
   const toggle = () => setIsOpen(!isOpen);
 
   return (
-    <NavBarContainer {...props} sx={{ '& a': { textDecoration: 'initial'}}}>
-      <Logo color={["white", "white", "primary.500", "primary.500"]} />
+    <NavBarContainer {...props} sx={{ '& a': { textDecoration: 'initial' } }}>
+      <Logo color={['white', 'white', 'primary.500', 'primary.500']} />
       <MenuToggle toggle={toggle} isOpen={isOpen} />
       <MenuLinks {...{ isOpen, colorMode, toggleColorMode }} />
     </NavBarContainer>

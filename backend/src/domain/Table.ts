@@ -1,5 +1,5 @@
-import { Game } from "./game";
-import { User } from "./User";
+import { Game } from './game';
+import { User } from './User';
 
 export class Table {
   public constructor(obj: Partial<Table>) {

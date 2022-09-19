@@ -8,8 +8,8 @@ import {
   Input,
   SimpleGrid,
   Stack,
-} from "@chakra-ui/react";
-import { IoArrowForward } from "react-icons/io5";
+} from '@chakra-ui/react';
+import { IoArrowForward } from 'react-icons/io5';
 
 export default function NewTable() {
   return (
@@ -19,7 +19,9 @@ export default function NewTable() {
         <br />
         <Stack spacing={5}>
           <FormControl isRequired>
-            <FormLabel htmlFor="display-name">Hi there! What's your name?</FormLabel>
+            <FormLabel htmlFor="display-name">
+              Hi there! What's your name?
+            </FormLabel>
             <Input id="display-name" placeholder="Your Name" size="lg" />
           </FormControl>
           <FormControl isRequired>

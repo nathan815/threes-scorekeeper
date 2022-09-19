@@ -1,4 +1,11 @@
-import { Button, Flex, Stack, Heading, useColorModeValue, useBreakpointValue } from '@chakra-ui/react';
+import {
+  Button,
+  Flex,
+  Stack,
+  Heading,
+  useColorModeValue,
+  useBreakpointValue,
+} from '@chakra-ui/react';
 import { Link as RouterLink } from 'react-router-dom';
 import { IoEnter, IoAddCircle } from 'react-icons/io5';
 
@@ -22,7 +29,7 @@ function CardHero(props) {
       transform: `rotate(${r}) translate(${x}, ${y})`,
       filter: `brightness(${brightness})`,
       width: width,
-      animate: 'transform 0.5s'
+      animate: 'transform 0.5s',
     };
   };
   return (

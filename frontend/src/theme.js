@@ -18,7 +18,7 @@ const theme = extendTheme({
     primary: colors.blue,
     light: {
       500: colors.white,
-    }
+    },
   },
   styles: {
     global: (props) => ({
@@ -40,10 +40,10 @@ const theme = extendTheme({
           _hover: {
             bg: 'blackAlpha.900',
           },
-          color: 'white'
-        }
-      }
-    }
+          color: 'white',
+        },
+      },
+    },
   },
 });
 

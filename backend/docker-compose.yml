@@ -12,15 +12,15 @@ services:
   #       - ./package-lock.json:/app/package-lock.json
 
   db:
-      image: mongo
-      environment:
-        MONGO_INITDB_ROOT_USERNAME: "${DB_USER}"
-        MONGO_INITDB_ROOT_PASSWORD: "${DB_PASSWORD}"
-        MONGO_INITDB_DATABASE: "${DB_NAME}"
-      ports:
-        - 27017:27017
-      volumes:
-        - mongodb_data_container:/data/db
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: '${DB_USER}'
+      MONGO_INITDB_ROOT_PASSWORD: '${DB_PASSWORD}'
+      MONGO_INITDB_DATABASE: '${DB_NAME}'
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data_container:/data/db
 
 volumes:
   mongodb_data_container:

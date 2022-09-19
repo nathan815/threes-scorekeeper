@@ -13,8 +13,8 @@ import { UserEntity } from './user';
 export class GameTableEntity extends BaseEntity {
   public static Model = getModelForClass(GameTableEntity, {
     options: {
-      customName: 'GameTable'
-    }
+      customName: 'GameTable',
+    },
   });
 
   public static newInstance(data: Partial<GameTableEntity>) {

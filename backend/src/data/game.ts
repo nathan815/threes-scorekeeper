@@ -15,8 +15,8 @@ import { Base } from '@typegoose/typegoose/lib/defaultClasses';
 export class GameEntity implements Base {
   public static Model = getModelForClass(GameEntity, {
     options: {
-      customName: 'Game'
-    }
+      customName: 'Game',
+    },
   });
 
   _id: Types.ObjectId;

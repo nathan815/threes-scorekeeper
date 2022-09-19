@@ -7,7 +7,10 @@ export async function getUser(id: string) {
   return user?.toDomain();
 }
 
-export async function checkGuestUserSecret(id: string, secret: string): Promise<User> {
+export async function checkGuestUserSecret(
+  id: string,
+  secret: string
+): Promise<User> {
   const user = await UserEntity.Model.findOne({
     id: id,
     guestSecret: secret,

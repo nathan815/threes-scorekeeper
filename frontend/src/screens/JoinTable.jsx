@@ -17,12 +17,16 @@ import { IoArrowForward } from 'react-icons/io5';
 import InternalLink from '../components/InternalLink';
 import config from '../config';
 
-
 export default function JoinTable() {
   const bg = useColorModeValue('whiteAlpha.900', 'blackAlpha.100');
   return (
-    <Flex justifyContent="center" direction="column" alignItems="center" marginTop={20}>
-    <Heading>{config.appName}</Heading>
+    <Flex
+      justifyContent="center"
+      direction="column"
+      alignItems="center"
+      marginTop={20}
+    >
+      <Heading>{config.appName}</Heading>
       <Box bg={bg} padding={10} borderRadius={10} maxWidth={600} marginTop={20}>
         <Heading size="lg">Join a table</Heading>
         <br />
