@@ -16,6 +16,7 @@ services:
       environment:
         MONGO_INITDB_ROOT_USERNAME: "${DB_USER}"
         MONGO_INITDB_ROOT_PASSWORD: "${DB_PASSWORD}"
+        MONGO_INITDB_DATABASE: "${DB_NAME}"
       ports:
         - 27017:27017
       volumes:
@@ -23,3 +24,4 @@ services:
 
 volumes:
   mongodb_data_container:
+    driver: local

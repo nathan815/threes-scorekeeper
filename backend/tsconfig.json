@@ -1,0 +1,14 @@
+{
+  "include": ["./src", "./@types"],
+  "files": ["./src/main.ts"],
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "module": "node16",
+    "typeRoots" : [
+      "@types", // custom merged types MUST be first in a list
+      "node_modules/@types",
+    ],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  }
+}
