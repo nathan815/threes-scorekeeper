@@ -3,10 +3,10 @@ export class User {
     Object.assign(this, obj);
   }
 
-  id: string;
-  displayName: string;
-  guestSecret: string;
-  email: string;
+  id: string = "";
+  displayName?: string;
+  guestSecret?: string;
+  email?: string;
 
   get isAnon(): boolean {
     return Boolean(this.guestSecret);
@@ -14,12 +14,12 @@ export class User {
 }
 
 interface UserPublicDto {
-  id: string;
-  displayName: string;
+  id?: string;
+  displayName?: string;
 }
 
 interface UserPrivateDto extends UserPublicDto {
-  email: string;
+  email?: string;
 }
 
 export function userToDto(user: User): UserPublicDto {
