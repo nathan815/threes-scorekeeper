@@ -1,51 +1,14 @@
-import express from 'express';
 import { StatusCodes } from 'http-status-codes';
+import Router from 'express-promise-router';
 import * as v from 'express-validator';
 
-import * as gameTableService from '../gameTableService';
-import * as userService from '../userService';
-import { User, userToPrivateDto } from '../domain/User';
+import { gameToDto } from '../domain/game/game.dto';
+import { userToPrivateDto } from '../domain/user/user.dto';
+import { requiresNoAuth, checkRequestValidation, requiresAuth, injectCurrentUser } from './middleware';
 
-export const router = express.Router();
+export const router = Router();
 
-router.use(async (req, res, next) => {
-  console.log(req.sessionID, req.session);
-  if (req.session.userId) {
-    req.user = await userService.getUser(req.session.userId);
-  }
-  console.log('user', req.user);
-  next();
-});
-
-function checkRequestValidation(req, res, next) {
-  const errors = v.validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({
-      errorMessage:
-        "There were errors in your request. See the 'errors' property for details.",
-      errors: errors.array(),
-    });
-  }
-  next();
-}
-
-function requiresNoAuth(req, res, next) {
-  if (req.user) {
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      errorMessage: 'Already authenticated',
-    });
-  }
-  next();
-}
-
-function requiresAuth(req, res, next) {
-  if (!req.user) {
-    return res.status(StatusCodes.UNAUTHORIZED).json({
-      errorMessage: 'Authentication required',
-    });
-  }
-  next();
-}
+router.use(injectCurrentUser);
 
 router.get('/', (req, res) => {
   res.send('Threes');
@@ -54,10 +17,10 @@ router.get('/', (req, res) => {
 router.post(
   '/auth/register/guest',
   requiresNoAuth,
-  v.body('displayName').isString(),
+  v.body('displayName').isString().notEmpty(),
   checkRequestValidation,
   async (req, res) => {
-    const user = await userService.createGuestUser({
+    const user = await req.di.userService.createGuestUser({
       displayName: req.body.displayName,
     });
     req.session.userId = user.id;
@@ -72,17 +35,25 @@ router.post(
 router.post(
   '/auth/login/guest',
   requiresNoAuth,
-  v.body('userId').isString(),
-  v.body('secret').isString(),
+  v.body('userId').isString().notEmpty(),
+  v.body('secret').isString().notEmpty(),
   checkRequestValidation,
   async (req, res) => {
-    const user = await userService.checkGuestUserSecret(
+    const result = await req.di.userService.checkGuestUserSecret(
       req.body.userId,
       req.body.secret
     );
-    if (!user) {
-      return res.status(StatusCodes.UNAUTHORIZED);
+    if (result === null) {
+      return res.status(StatusCodes.UNAUTHORIZED).send({
+        error: 'User not found',
+      });
     }
+    if (result === false) {
+      return res.status(StatusCodes.UNAUTHORIZED).send({
+        error: 'Auth failure',
+      });
+    }
+    const user = result;
     req.session.userId = user.id;
     return res.status(StatusCodes.OK).json({
       user: userToPrivateDto(user),
@@ -90,31 +61,37 @@ router.post(
   }
 );
 
-router.get('/tables', async (req, res) => {
-  const tables = await gameTableService.getTables();
-  return res.json(tables);
+router.get('/games', async (req, res) => {
+  const games = await req.di.gameService.getGames();
+  console.log('games', games);
+  return res.json(games.map(gameToDto));
 });
 
 router.get(
-  '/tables/:id',
+  '/games/:id',
   v.param('id').isString(),
   checkRequestValidation,
   async (req, res) => {
-    const tables = await gameTableService.getTableByShortId(req.params.id);
-    return res.json(tables);
+    const game = await req.di.gameService.getByShortId(req.params.id);
+    if (!game) {
+      return res.status(StatusCodes.NOT_FOUND).send({
+        error: 'Game not found',
+      });
+    }
+    return res.json(gameToDto(game));
   }
 );
 
 router.post(
-  '/tables',
+  '/games',
   requiresAuth,
   v.body('name').isString(),
   checkRequestValidation,
   async (req, res) => {
-    const table = await gameTableService.createTable({
+    const game = await req.di.gameService.createGame({
       name: req.body.name,
-      createdBy: req.user,
+      owner: req.user!,
     });
-    res.json(table);
+    res.json(gameToDto(game));
   }
 );

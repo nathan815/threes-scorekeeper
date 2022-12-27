@@ -1,29 +1,45 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import session from 'express-session';
 
 import './config';
-import './db';
+import { configureDb } from './db';
+import { injectDIMiddleware } from './di';
 import { router } from './http/routes';
 
-const app = express();
-const port = process.env.PORT || 8080;
+async function createApp() {
+  const app = express();
 
-const sessionConfig: session.SessionOptions = {
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: false },
-};
+  const sessionConfig: session.SessionOptions = {
+    secret: process.env.SESSION_SECRET!,
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false },
+  };
 
-if (app.get('env') === 'production') {
-  app.set('trust proxy', 1); // trust first proxy
-  sessionConfig.cookie.secure = true; // serve secure cookies
+  if (app.get('env') === 'production') {
+    app.set('trust proxy', 1); // trust first proxy
+    sessionConfig.cookie!.secure = true; // serve secure cookies
+  }
+
+  app.use(session(sessionConfig));
+  app.use(express.json());
+
+  await configureDb();
+
+  app.use(injectDIMiddleware);
+
+  app.use(router);
+
+  return app;
 }
-app.use(session(sessionConfig));
-app.use(express.json());
 
-app.use(router);
+async function main() {
+  const port = process.env.PORT || 8080;
+  const app = await createApp();
 
-app.listen(port, () => {
-  console.log(`Listening on port ${port}`);
-});
+  app.listen(port, () => {
+    console.log(`Listening on port ${port}`);
+  });
+}
+
+main();

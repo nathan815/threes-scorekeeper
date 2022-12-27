@@ -5,6 +5,6 @@ const generator = new ShortUniqueId({
   length: 6,
 });
 
-export function generateJoinCode() {
+export function generateShortId() {
   return generator.randomUUID();
 }

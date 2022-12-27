@@ -32,18 +32,17 @@ export class CardRank {
     return rankNumberToName[this.number] || null;
   }
 
-  static of(number: number) {
-    return new CardRank(number);
+  static of(rank: CardRankName | number) {
+    if (typeof rank == 'number') {
+      return new CardRank(rank);
+    }
+    return new CardRank(rankNameToNumber[rank]);
   }
 
-  static ofName(name: CardRankName) {
-    return new CardRank(rankNameToNumber[name]);
-  }
-
-  static ACE = CardRank.ofName(CardRankName.Ace);
-  static JACK = CardRank.ofName(CardRankName.Jack);
-  static QUEEN = CardRank.ofName(CardRankName.Queen);
-  static KING = CardRank.ofName(CardRankName.King);
+  static ACE = CardRank.of(CardRankName.Ace);
+  static JACK = CardRank.of(CardRankName.Jack);
+  static QUEEN = CardRank.of(CardRankName.Queen);
+  static KING = CardRank.of(CardRankName.King);
 }
 
 export class Card {

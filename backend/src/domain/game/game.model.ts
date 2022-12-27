@@ -1,10 +1,8 @@
-import { ALL_CARDS, Card, CardRank } from './cards';
-import { User } from '../user/user';
-import ShortUniqueId from 'short-unique-id';
-import { generateJoinCode } from '../../utils/generateJoinCode';
+import { CardRank } from './cards';
+import { User } from '../user/user.model';
+import { generateShortId } from '../../utils/generateShortId';
 
 const MAX_PLAYERS = 8;
-
 const TOTAL_ROUNDS = 13;
 
 export enum GameStage {
@@ -13,22 +11,22 @@ export enum GameStage {
   Done = 'Done',
 }
 
-interface PlayerPoints {
-  [userId: string]: number;
-}
-
 export class Game {
-  id?: string;
-  joinCode: string;
+  id!: string;
   stage: GameStage = GameStage.Pre;
   players: User[] = [];
   rounds: GameRound[] = [];
   startedAt?: Date;
   endedAt?: Date;
 
-  constructor(public owner: User) {
-    this.addPlayer(owner);
-    this.joinCode = generateJoinCode();
+  constructor(
+    public name: string,
+    public owner: User | undefined,
+    public shortId: string = generateShortId()
+  ) {
+    if (owner) {
+      this.addPlayer(owner);
+    }
   }
 
   get currentRound(): GameRound | undefined {
@@ -38,6 +36,17 @@ export class Game {
     return this.rounds[this.rounds.length - 1];
   }
 
+  get totalPointsByPlayer(): { [userId: string]: number } {
+    const totals: { [userId: string]: number } = {};
+    for (const round of this.rounds) {
+      for (const userId of Object.keys(round.playerPoints)) {
+        totals[userId] =
+          (totals[userId] || 0) + round.playerPoints[userId].points;
+      }
+    }
+    return totals;
+  }
+
   get winningPlayer(): User | undefined {
     if (this.stage == GameStage.Pre) {
       return;
@@ -45,17 +54,19 @@ export class Game {
 
     let minPointsUserId: string;
     let minPoints = Number.MAX_VALUE;
-    for (const round of this.rounds) {
-      for (const userId of Object.keys(round.playerPoints)) {
-        if (round.playerPoints[userId] < minPoints) {
-          minPointsUserId = userId;
-        }
+    for (const userId of Object.keys(this.totalPointsByPlayer)) {
+      if (this.totalPointsByPlayer[userId] < minPoints) {
+        minPoints = this.totalPointsByPlayer[userId];
+        minPointsUserId = userId;
       }
     }
     return this.players.find((u) => u.id == minPointsUserId);
   }
 
   addPlayer(player: User): boolean {
+    if (!player) {
+      throw new Error('Invalid player');
+    }
     if (this.players.length == MAX_PLAYERS) {
       return false;
     }
@@ -69,7 +80,7 @@ export class Game {
 
   getPlayerPoints(player: User): number {
     return this.rounds
-      .map((round) => round.playerPoints[player.id])
+      .map((round) => round.playerPoints[player.id].points)
       .reduce((prev, cur) => prev + cur, 0);
   }
 
@@ -96,21 +107,26 @@ export class Game {
     this.stage = GameStage.Done;
   }
 
-  finishRound(playerPoints: PlayerPoints) {
+  finishRound(playerPoints: PlayerRoundPoints[]) {
     if (!this.currentRound) {
       throw new Error('No round in progress');
     }
-    for (const id in Object.keys(playerPoints)) {
-      if (!this.players[id]) {
-        throw new Error(`User ID ${id} not in this game`);
+    for (let playerRound of playerPoints) {
+      if (!this.players.some((u) => u.id == playerRound.userId)) {
+        throw new Error(`No player with ID ${playerRound.userId} in this game`);
+      }
+      this.currentRound.recordPointsForPlayer(playerRound);
+    }
+    for (let player of this.players) {
+      if (
+        !Object.keys(this.currentRound.playerPoints).some(
+          (id) => id == player.id
+        )
+      ) {
+        throw new Error(`Points not provided for player ID ${player.id}`);
       }
     }
-    for (const id in Object.keys(this.players)) {
-      if (!playerPoints[id]) {
-        throw new Error(`Points no provided for user ID ${id}`);
-      }
-    }
-    this.currentRound.finish(playerPoints);
+    this.currentRound.finish();
   }
 
   nextRound() {
@@ -119,7 +135,7 @@ export class Game {
         `Game must be in progress to go to next round. Current stage is: ${this.stage}`
       );
     }
-    
+
     if (this.rounds.length == TOTAL_ROUNDS) {
       this.finish();
       return;
@@ -138,7 +154,7 @@ export class Game {
 export class GameRound {
   startedAt: Date;
   endedAt?: Date;
-  playerPoints: PlayerPoints = {};
+  playerPoints: PlayerPointsMap = {};
 
   public constructor(public game: Game, public cardRank: CardRank) {
     this.startedAt = new Date();
@@ -148,11 +164,37 @@ export class GameRound {
     return Boolean(this.endedAt);
   }
 
-  finish(playerPoints: PlayerPoints) {
+  recordPointsForPlayer(points: PlayerRoundPoints) {
+    this.playerPoints[points.userId] = points;
+  }
+
+  finish() {
     if (this.isFinished) {
       throw new Error('Round is already finished');
     }
-    this.playerPoints = playerPoints;
     this.endedAt = new Date();
+  }
+}
+
+const PERFECT_DECK_CUT_BONUS = -20;
+
+interface PlayerPointsMap {
+  [userId: string]: PlayerRoundPoints;
+}
+
+export class PlayerRoundPoints {
+  public userId: string;
+
+  constructor(
+    user: User,
+    public cardPoints: number,
+    public cutDeckPerfectly: boolean = false
+  ) {
+    this.userId = user.id;
+  }
+
+  get points() {
+    const bonus = this.cutDeckPerfectly ? PERFECT_DECK_CUT_BONUS : 0;
+    return this.cardPoints + bonus;
   }
 }

@@ -1,8 +1,9 @@
 {
   "include": ["./src", "./@types"],
-  "files": ["./src/main.ts"],
+  "files": ["./src/main.ts", "./src/DI.1.ts"],
   "compilerOptions": {
     "strict": true,
+    "target": "ES2021",
     "esModuleInterop": true,
     "module": "node16",
     "typeRoots": [
