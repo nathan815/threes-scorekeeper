@@ -142,8 +142,8 @@ router.post(
         });
       }
       if (err instanceof Error) {
-        return res.status(StatusCodes.CONFLICT).send({
-          errorMessage: `Unable to start game: ${err.message}`,
+        return res.status(StatusCodes.BAD_REQUEST).send({
+          errorMessage: err.message,
         });
       }
       throw err;
@@ -153,8 +153,12 @@ router.post(
   }
 );
 
-async function getGameOrSendFailure(req: Request, res: Response) {
-  const game = await req.di.gameService.getByShortId(req.params.id);
+async function getGameOrSendFailure(
+  req: Request,
+  res: Response,
+  idFn = (req: Request) => req.params.id
+) {
+  const game = await req.di.gameService.getByShortId(idFn(req));
   if (!game) {
     res.status(StatusCodes.NOT_FOUND).send({
       errorMessage: 'Game not found',
