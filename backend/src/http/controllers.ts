@@ -75,7 +75,6 @@ router.get('/users', async (req, res) => {
   return res.json(users.map(userToDto));
 });
 
-
 router.get('/games', async (req, res) => {
   const games = await req.di.gameService.getGames();
   console.log('games', games);
@@ -167,10 +166,13 @@ router.post(
 router.put(
   '/games/:id/rounds/:round/playerResult/:userId',
   requiresAuth,
-  v.oneOf([
-    v.param('round').isInt().withMessage('not an integer').toInt(),
-    v.param('round').equals('current').withMessage('not equal to current'),
-  ], "round must be 'current' or a previous round number"),
+  v.oneOf(
+    [
+      v.param('round').isInt().withMessage('not an integer').toInt(),
+      v.param('round').equals('current').withMessage('not equal to current'),
+    ],
+    "round must be 'current' or a previous round number"
+  ),
   v.param('userId').isMongoId(),
   v.body('points').isInt().toInt(),
   v.body('perfectDeckCut').isBoolean({ strict: true }),
@@ -193,7 +195,12 @@ router.put(
 
     try {
       const roundNumber = round === 'current' ? undefined : parseInt(round);
-      game.recordPlayerRoundResult(subjectUser, points, perfectDeckCut, roundNumber);
+      game.recordPlayerRoundResult(
+        subjectUser,
+        points,
+        perfectDeckCut,
+        roundNumber
+      );
     } catch (err) {
       if (err instanceof GameError) {
         return res.status(StatusCodes.BAD_REQUEST).send({

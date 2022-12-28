@@ -6,7 +6,7 @@ import './config';
 import { configureDb, MONGO_OPTIONS, MONGO_URL } from './db';
 import { injectDIMiddleware } from './di';
 import { injectCurrentUser } from './http/middleware';
-import { router } from './http/routes';
+import { router } from './http/controllers';
 
 async function createApp() {
   const app = express();
