@@ -4,6 +4,7 @@ import session from 'express-session';
 import './config';
 import { configureDb } from './db';
 import { injectDIMiddleware } from './di';
+import { injectCurrentUser } from './http/middleware';
 import { router } from './http/routes';
 
 async function createApp() {
@@ -27,6 +28,7 @@ async function createApp() {
   await configureDb();
 
   app.use(injectDIMiddleware);
+  app.use(injectCurrentUser);
 
   app.use(router);
 

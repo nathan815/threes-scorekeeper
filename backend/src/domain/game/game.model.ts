@@ -64,15 +64,15 @@ export class Game {
   }
 
   addPlayer(player: User): boolean {
-    if (!player) {
-      throw new Error('Invalid player');
+    if (!(player instanceof User)) {
+      throw new Error(`Invalid player user object: ${player}`);
     }
-    if (this.players.length == MAX_PLAYERS) {
-      return false;
+    if (this.players.some((u) => u.id == player.id)) {
+      // Player is already in the game. All good.
+      return true;
     }
-    if (this.players.find((u) => u.id == player.id)) {
-      // User is already added to this game.
-      return false;
+    if (this.players.length >= MAX_PLAYERS) {
+      throw new Error(`Maximum of ${MAX_PLAYERS} players reached`)
     }
     this.players.push(player);
     return true;

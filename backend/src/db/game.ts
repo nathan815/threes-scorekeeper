@@ -1,9 +1,11 @@
 import mongoose from 'mongoose';
+import autopopulate from 'mongoose-autopopulate';
 import { GameStage, GameRound, Game } from '../domain/game/game.model';
 import { UserEntity } from './user';
 import {
   getModelForClass,
   prop,
+  plugin,
   Ref,
   DocumentType,
   modelOptions,
@@ -14,6 +16,7 @@ import { TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
 import { GameRepository } from '../domain/game/game.repository';
 
 @modelOptions({ options: { customName: 'games' } })
+@plugin(autopopulate as any)
 export class GameEntity extends TimeStamps {
   @prop()
   _id?: mongoose.Types.ObjectId;
@@ -21,16 +24,16 @@ export class GameEntity extends TimeStamps {
   @prop()
   name?: string;
 
-  @prop()
+  @prop({ unique: true })
   shortId?: string;
 
   @prop()
   stage?: string;
 
-  @prop({ ref: () => UserEntity })
+  @prop({ ref: () => UserEntity, autopopulate: true })
   owner: Ref<UserEntity>;
 
-  @prop({ ref: () => UserEntity })
+  @prop({ ref: () => UserEntity, autopopulate: true })
   players: Ref<UserEntity>[] = [];
 
   @prop({ type: () => GameRound })
@@ -52,6 +55,7 @@ export class GameEntity extends TimeStamps {
       throw new Error('Players must be documents');
     }
     const game = new Game(this.name!, this.owner?.toDomain(), this.shortId);
+    game.id = this._id.toHexString();
     game.players = this.players.map((p) => {
       return p.toDomain();
     });
@@ -93,8 +97,9 @@ export class GameRepositoryMongo implements GameRepository {
     return games.map((db) => db.toDomain());
   }
 
-  getByShortId(shortId: string): Promise<Game> {
-    throw new Error('Method not implemented.');
+  async getByShortId(shortId: string): Promise<Game | undefined> {
+    const game = await GameDbModel.findOne({ shortId: shortId });
+    return game?.toDomain();
   }
 
   async create(game: Game): Promise<Game> {
@@ -103,7 +108,10 @@ export class GameRepositoryMongo implements GameRepository {
     return game;
   }
 
-  update(game: Game): Promise<Game> {
-    throw new Error('Method not implemented.');
+  async update(game: Game): Promise<Game> {
+   const model = new GameDbModel(GameEntity.fromDomain(game));
+   model.isNew = false;
+   const saved = await model.save();
+   return saved.toDomain();
   }
 }

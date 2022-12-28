@@ -4,11 +4,13 @@ import * as v from 'express-validator';
 
 import { gameToDto } from '../domain/game/game.dto';
 import { userToPrivateDto } from '../domain/user/user.dto';
-import { requiresNoAuth, checkRequestValidation, requiresAuth, injectCurrentUser } from './middleware';
+import {
+  requiresNoAuth,
+  checkRequestValidation,
+  requiresAuth,
+} from './middleware';
 
 export const router = Router();
-
-router.use(injectCurrentUser);
 
 router.get('/', (req, res) => {
   res.send('Threes');
@@ -45,12 +47,12 @@ router.post(
     );
     if (result === null) {
       return res.status(StatusCodes.UNAUTHORIZED).send({
-        error: 'User not found',
+        errorMessage: 'User not found',
       });
     }
     if (result === false) {
       return res.status(StatusCodes.UNAUTHORIZED).send({
-        error: 'Auth failure',
+        errorMessage: 'Auth failure',
       });
     }
     const user = result;
@@ -75,7 +77,7 @@ router.get(
     const game = await req.di.gameService.getByShortId(req.params.id);
     if (!game) {
       return res.status(StatusCodes.NOT_FOUND).send({
-        error: 'Game not found',
+        errorMessage: 'Game not found',
       });
     }
     return res.json(gameToDto(game));
@@ -92,6 +94,33 @@ router.post(
       name: req.body.name,
       owner: req.user!,
     });
+    res.json(gameToDto(game));
+  }
+);
+
+router.post(
+  '/games/:id/join',
+  requiresAuth,
+  checkRequestValidation,
+  async (req, res) => {
+    const game = await req.di.gameService.getByShortId(req.params.id);
+    if (!game) {
+      return res.status(StatusCodes.NOT_FOUND).send({
+        error: 'Game not found',
+      });
+    }
+    try {
+      game.addPlayer(req.user!);
+    } catch (err) {
+      if (err instanceof Error) {
+        return res.status(StatusCodes.CONFLICT).send({
+          errorMessage: `Unable to join game: ${err.message}`,
+        });
+      } else {
+        throw err;
+      }
+    }
+    req.di.repositories.game.update(game);
     res.json(gameToDto(game));
   }
 );

@@ -64,27 +64,29 @@ describe(Game, () => {
 
     it('prevents adding more than allowed number of players', () => {
       const g = new Game("test", userA);
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 7; i++) {
         g.addPlayer(new User({ id: String(i), displayName: String(i) }));
       }
 
       expect(g.players.length).toBe(8);
 
-      expect(g.addPlayer(userB)).toBe(false);
+      expect(g.addPlayer(userA)).toBe(true); // adding existing player is idempotent
+
+      expect(() => g.addPlayer(userB)).toThrow("Maximum of 8 players reached");
 
       expect(g.players.length).toBe(8);
     });
 
-    it('prevents adding same player twice', () => {
+    it('is idempotent (same player is only added once)', () => {
       const g = new Game("test", userA);
       expect(g.players.length).toBe(1);
 
-      expect(g.addPlayer(userA)).toBe(false);
+      expect(g.addPlayer(userA)).toBe(true);
       expect(g.players.length).toBe(1);
 
       expect(g.addPlayer(userB)).toBe(true);
-      expect(g.addPlayer(userB)).toBe(false);
-      expect(g.addPlayer(userB)).toBe(false);
+      expect(g.addPlayer(userB)).toBe(true);
+      expect(g.addPlayer(userB)).toBe(true);
       expect(g.players.length).toBe(2);
     });
   });
