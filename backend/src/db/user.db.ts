@@ -5,7 +5,7 @@ import { User } from '../domain/user/user.model';
 import { UserRepository } from '../domain/user/user.repository';
 
 @modelOptions({ options: { customName: 'users' } })
-export class UserEntity extends TimeStamps {
+export class UserSchema extends TimeStamps {
   @prop()
   _id?: mongoose.Types.ObjectId;
 
@@ -26,8 +26,8 @@ export class UserEntity extends TimeStamps {
     return user;
   }
 
-  static fromDomain(user: User): UserEntity {
-    const ent = new UserEntity();
+  static fromDomain(user: User): UserSchema {
+    const ent = new UserSchema();
     ent._id = user.id
       ? new mongoose.Types.ObjectId(user.id)
       : new mongoose.Types.ObjectId();
@@ -38,7 +38,7 @@ export class UserEntity extends TimeStamps {
   }
 }
 
-export const UserDbModel = getModelForClass(UserEntity);
+export const UserDbModel = getModelForClass(UserSchema);
 
 export class UserRepositoryMongo implements UserRepository {
   async getById(id: string): Promise<User | undefined> {
@@ -47,7 +47,7 @@ export class UserRepositoryMongo implements UserRepository {
   }
 
   async save(user: User): Promise<User> {
-    const ent = await UserDbModel.create(UserEntity.fromDomain(user));
+    const ent = await UserDbModel.create(UserSchema.fromDomain(user));
     const savedEnt = await ent.save();
     // console.log('ent', ent, 'saved', savedEnt);
     return savedEnt.toDomain();

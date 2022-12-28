@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import { GameRepositoryMongo } from './db/game';
-import { UserRepositoryMongo } from './db/user';
+import { GameRepositoryMongo } from './db/game.db';
+import { UserRepositoryMongo } from './db/user.db';
 import { GameRepository } from './domain/game/game.repository';
 import { GameService } from './domain/game/game.service';
 import { UserRepository } from './domain/user/user.repository';

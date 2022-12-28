@@ -10,7 +10,11 @@ import {
   checkRequestValidation,
   requiresAuth,
 } from './middleware';
-import { GameError, NonOwnerCannotStartGameError } from '../domain/game/game.model';
+import {
+  GameError,
+  NonOwnerCannotStartGameError,
+  PlayerRoundResult,
+} from '../domain/game/game.model';
 
 export const router = Router();
 
@@ -152,8 +156,68 @@ router.post(
     res.json(gameToDto(game));
   }
 );
+
+router.put(
+  '/games/:id/rounds/:round/playerResult/:userId',
+  requiresAuth,
+  v.oneOf([
+    v.param('round').isInt().withMessage('not an integer').toInt(),
+    v.param('round').equals('current').withMessage('not equal to current'),
+  ], "round must be 'current' or a previous round number"),
+  v.param('userId').isMongoId(),
+  v.body('points').isInt().toInt(),
+  v.body('perfectDeckCut').isBoolean({ strict: true }),
+  checkRequestValidation,
+  async (req, res) => {
+    const { round, userId } = req.params;
+    const { points, perfectDeckCut } = req.body;
+
+    const subjectUser = await req.di.userService.getUser(userId);
+    if (!subjectUser) {
+      return res.status(StatusCodes.BAD_REQUEST).send({
+        errorMessage: 'Provided userId does not exist',
+      });
+    }
+
+    const game = await getGameOrSendFailure(req, res);
+    if (!game) {
+      return;
+    }
+
+    try {
+      const roundNumber = round === 'current' ? undefined : parseInt(round);
+      game.recordPlayerRoundResult(subjectUser, points, perfectDeckCut, roundNumber);
+    } catch (err) {
+      if (err instanceof GameError) {
         return res.status(StatusCodes.BAD_REQUEST).send({
           errorMessage: err.message,
+          details: { ...err },
+        });
+      }
+      throw err;
+    }
+
+    req.di.repositories.game.update(game);
+    res.json(gameToDto(game));
+  }
+);
+
+router.post(
+  '/games/:id/rounds/current/end',
+  requiresAuth,
+  checkRequestValidation,
+  async (req, res) => {
+    const game = await getGameOrSendFailure(req, res);
+    if (!game) {
+      return;
+    }
+    try {
+      game.nextRound();
+    } catch (err) {
+      if (err instanceof GameError) {
+        return res.status(StatusCodes.BAD_REQUEST).send({
+          errorMessage: err.message,
+          details: { ...err },
         });
       }
       throw err;

@@ -40,7 +40,7 @@ describe(Game, () => {
     expect(userC).not.toBeUndefined();
   });
 
-  it('runs correctly in full end-to-end scenario', () => {
+  it('runs correctly through full happy-path', () => {
     const g = new Game('e2e game test', userA);
     g.addPlayer(userB);
     expect(g.winningPlayer).toBeUndefined();
@@ -49,54 +49,47 @@ describe(Game, () => {
 
     // Ace
     expect(g.currentRound?.cardRank).toEqual(CardRank.of(CardRankName.Ace));
-
-    g.recordPlayerRoundResult(new PlayerRoundResult(userA, 0));
-    g.recordPlayerRoundResult(new PlayerRoundResult(userB, 10));
-    g.finishRound();
-
+    g.recordPlayerRoundResult(userA, 0);
+    g.recordPlayerRoundResult(userB, 10);
     expect(g.currentRound?.cardRank).toEqual(CardRank.of(CardRankName.Ace));
-    expect(g.totalPointsByPlayer[userA.id]).toBe(0);
-    expect(g.totalPointsByPlayer[userB.id]).toBe(10);
+    expect(g.getPlayerPoints(userA)).toBe(0);
+    expect(g.getPlayerPoints(userB)).toBe(10);
     expect(g.winningPlayer).toEqual(userA);
 
     // 2
     g.nextRound();
     expect(g.currentRound?.cardRank).toEqual(CardRank.of(2));
-    g.recordPlayerRoundResult(new PlayerRoundResult(userA, 25));
-    g.recordPlayerRoundResult(new PlayerRoundResult(userB, 5));
-    g.finishRound();
-    expect(g.totalPointsByPlayer[userA.id]).toBe(25);
-    expect(g.totalPointsByPlayer[userB.id]).toBe(15);
+    g.recordPlayerRoundResult(userA, 25);
+    g.recordPlayerRoundResult(userB, 5);
+    expect(g.getPlayerPoints(userA)).toBe(25);
+    expect(g.getPlayerPoints(userB)).toBe(15);
     expect(g.winningPlayer).toEqual(userB);
 
     // 3
     g.nextRound();
     expect(g.currentRound?.cardRank).toEqual(CardRank.of(3));
-    g.recordPlayerRoundResult(new PlayerRoundResult(userA, 5));
-    g.recordPlayerRoundResult(new PlayerRoundResult(userB, 10));
-    g.finishRound();
-    expect(g.totalPointsByPlayer[userA.id]).toBe(30);
-    expect(g.totalPointsByPlayer[userB.id]).toBe(25);
+    g.recordPlayerRoundResult(userA, 5);
+    g.recordPlayerRoundResult(userB, 10);
+    expect(g.getPlayerPoints(userA)).toBe(30);
+    expect(g.getPlayerPoints(userB)).toBe(25);
     expect(g.winningPlayer).toEqual(userB);
 
     // 4
     g.nextRound();
     expect(g.currentRound?.cardRank).toEqual(CardRank.of(4));
-    g.recordPlayerRoundResult(new PlayerRoundResult(userA, 0));
-    g.recordPlayerRoundResult(new PlayerRoundResult(userB, 10));
-    g.finishRound();
-    expect(g.totalPointsByPlayer[userA.id]).toBe(30);
-    expect(g.totalPointsByPlayer[userB.id]).toBe(35);
+    g.recordPlayerRoundResult(userA, 0);
+    g.recordPlayerRoundResult(userB, 10);
+    expect(g.getPlayerPoints(userA)).toBe(30);
+    expect(g.getPlayerPoints(userB)).toBe(35);
     expect(g.winningPlayer).toEqual(userA);
 
     // 5
     g.nextRound();
     expect(g.currentRound?.cardRank).toEqual(CardRank.of(5));
-    g.recordPlayerRoundResult(new PlayerRoundResult(userA, 5));
-    g.recordPlayerRoundResult(new PlayerRoundResult(userB, 5));
-    g.finishRound();
-    expect(g.totalPointsByPlayer[userA.id]).toBe(35);
-    expect(g.totalPointsByPlayer[userB.id]).toBe(40);
+    g.recordPlayerRoundResult(userA, 5);
+    g.recordPlayerRoundResult(userB, 5);
+    expect(g.getPlayerPoints(userA)).toBe(35);
+    expect(g.getPlayerPoints(userB)).toBe(40);
     expect(g.winningPlayer).toEqual(userA);
   });
 
@@ -201,31 +194,30 @@ describe(Game, () => {
       expect(g.currentRound?.cardRank).toEqual(CardRank.ACE);
       expect(g.currentRound?.cardRank?.number).toBe(1);
 
-      g.recordPlayerRoundResult(new PlayerRoundResult(userA, 0));
-      g.recordPlayerRoundResult(new PlayerRoundResult(userB, 0));
-      g.finishRound();
+      g.recordPlayerRoundResult(userA, 0);
+      g.recordPlayerRoundResult(userB, 0);
 
       g.nextRound();
 
       expect(g.currentRound?.cardRank?.number).toBe(2);
 
-      g.recordPlayerRoundResult(new PlayerRoundResult(userA, 0));
-      g.recordPlayerRoundResult(new PlayerRoundResult(userB, 0));
-      g.finishRound();
+      g.recordPlayerRoundResult(userA, 0);
+      g.recordPlayerRoundResult(userB, 0);
 
       g.nextRound();
 
       expect(g.currentRound?.cardRank?.number).toBe(3);
     });
 
-    it('throws if current round is not finished', () => {
+    it('throws if no result was recorded for a player', () => {
       const g = new Game('test', userA);
       g.addPlayer(userB);
       g.start(userA);
 
+      g.recordPlayerRoundResult(userA, 0);
       expect(() => {
         g.nextRound();
-      }).toThrow('Current round is not finished');
+      }).toThrow(ResultNotRecordedForPlayersError);
     });
 
     it('throws if game is not in progress', () => {
@@ -251,16 +243,49 @@ describe(Game, () => {
   });
 
   describe(Game.prototype.recordPlayerRoundResult, () => {
+    it('records player result on current round when none specified', () => {
+      const g = new Game('test', userA);
+      g.addPlayer(userB);
+      g.start(userA);
+
+      g.recordPlayerRoundResult(userA, 0);
+      g.recordPlayerRoundResult(userB, 7);
+
+      expect(g.currentRound?.playerResults[userA.id].cardPoints).toBe(0);
+      expect(g.currentRound?.playerResults[userB.id].cardPoints).toBe(7);
+    });
+
+    it('records player result on specified round', () => {
+      const g = new Game('test', userA);
+      g.addPlayer(userB);
+      g.start(userA);
+
+      g.recordPlayerRoundResult(userA, 3);
+      g.recordPlayerRoundResult(userB, 5);
+      expect(g.currentRound?.playerResults[userA.id].cardPoints).toBe(3);
+      expect(g.currentRound?.playerResults[userB.id].cardPoints).toBe(5);
+
+      g.nextRound();
+      g.recordPlayerRoundResult(userA, 13);
+      g.recordPlayerRoundResult(userB, 8);
+      expect(g.currentRound?.playerResults[userA.id].cardPoints).toBe(13);
+      expect(g.currentRound?.playerResults[userB.id].cardPoints).toBe(8);
+
+      g.recordPlayerRoundResult(userB, 16, false, 1); // change userB round1 points to 16
+      expect(g.rounds[0].playerResults[userA.id].cardPoints).toBe(3); // userA unchanged
+      expect(g.rounds[0].playerResults[userB.id].cardPoints).toBe(16); // userB is now 16
+    });
+
     it('throws if provided player is not in game', () => {
       const g = new Game('test', userA);
       g.addPlayer(userB);
       g.start(userA);
 
-      g.recordPlayerRoundResult(new PlayerRoundResult(userA, 0));
-      g.recordPlayerRoundResult(new PlayerRoundResult(userB, 10));
+      g.recordPlayerRoundResult(userA, 0);
+      g.recordPlayerRoundResult(userB, 10);
 
       expect(() => {
-        g.recordPlayerRoundResult(new PlayerRoundResult(userC, 15));
+        g.recordPlayerRoundResult(userC, 15);
       }).toThrow(`No player with ID ${userC.id} in this game`);
     });
 
@@ -269,46 +294,9 @@ describe(Game, () => {
       g.addPlayer(userB);
 
       expect(() => {
-        g.recordPlayerRoundResult(new PlayerRoundResult(userA, 0));
-        g.recordPlayerRoundResult(new PlayerRoundResult(userB, 0));
+        g.recordPlayerRoundResult(userA, 0);
+        g.recordPlayerRoundResult(userB, 0);
       }).toThrow('No round in progress');
-    });
-  });
-
-  describe(Game.prototype.finishRound, () => {
-    it('throws if points no provided for a player', () => {
-      const g = new Game('test', userA);
-      g.addPlayer(userB);
-      g.start(userA);
-
-      g.recordPlayerRoundResult(new PlayerRoundResult(userA, 0));
-      expect(() => {
-        g.finishRound();
-      }).toThrow(ResultNotRecordedForPlayersError);
-    });
-
-    it('throws if no round', () => {
-      const g = new Game('test', userA);
-      g.addPlayer(userB);
-
-      expect(() => {
-        g.finishRound();
-      }).toThrow('No round in progress');
-    });
-
-    it('throws if round is finished', () => {
-      const g = new Game('test', userA);
-      g.addPlayer(userB);
-      g.start(userA);
-
-      g.recordPlayerRoundResult(new PlayerRoundResult(userA, 0));
-      g.recordPlayerRoundResult(new PlayerRoundResult(userB, 0));
-
-      g.finishRound();
-
-      expect(() => {
-        g.finishRound();
-      }).toThrow('Round is already finished');
     });
   });
 });

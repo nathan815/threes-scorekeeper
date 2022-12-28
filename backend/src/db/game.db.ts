@@ -1,7 +1,12 @@
 import mongoose from 'mongoose';
 import autopopulate from 'mongoose-autopopulate';
-import { GameStage, GameRound, Game } from '../domain/game/game.model';
-import { UserEntity } from './user.db';
+import {
+  GameStage,
+  GameRound,
+  Game,
+  PlayerResultMap,
+} from '../domain/game/game.model';
+import { UserSchema } from './user.db';
 import {
   getModelForClass,
   prop,
@@ -14,10 +19,26 @@ import {
 } from '@typegoose/typegoose';
 import { TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
 import { GameRepository } from '../domain/game/game.repository';
+import { cloneDeep } from 'lodash';
+import { CardRank } from '../domain/game/cards';
+
+class GameRoundSchema {
+  @prop()
+  cardRank?: number;
+
+  @prop()
+  playerResults?: PlayerResultMap;
+
+  @prop()
+  startedAt?: Date;
+
+  @prop()
+  endedAt?: Date;
+}
 
 @modelOptions({ options: { customName: 'games' } })
 @plugin(autopopulate as any)
-export class GameEntity extends TimeStamps {
+export class GameSchema extends TimeStamps {
   @prop()
   _id?: mongoose.Types.ObjectId;
 
@@ -30,14 +51,14 @@ export class GameEntity extends TimeStamps {
   @prop()
   stage?: string;
 
-  @prop({ ref: () => UserEntity, autopopulate: true })
-  owner: Ref<UserEntity>;
+  @prop({ ref: () => UserSchema, autopopulate: true })
+  owner: Ref<UserSchema>;
 
-  @prop({ ref: () => UserEntity, autopopulate: true })
-  players: Ref<UserEntity>[] = [];
+  @prop({ ref: () => UserSchema, autopopulate: true })
+  players: Ref<UserSchema>[] = [];
 
-  @prop({ type: () => [GameRound] })
-  rounds: GameRound[] = [];
+  @prop()
+  rounds: GameRoundSchema[] = [];
 
   @prop()
   startedAt?: Date;
@@ -45,7 +66,7 @@ export class GameEntity extends TimeStamps {
   @prop()
   endedAt?: Date;
 
-  toDomain(this: DocumentType<GameEntity>): Game {
+  toDomain(this: DocumentType<GameSchema>): Game {
     if (!isDocument(this.owner) && this.owner) {
       throw new Error('Owner must be a document');
     }
@@ -58,34 +79,47 @@ export class GameEntity extends TimeStamps {
       return p.toDomain();
     });
     game.stage = GameStage[this.stage! as keyof typeof GameStage];
-    game.rounds = this.rounds;
+    game.rounds = this.rounds.map((r) => {
+      const round = new GameRound(CardRank.of(r.cardRank!));
+      round.startedAt = r.startedAt!;
+      round.endedAt = r.endedAt!;
+      round.playerResults = r.playerResults || {};
+      return round;
+    });
     game.startedAt = this.startedAt;
     game.endedAt = this.endedAt;
     console.debug('toDomain - GAME', game);
     return game;
   }
 
-  static fromDomain(game: Game): GameEntity {
+  static fromDomain(game: Game): GameSchema {
     console.debug('fromDomain - GAME', game);
-    const entity = new GameEntity();
+    const entity = new GameSchema();
     entity._id = game.id
       ? new mongoose.Types.ObjectId(game.id)
       : new mongoose.Types.ObjectId();
-    entity.players = game.players.map(UserEntity.fromDomain);
+    entity.players = game.players.map(UserSchema.fromDomain);
     entity.shortId = game.shortId;
     if (game.owner) {
-      entity.owner = UserEntity.fromDomain(game.owner);
+      entity.owner = UserSchema.fromDomain(game.owner);
     }
     entity.name = game.name;
     entity.stage = game.stage;
-    entity.rounds = game.rounds;
+    entity.rounds = cloneDeep(game.rounds).map(r => {
+      const s = new GameRoundSchema();
+      s.cardRank = r.cardRank.number;
+      s.playerResults = r.playerResults;
+      s.startedAt = r.startedAt;
+      s.endedAt = r.endedAt;
+      return s;
+    });
     entity.startedAt = game.startedAt;
     entity.endedAt = game.endedAt;
     return entity;
   }
 }
 
-export const GameDbModel = getModelForClass(GameEntity);
+export const GameDbModel = getModelForClass(GameSchema);
 
 export class GameRepositoryMongo implements GameRepository {
   async getAll(): Promise<Game[]> {
@@ -100,13 +134,13 @@ export class GameRepositoryMongo implements GameRepository {
   }
 
   async create(game: Game): Promise<Game> {
-    const ent = await GameDbModel.create(GameEntity.fromDomain(game));
+    const ent = await GameDbModel.create(GameSchema.fromDomain(game));
     const saved = await ent.save();
     return game;
   }
 
   async update(game: Game): Promise<Game> {
-    const model = new GameDbModel(GameEntity.fromDomain(game));
+    const model = new GameDbModel(GameSchema.fromDomain(game));
     model.isNew = false;
     const saved = await model.save();
     return saved.toDomain();
