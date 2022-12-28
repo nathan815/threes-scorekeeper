@@ -91,6 +91,15 @@ describe(Game, () => {
     expect(g.getPlayerPoints(userA)).toBe(35);
     expect(g.getPlayerPoints(userB)).toBe(40);
     expect(g.winningPlayer).toEqual(userA);
+
+    // 6
+    g.nextRound();
+    expect(g.currentRound?.cardRank).toEqual(CardRank.of(6));
+    g.recordPlayerRoundResult(userA, 5, true); // user gets -20 bonus for cutting deck perfectly. effectively -15.
+    g.recordPlayerRoundResult(userB, 8);
+    expect(g.getPlayerPoints(userA)).toBe(20);
+    expect(g.getPlayerPoints(userB)).toBe(48);
+    expect(g.winningPlayer).toEqual(userA);
   });
 
   describe(Game.prototype.addPlayer, () => {
@@ -175,7 +184,7 @@ describe(Game, () => {
 
       expect(() => {
         g.start(userA);
-      }).toThrow('Cannot start game in this stage');
+      }).toThrow('Game has already been started');
     });
 
     it('throws if non-owner tries to start game', () => {

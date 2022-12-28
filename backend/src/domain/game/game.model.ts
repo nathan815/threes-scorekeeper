@@ -73,7 +73,7 @@ export class Game {
     }
     if (this.stage != GameStage.Pre) {
       throw new IllegalGameStageError(
-        `Game must be in ${GameStage.Pre} stage to add players`
+        `Cannot add players in stage ${this.stage}`
       );
     }
     if (this.players.some((u) => u.id == player.id)) {
@@ -91,11 +91,7 @@ export class Game {
     return this.rounds
       .map((round) => {
         const result = round.playerResults[player.id];
-        if (result) {
-          const bonus = result.cutDeckPerfectly ? PERFECT_DECK_CUT_BONUS : 0;
-          return result.cardPoints + bonus;
-        }
-        return 0;
+        return result ? result.cardPoints + (result.perfectCutBonus || 0) : 0;
       })
       .reduce((prev, cur) => prev + cur, 0);
   }
@@ -106,7 +102,7 @@ export class Game {
     }
 
     if (this.stage != GameStage.Pre) {
-      throw new GameError('Cannot start game in this stage: ' + this.stage);
+      throw new GameError('Game has already been started');
     }
 
     if (this.players.length < 2) {
@@ -143,6 +139,13 @@ export class Game {
       }
       round = this.currentRound;
     } else {
+      if (roundNumber < 1 || roundNumber > TOTAL_ROUNDS) {
+        throw new GameError('Invalid round number provided', {
+          roundNumber,
+          minRound: 1,
+          maxRound: TOTAL_ROUNDS,
+        });
+      }
       const foundRound = this.rounds.find(
         (r) => r.cardRank.number == roundNumber
       );
@@ -160,7 +163,7 @@ export class Game {
     return round.recordPlayerResult({
       userId: player.id,
       cardPoints: points,
-      cutDeckPerfectly,
+      perfectCutBonus: cutDeckPerfectly ? PERFECT_DECK_CUT_BONUS : 0,
     });
   }
 
@@ -240,11 +243,11 @@ export interface PlayerResultMap {
 export interface PlayerRoundResult {
   userId: string;
   cardPoints: number;
-  cutDeckPerfectly: boolean;
+  perfectCutBonus: number;
 }
 
 export class GameError extends Error {
-  constructor(msg: string) {
+  constructor(msg: string, public context?: any) {
     super(msg);
   }
 }
