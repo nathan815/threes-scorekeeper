@@ -46,8 +46,6 @@ export class GameEntity extends TimeStamps {
   endedAt?: Date;
 
   toDomain(this: DocumentType<GameEntity>): Game {
-    console.log('owner', this.owner);
-    console.log('players', this.players);
     if (!isDocument(this.owner) && this.owner) {
       throw new Error('Owner must be a document');
     }
@@ -90,10 +88,8 @@ export const GameDbModel = getModelForClass(GameEntity);
 
 export class GameRepositoryMongo implements GameRepository {
   async getAll(): Promise<Game[]> {
-    const games = await GameDbModel.find()
-      .populate(['owner', 'players'])
-      .exec();
-    console.log('games', games);
+    const games = await GameDbModel.find().exec();
+    console.debug('All games:', games);
     return games.map((db) => db.toDomain());
   }
 
@@ -109,9 +105,9 @@ export class GameRepositoryMongo implements GameRepository {
   }
 
   async update(game: Game): Promise<Game> {
-   const model = new GameDbModel(GameEntity.fromDomain(game));
-   model.isNew = false;
-   const saved = await model.save();
-   return saved.toDomain();
+    const model = new GameDbModel(GameEntity.fromDomain(game));
+    model.isNew = false;
+    const saved = await model.save();
+    return saved.toDomain();
   }
 }

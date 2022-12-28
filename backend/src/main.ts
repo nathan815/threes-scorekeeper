@@ -1,8 +1,9 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express from 'express';
 import session from 'express-session';
+import MongoStore from 'connect-mongo';
 
 import './config';
-import { configureDb } from './db';
+import { configureDb, MONGO_OPTIONS, MONGO_URL } from './db';
 import { injectDIMiddleware } from './di';
 import { injectCurrentUser } from './http/middleware';
 import { router } from './http/routes';
@@ -10,26 +11,37 @@ import { router } from './http/routes';
 async function createApp() {
   const app = express();
 
+  const isProduction = app.get('env') === 'production';
+
   const sessionConfig: session.SessionOptions = {
     secret: process.env.SESSION_SECRET!,
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false },
+    cookie: {
+      secure: isProduction,
+    },
+    store: MongoStore.create({
+      mongoUrl: MONGO_URL,
+      mongoOptions: {
+        auth: {
+          username: MONGO_OPTIONS.user,
+          password: MONGO_OPTIONS.pass,
+        },
+        authSource: MONGO_OPTIONS.authSource,
+      },
+    }),
   };
 
-  if (app.get('env') === 'production') {
+  if (isProduction) {
     app.set('trust proxy', 1); // trust first proxy
-    sessionConfig.cookie!.secure = true; // serve secure cookies
   }
-
-  app.use(session(sessionConfig));
-  app.use(express.json());
 
   await configureDb();
 
+  app.use(session(sessionConfig));
+  app.use(express.json());
   app.use(injectDIMiddleware);
   app.use(injectCurrentUser);
-
   app.use(router);
 
   return app;

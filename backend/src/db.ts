@@ -1,12 +1,15 @@
 import mongoose from 'mongoose';
-import CONFIG from './config';
+import config from './config';
 
-export function configureDb(config = CONFIG): Promise<typeof mongoose> {
-  const connString = `mongodb://${config.db.host}/${config.db.name}`;
-  console.log(`Connecting to mongo @ ${connString}`);
-  return mongoose.connect(connString, {
-    user: config.db.user,
-    pass: config.db.pass,
-    authSource: 'admin',
-  });
+export const MONGO_URL =  `mongodb://${config.db.host}/${config.db.name}`;
+
+export const MONGO_OPTIONS = {
+  user: config.db.user,
+  pass: config.db.pass,
+  authSource: 'admin',
+};
+
+export function configureDb(): Promise<typeof mongoose> {
+  console.log(`Connecting to mongodb: ${MONGO_URL}`);
+  return mongoose.connect(MONGO_URL, MONGO_OPTIONS);
 }

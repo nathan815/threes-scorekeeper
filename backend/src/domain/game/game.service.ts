@@ -19,7 +19,4 @@ export class GameService {
     return await this.gameRepo.create(game);
   }
 
-  async startGame(game: Game, user: User) {
-
-  }
 }
