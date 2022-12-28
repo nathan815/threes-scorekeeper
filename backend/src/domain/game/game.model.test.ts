@@ -121,12 +121,8 @@ describe(Game, () => {
       g.addPlayer(userB);
       g.start(userA);
 
-      expect(() => g.addPlayer(userC)).toThrow(
-        `Game must be in ${GameStage.Pre} stage to add players`
-      ); // fails for user not in game
-      expect(() => g.addPlayer(userB)).toThrow(
-        `Game must be in ${GameStage.Pre} stage to add players`
-      ); // also fails for users already in game
+      expect(() => g.addPlayer(userC)).toThrow(IllegalGameStageError); // fails for user not in game
+      expect(() => g.addPlayer(userB)).toThrow(IllegalGameStageError); // also fails for users already in game
     });
 
     it('prevents adding more than allowed number of players', () => {

@@ -65,7 +65,7 @@ export class Game {
 
   addPlayer(player: User): boolean {
     if (!(player instanceof User)) {
-      throw new Error(`Invalid player user object: ${player}`);
+      throw new GameError(`Invalid player user object: ${player}`);
     }
     if (this.stage != GameStage.Pre) {
       throw new IllegalGameStageError(
@@ -77,7 +77,7 @@ export class Game {
       return true;
     }
     if (this.players.length >= MAX_PLAYERS) {
-      throw new Error(`Maximum of ${MAX_PLAYERS} players reached`);
+      throw new GameError(`Maximum of ${MAX_PLAYERS} players reached`);
     }
     this.players.push(player);
     return true;
@@ -97,16 +97,17 @@ export class Game {
     }
 
     if (this.stage != GameStage.Pre) {
-      throw new Error('Cannot start game in this stage: ' + this.stage);
+      throw new GameError('Cannot start game in this stage: ' + this.stage);
     }
 
     if (this.players.length < 2) {
-      throw new Error('Cannot start game unless there are 2 or more players');
+      throw new GameError('Cannot start game unless there are 2 or more players');
     }
 
     this.startedAt = new Date();
     this.stage = GameStage.InProgress;
     this.nextRound();
+    console.log('End of start - game =', this);
   }
 
   finish() {
@@ -120,18 +121,19 @@ export class Game {
 
   recordPlayerRoundResult(result: PlayerRoundResult) {
     if (!this.currentRound) {
-      throw new Error('No round in progress');
+      throw new GameError('No round in progress');
     }
     if (!this.players.some((u) => u.id == result.userId)) {
-      throw new Error(`No player with ID ${result.userId} in this game`);
+      throw new GameError(`No player with ID ${result.userId} in this game`);
     }
     return this.currentRound.recordPlayerResult(result);
   }
 
   finishRound() {
     const currentRound = this.currentRound;
+    console.log('currentRound', currentRound);
     if (!currentRound) {
-      throw new Error('No round in progress');
+      throw new GameError('No round in progress');
     }
     const missingPlayerIds = this.players
       .map((player) => player.id)
@@ -155,21 +157,24 @@ export class Game {
     }
 
     if (this.currentRound && !this.currentRound.isFinished) {
-      throw new Error('Current round is not finished');
+      throw new GameError('Current round is not finished');
     }
 
     const curRankNum = this.currentRound?.cardRank.number ?? 0;
     const nextRank = CardRank.of(curRankNum + 1);
-    this.rounds.push(new GameRound(this, nextRank));
+    const round = new GameRound(nextRank);
+    this.rounds.push(round);
+    console.log('new round', round, 'ROUNDS', this.rounds);
   }
 }
 
 export class GameRound {
+  _id = false;
   startedAt: Date;
   endedAt?: Date;
   playerResults: PlayerResultMap = {};
 
-  public constructor(public game: Game, public cardRank: CardRank) {
+  public constructor(public cardRank: CardRank) {
     this.startedAt = new Date();
   }
 
@@ -183,7 +188,7 @@ export class GameRound {
 
   finish() {
     if (this.isFinished) {
-      throw new Error('Round is already finished');
+      throw new GameError('Round is already finished');
     }
     this.endedAt = new Date();
   }
@@ -212,19 +217,25 @@ export class PlayerRoundResult {
   }
 }
 
-export class IllegalGameStageError extends Error {
+export class GameError extends Error {
   constructor(msg: string) {
     super(msg);
   }
 }
 
-export class NonOwnerCannotStartGameError extends Error {
+export class IllegalGameStageError extends GameError {
   constructor(msg: string) {
     super(msg);
   }
 }
 
-export class ResultNotRecordedForPlayersError extends Error {
+export class NonOwnerCannotStartGameError extends GameError {
+  constructor(msg: string) {
+    super(msg);
+  }
+}
+
+export class ResultNotRecordedForPlayersError extends GameError {
   constructor(playerIds: string[]) {
     super(`Result not recorded for player IDs: ${playerIds.join(', ')}`);
   }

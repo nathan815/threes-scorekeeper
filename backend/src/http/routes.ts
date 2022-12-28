@@ -10,7 +10,7 @@ import {
   checkRequestValidation,
   requiresAuth,
 } from './middleware';
-import { NonOwnerCannotStartGameError } from '../domain/game/game.model';
+import { GameError, NonOwnerCannotStartGameError } from '../domain/game/game.model';
 
 export const router = Router();
 
@@ -112,7 +112,7 @@ router.post(
     try {
       game.addPlayer(req.user!);
     } catch (err) {
-      if (err instanceof Error) {
+      if (err instanceof GameError) {
         return res.status(StatusCodes.CONFLICT).send({
           errorMessage: `Unable to join game: ${err.message}`,
         });
@@ -141,7 +141,17 @@ router.post(
           errorMessage: err.message,
         });
       }
-      if (err instanceof Error) {
+      if (err instanceof GameError) {
+        return res.status(StatusCodes.BAD_REQUEST).send({
+          errorMessage: err.message,
+        });
+      }
+      throw err;
+    }
+    req.di.repositories.game.update(game);
+    res.json(gameToDto(game));
+  }
+);
         return res.status(StatusCodes.BAD_REQUEST).send({
           errorMessage: err.message,
         });
