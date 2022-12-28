@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import autopopulate from 'mongoose-autopopulate';
 import { GameStage, GameRound, Game } from '../domain/game/game.model';
-import { UserEntity } from './user';
+import { UserEntity } from './user.db';
 import {
   getModelForClass,
   prop,
@@ -36,7 +36,7 @@ export class GameEntity extends TimeStamps {
   @prop({ ref: () => UserEntity, autopopulate: true })
   players: Ref<UserEntity>[] = [];
 
-  @prop({ type: () => GameRound })
+  @prop({ type: () => [GameRound] })
   rounds: GameRound[] = [];
 
   @prop()
@@ -61,11 +61,12 @@ export class GameEntity extends TimeStamps {
     game.rounds = this.rounds;
     game.startedAt = this.startedAt;
     game.endedAt = this.endedAt;
+    console.debug('toDomain - GAME', game);
     return game;
   }
 
   static fromDomain(game: Game): GameEntity {
-    console.log('GAME', game);
+    console.debug('fromDomain - GAME', game);
     const entity = new GameEntity();
     entity._id = game.id
       ? new mongoose.Types.ObjectId(game.id)
