@@ -1,6 +1,13 @@
 import { User } from '../user/user.model';
 import { CardRank, CardRankName } from './cards';
-import { Game, GameStage, NonOwnerCannotStartGame, PlayerRoundResult } from './game.model';
+import {
+  Game,
+  GameStage,
+  IllegalGameStageError,
+  NonOwnerCannotStartGameError,
+  PlayerRoundResult,
+  ResultNotRecordedForPlayersError,
+} from './game.model';
 
 describe(Game, () => {
   let userA: User;
@@ -33,17 +40,64 @@ describe(Game, () => {
     expect(userC).not.toBeUndefined();
   });
 
-  it('runs end-to-end', () => {
-    const g = new Game('test', userA);
+  it('runs correctly in full end-to-end scenario', () => {
+    const g = new Game('e2e game test', userA);
     g.addPlayer(userB);
+    expect(g.winningPlayer).toBeUndefined();
+
     g.start(userA);
 
+    // Ace
     expect(g.currentRound?.cardRank).toEqual(CardRank.of(CardRankName.Ace));
 
-    g.finishRound([
-      new PlayerRoundPoints(userA, 0),
-      new PlayerRoundPoints(userB, 10),
-    ]);
+    g.recordPlayerRoundResult(new PlayerRoundResult(userA, 0));
+    g.recordPlayerRoundResult(new PlayerRoundResult(userB, 10));
+    g.finishRound();
+
+    expect(g.currentRound?.cardRank).toEqual(CardRank.of(CardRankName.Ace));
+    expect(g.totalPointsByPlayer[userA.id]).toBe(0);
+    expect(g.totalPointsByPlayer[userB.id]).toBe(10);
+    expect(g.winningPlayer).toEqual(userA);
+
+    // 2
+    g.nextRound();
+    expect(g.currentRound?.cardRank).toEqual(CardRank.of(2));
+    g.recordPlayerRoundResult(new PlayerRoundResult(userA, 25));
+    g.recordPlayerRoundResult(new PlayerRoundResult(userB, 5));
+    g.finishRound();
+    expect(g.totalPointsByPlayer[userA.id]).toBe(25);
+    expect(g.totalPointsByPlayer[userB.id]).toBe(15);
+    expect(g.winningPlayer).toEqual(userB);
+
+    // 3
+    g.nextRound();
+    expect(g.currentRound?.cardRank).toEqual(CardRank.of(3));
+    g.recordPlayerRoundResult(new PlayerRoundResult(userA, 5));
+    g.recordPlayerRoundResult(new PlayerRoundResult(userB, 10));
+    g.finishRound();
+    expect(g.totalPointsByPlayer[userA.id]).toBe(30);
+    expect(g.totalPointsByPlayer[userB.id]).toBe(25);
+    expect(g.winningPlayer).toEqual(userB);
+
+    // 4
+    g.nextRound();
+    expect(g.currentRound?.cardRank).toEqual(CardRank.of(4));
+    g.recordPlayerRoundResult(new PlayerRoundResult(userA, 0));
+    g.recordPlayerRoundResult(new PlayerRoundResult(userB, 10));
+    g.finishRound();
+    expect(g.totalPointsByPlayer[userA.id]).toBe(30);
+    expect(g.totalPointsByPlayer[userB.id]).toBe(35);
+    expect(g.winningPlayer).toEqual(userA);
+
+    // 5
+    g.nextRound();
+    expect(g.currentRound?.cardRank).toEqual(CardRank.of(5));
+    g.recordPlayerRoundResult(new PlayerRoundResult(userA, 5));
+    g.recordPlayerRoundResult(new PlayerRoundResult(userB, 5));
+    g.finishRound();
+    expect(g.totalPointsByPlayer[userA.id]).toBe(35);
+    expect(g.totalPointsByPlayer[userB.id]).toBe(40);
+    expect(g.winningPlayer).toEqual(userA);
   });
 
   describe(Game.prototype.addPlayer, () => {
@@ -67,9 +121,13 @@ describe(Game, () => {
       g.addPlayer(userB);
       g.start(userA);
 
-      expect(() => g.addPlayer(userC)).toThrow(`Game must be in ${GameStage.Pre} stage to add players`); // fails for user not in game
-      expect(() => g.addPlayer(userB)).toThrow(`Game must be in ${GameStage.Pre} stage to add players`); // also fails for users already in game
-    })
+      expect(() => g.addPlayer(userC)).toThrow(
+        `Game must be in ${GameStage.Pre} stage to add players`
+      ); // fails for user not in game
+      expect(() => g.addPlayer(userB)).toThrow(
+        `Game must be in ${GameStage.Pre} stage to add players`
+      ); // also fails for users already in game
+    });
 
     it('prevents adding more than allowed number of players', () => {
       const g = new Game('test', userA);
@@ -134,7 +192,7 @@ describe(Game, () => {
     it('throws if non-owner tries to start game', () => {
       const g = new Game('test', userA);
       g.addPlayer(userB);
-      expect(() => g.start(userB)).toThrow(NonOwnerCannotStartGame);
+      expect(() => g.start(userB)).toThrow(NonOwnerCannotStartGameError);
     });
   });
 
@@ -147,16 +205,16 @@ describe(Game, () => {
       expect(g.currentRound?.cardRank).toEqual(CardRank.ACE);
       expect(g.currentRound?.cardRank?.number).toBe(1);
 
-      g.recordPlayerRoundResult(new PlayerRoundResult(userA, 0))
-      g.recordPlayerRoundResult(new PlayerRoundResult(userB, 0))
+      g.recordPlayerRoundResult(new PlayerRoundResult(userA, 0));
+      g.recordPlayerRoundResult(new PlayerRoundResult(userB, 0));
       g.finishRound();
 
       g.nextRound();
 
       expect(g.currentRound?.cardRank?.number).toBe(2);
 
-      g.recordPlayerRoundResult(new PlayerRoundResult(userA, 0))
-      g.recordPlayerRoundResult(new PlayerRoundResult(userB, 0))
+      g.recordPlayerRoundResult(new PlayerRoundResult(userA, 0));
+      g.recordPlayerRoundResult(new PlayerRoundResult(userB, 0));
       g.finishRound();
 
       g.nextRound();
@@ -178,7 +236,7 @@ describe(Game, () => {
       const g = new Game('test', userA);
       expect(() => {
         g.nextRound();
-      }).toThrow('Game must be in progress');
+      }).toThrow(IllegalGameStageError);
     });
   });
 
@@ -208,7 +266,6 @@ describe(Game, () => {
       expect(() => {
         g.recordPlayerRoundResult(new PlayerRoundResult(userC, 15));
       }).toThrow(`No player with ID ${userC.id} in this game`);
-
     });
 
     it('throws if no round', () => {
@@ -220,7 +277,7 @@ describe(Game, () => {
         g.recordPlayerRoundResult(new PlayerRoundResult(userB, 0));
       }).toThrow('No round in progress');
     });
-  })
+  });
 
   describe(Game.prototype.finishRound, () => {
     it('throws if points no provided for a player', () => {
@@ -231,7 +288,7 @@ describe(Game, () => {
       g.recordPlayerRoundResult(new PlayerRoundResult(userA, 0));
       expect(() => {
         g.finishRound();
-      }).toThrow(`Points not provided for player ID ${userB.id}`);
+      }).toThrow(ResultNotRecordedForPlayersError);
     });
 
     it('throws if no round', () => {

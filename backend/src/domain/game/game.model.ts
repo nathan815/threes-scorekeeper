@@ -11,12 +11,6 @@ export enum GameStage {
   Done = 'Done',
 }
 
-export class NonOwnerCannotStartGame extends Error {
-  constructor(msg: string) {
-    super(msg);
-  }
-}
-
 export class Game {
   id!: string;
   stage: GameStage = GameStage.Pre;
@@ -74,7 +68,9 @@ export class Game {
       throw new Error(`Invalid player user object: ${player}`);
     }
     if (this.stage != GameStage.Pre) {
-      throw new Error(`Game must be in ${GameStage.Pre} stage to add players`);
+      throw new IllegalGameStageError(
+        `Game must be in ${GameStage.Pre} stage to add players`
+      );
     }
     if (this.players.some((u) => u.id == player.id)) {
       // Player is already in the game. All good.
@@ -93,10 +89,10 @@ export class Game {
       .reduce((prev, cur) => prev + cur, 0);
   }
 
-  start(user: User) {
-    if (user.id != this.owner!.id) {
-      throw new NonOwnerCannotStartGame(
-        'You are not the game owner. Only the owner can start the game.'
+  start(startedBy: User) {
+    if (startedBy.id != this.owner!.id) {
+      throw new NonOwnerCannotStartGameError(
+        'Only the owner can start the game.'
       );
     }
 
@@ -133,25 +129,23 @@ export class Game {
   }
 
   finishRound() {
-    if (!this.currentRound) {
+    const currentRound = this.currentRound;
+    if (!currentRound) {
       throw new Error('No round in progress');
     }
-    for (let player of this.players) {
-      if (
-        !Object.keys(this.currentRound.playerResults).some(
-          (id) => id == player.id
-        )
-      ) {
-        throw new Error(`Points not provided for player ID ${player.id}`);
-      }
+    const missingPlayerIds = this.players
+      .map((player) => player.id)
+      .filter((id) => !currentRound.playerResults.hasOwnProperty(id));
+    if (missingPlayerIds.length > 0) {
+      throw new ResultNotRecordedForPlayersError(missingPlayerIds);
     }
-    this.currentRound.finish();
+    currentRound.finish();
   }
 
   nextRound() {
     if (this.stage != GameStage.InProgress) {
-      throw new Error(
-        `Game must be in progress to go to next round. Current stage is: ${this.stage}`
+      throw new IllegalGameStageError(
+        `Game must be in stage ${GameStage.InProgress} to go to next round.`
       );
     }
 
@@ -215,5 +209,23 @@ export class PlayerRoundResult {
   get points() {
     const bonus = this.cutDeckPerfectly ? PERFECT_DECK_CUT_BONUS : 0;
     return this.cardPoints + bonus;
+  }
+}
+
+export class IllegalGameStageError extends Error {
+  constructor(msg: string) {
+    super(msg);
+  }
+}
+
+export class NonOwnerCannotStartGameError extends Error {
+  constructor(msg: string) {
+    super(msg);
+  }
+}
+
+export class ResultNotRecordedForPlayersError extends Error {
+  constructor(playerIds: string[]) {
+    super(`Result not recorded for player IDs: ${playerIds.join(', ')}`);
   }
 }

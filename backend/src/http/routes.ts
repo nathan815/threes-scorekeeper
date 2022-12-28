@@ -10,7 +10,7 @@ import {
   checkRequestValidation,
   requiresAuth,
 } from './middleware';
-import { NonOwnerCannotStartGame } from '../domain/game/game.model';
+import { NonOwnerCannotStartGameError } from '../domain/game/game.model';
 
 export const router = Router();
 
@@ -136,7 +136,7 @@ router.post(
     try {
       game.start(req.user!);
     } catch (err) {
-      if (err instanceof NonOwnerCannotStartGame) {
+      if (err instanceof NonOwnerCannotStartGameError) {
         return res.status(StatusCodes.FORBIDDEN).send({
           errorMessage: err.message,
         });
