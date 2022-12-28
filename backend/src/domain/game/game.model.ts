@@ -73,12 +73,15 @@ export class Game {
     if (!(player instanceof User)) {
       throw new Error(`Invalid player user object: ${player}`);
     }
+    if (this.stage != GameStage.Pre) {
+      throw new Error(`Game must be in ${GameStage.Pre} stage to add players`);
+    }
     if (this.players.some((u) => u.id == player.id)) {
       // Player is already in the game. All good.
       return true;
     }
     if (this.players.length >= MAX_PLAYERS) {
-      throw new Error(`Maximum of ${MAX_PLAYERS} players reached`)
+      throw new Error(`Maximum of ${MAX_PLAYERS} players reached`);
     }
     this.players.push(player);
     return true;
@@ -92,7 +95,9 @@ export class Game {
 
   start(user: User) {
     if (user.id != this.owner!.id) {
-      throw new NonOwnerCannotStartGame('You are not the game owner. Only the owner can start the game.');
+      throw new NonOwnerCannotStartGame(
+        'You are not the game owner. Only the owner can start the game.'
+      );
     }
 
     if (this.stage != GameStage.Pre) {

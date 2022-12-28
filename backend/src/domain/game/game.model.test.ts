@@ -62,6 +62,15 @@ describe(Game, () => {
       expect(g.players[2]).toBe(userC);
     });
 
+    it('prevents adding players if game is already started', () => {
+      const g = new Game('test', userA);
+      g.addPlayer(userB);
+      g.start(userA);
+
+      expect(() => g.addPlayer(userC)).toThrow(`Game must be in ${GameStage.Pre} stage to add players`); // fails for user not in game
+      expect(() => g.addPlayer(userB)).toThrow(`Game must be in ${GameStage.Pre} stage to add players`); // also fails for users already in game
+    })
+
     it('prevents adding more than allowed number of players', () => {
       const g = new Game('test', userA);
       for (let i = 0; i < 7; i++) {
