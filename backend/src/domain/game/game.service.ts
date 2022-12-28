@@ -14,9 +14,7 @@ export class GameService {
   }
 
   async createGame({ name, owner }: { name: string; owner: User }) {
-    console.log('createGame name', name)
     const game = new Game(name, owner);
     return await this.gameRepo.create(game);
   }
-
 }

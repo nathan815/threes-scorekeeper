@@ -105,7 +105,7 @@ export class GameSchema extends TimeStamps {
     }
     entity.name = game.name;
     entity.stage = game.stage;
-    entity.rounds = cloneDeep(game.rounds).map(r => {
+    entity.rounds = cloneDeep(game.rounds).map((r) => {
       const s = new GameRoundSchema();
       s.cardRank = r.cardRank.number;
       s.playerResults = r.playerResults;

@@ -13,7 +13,6 @@ import {
 import {
   GameError,
   NonOwnerCannotStartGameError,
-  PlayerRoundResult,
 } from '../domain/game/game.model';
 
 export const router = Router();

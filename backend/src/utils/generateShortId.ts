@@ -1,4 +1,4 @@
-import ShortUniqueId from "short-unique-id";
+import ShortUniqueId from 'short-unique-id';
 
 const generator = new ShortUniqueId({
   dictionary: 'alphanum_upper',

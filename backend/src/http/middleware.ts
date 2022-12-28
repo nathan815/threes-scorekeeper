@@ -1,7 +1,6 @@
-import { Request, Response, NextFunction } from "express";
-import { StatusCodes } from "http-status-codes";
+import { Request, Response, NextFunction } from 'express';
+import { StatusCodes } from 'http-status-codes';
 import * as v from 'express-validator';
-
 
 export async function injectCurrentUser(
   req: Request,
@@ -37,7 +36,11 @@ export function checkRequestValidation(
   next();
 }
 
-export function requiresNoAuth(req: Request, res: Response, next: NextFunction) {
+export function requiresNoAuth(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   if (req.user) {
     return res.status(StatusCodes.BAD_REQUEST).json({
       errorMessage: 'Unauthenticated only route',

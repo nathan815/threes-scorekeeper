@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import config from './config';
 
-export const MONGO_URL =  `mongodb://${config.db.host}/${config.db.name}`;
+export const MONGO_URL = `mongodb://${config.db.host}/${config.db.name}`;
 
 export const MONGO_OPTIONS = {
   user: config.db.user,

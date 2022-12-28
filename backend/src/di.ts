@@ -6,7 +6,6 @@ import { GameService } from './domain/game/game.service';
 import { UserRepository } from './domain/user/user.repository';
 import { UserService } from './domain/user/user.service';
 
-
 export type DIContainer = {
   repositories: {
     game: GameRepository;
@@ -15,7 +14,6 @@ export type DIContainer = {
   gameService: GameService;
   userService: UserService;
 };
-
 
 export function createDIContainer(): DIContainer {
   const repositories = {
@@ -31,7 +29,11 @@ export function createDIContainer(): DIContainer {
 
 const DI = createDIContainer();
 
-export function injectDIMiddleware(req: Request, res: Response, next: NextFunction) {
+export function injectDIMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   req.di = DI;
   next();
 }

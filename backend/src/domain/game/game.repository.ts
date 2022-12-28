@@ -1,11 +1,11 @@
-import { Game } from "./game.model";
+import { Game } from './game.model';
 
 export interface GameRepository {
-  getAll(): Promise<Game[]>
+  getAll(): Promise<Game[]>;
 
-  getByShortId(shortId: string): Promise<Game | undefined>
+  getByShortId(shortId: string): Promise<Game | undefined>;
 
-  create(game: Game): Promise<Game>
+  create(game: Game): Promise<Game>;
 
-  update(game: Game): Promise<Game>
+  update(game: Game): Promise<Game>;
 }
