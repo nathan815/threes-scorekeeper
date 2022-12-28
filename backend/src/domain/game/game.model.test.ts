@@ -1,6 +1,6 @@
 import { User } from '../user/user.model';
 import { CardRank, CardRankName } from './cards';
-import { Game, GameStage, NonOwnerCannotStartGame, PlayerRoundPoints } from './game.model';
+import { Game, GameStage, NonOwnerCannotStartGame, PlayerRoundResult } from './game.model';
 
 describe(Game, () => {
   let userA: User;
@@ -147,19 +147,17 @@ describe(Game, () => {
       expect(g.currentRound?.cardRank).toEqual(CardRank.ACE);
       expect(g.currentRound?.cardRank?.number).toBe(1);
 
-      g.finishRound([
-        new PlayerRoundPoints(userA, 0),
-        new PlayerRoundPoints(userB, 0),
-      ]);
+      g.recordPlayerRoundResult(new PlayerRoundResult(userA, 0))
+      g.recordPlayerRoundResult(new PlayerRoundResult(userB, 0))
+      g.finishRound();
 
       g.nextRound();
 
       expect(g.currentRound?.cardRank?.number).toBe(2);
 
-      g.finishRound([
-        new PlayerRoundPoints(userA, 0),
-        new PlayerRoundPoints(userB, 0),
-      ]);
+      g.recordPlayerRoundResult(new PlayerRoundResult(userA, 0))
+      g.recordPlayerRoundResult(new PlayerRoundResult(userB, 0))
+      g.finishRound();
 
       g.nextRound();
 
@@ -198,28 +196,41 @@ describe(Game, () => {
     });
   });
 
-  describe(Game.prototype.finishRound, () => {
+  describe(Game.prototype.recordPlayerRoundResult, () => {
     it('throws if provided player is not in game', () => {
       const g = new Game('test', userA);
       g.addPlayer(userB);
       g.start(userA);
 
+      g.recordPlayerRoundResult(new PlayerRoundResult(userA, 0));
+      g.recordPlayerRoundResult(new PlayerRoundResult(userB, 10));
+
       expect(() => {
-        g.finishRound([
-          new PlayerRoundPoints(userA, 0),
-          new PlayerRoundPoints(userB, 0),
-          new PlayerRoundPoints(userC, 0),
-        ]);
+        g.recordPlayerRoundResult(new PlayerRoundResult(userC, 15));
       }).toThrow(`No player with ID ${userC.id} in this game`);
+
     });
 
+    it('throws if no round', () => {
+      const g = new Game('test', userA);
+      g.addPlayer(userB);
+
+      expect(() => {
+        g.recordPlayerRoundResult(new PlayerRoundResult(userA, 0));
+        g.recordPlayerRoundResult(new PlayerRoundResult(userB, 0));
+      }).toThrow('No round in progress');
+    });
+  })
+
+  describe(Game.prototype.finishRound, () => {
     it('throws if points no provided for a player', () => {
       const g = new Game('test', userA);
       g.addPlayer(userB);
       g.start(userA);
 
+      g.recordPlayerRoundResult(new PlayerRoundResult(userA, 0));
       expect(() => {
-        g.finishRound([new PlayerRoundPoints(userA, 0)]);
+        g.finishRound();
       }).toThrow(`Points not provided for player ID ${userB.id}`);
     });
 
@@ -228,10 +239,7 @@ describe(Game, () => {
       g.addPlayer(userB);
 
       expect(() => {
-        g.finishRound([
-          new PlayerRoundPoints(userA, 0),
-          new PlayerRoundPoints(userB, 0),
-        ]);
+        g.finishRound();
       }).toThrow('No round in progress');
     });
 
@@ -240,15 +248,13 @@ describe(Game, () => {
       g.addPlayer(userB);
       g.start(userA);
 
-      const points = [
-        new PlayerRoundPoints(userA, 0),
-        new PlayerRoundPoints(userB, 0),
-      ];
+      g.recordPlayerRoundResult(new PlayerRoundResult(userA, 0));
+      g.recordPlayerRoundResult(new PlayerRoundResult(userB, 0));
 
-      g.finishRound(points);
+      g.finishRound();
 
       expect(() => {
-        g.finishRound(points);
+        g.finishRound();
       }).toThrow('Round is already finished');
     });
   });

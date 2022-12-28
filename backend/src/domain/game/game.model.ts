@@ -45,9 +45,9 @@ export class Game {
   get totalPointsByPlayer(): { [userId: string]: number } {
     const totals: { [userId: string]: number } = {};
     for (const round of this.rounds) {
-      for (const userId of Object.keys(round.playerPoints)) {
+      for (const userId of Object.keys(round.playerResults)) {
         totals[userId] =
-          (totals[userId] || 0) + round.playerPoints[userId].points;
+          (totals[userId] || 0) + round.playerResults[userId].points;
       }
     }
     return totals;
@@ -89,7 +89,7 @@ export class Game {
 
   getPlayerPoints(player: User): number {
     return this.rounds
-      .map((round) => round.playerPoints[player.id].points)
+      .map((round) => round.playerResults[player.id].points)
       .reduce((prev, cur) => prev + cur, 0);
   }
 
@@ -122,19 +122,23 @@ export class Game {
     this.stage = GameStage.Done;
   }
 
-  finishRound(playerPoints: PlayerRoundPoints[]) {
+  recordPlayerRoundResult(result: PlayerRoundResult) {
     if (!this.currentRound) {
       throw new Error('No round in progress');
     }
-    for (let playerRound of playerPoints) {
-      if (!this.players.some((u) => u.id == playerRound.userId)) {
-        throw new Error(`No player with ID ${playerRound.userId} in this game`);
-      }
-      this.currentRound.recordPointsForPlayer(playerRound);
+    if (!this.players.some((u) => u.id == result.userId)) {
+      throw new Error(`No player with ID ${result.userId} in this game`);
+    }
+    return this.currentRound.recordPlayerResult(result);
+  }
+
+  finishRound() {
+    if (!this.currentRound) {
+      throw new Error('No round in progress');
     }
     for (let player of this.players) {
       if (
-        !Object.keys(this.currentRound.playerPoints).some(
+        !Object.keys(this.currentRound.playerResults).some(
           (id) => id == player.id
         )
       ) {
@@ -169,7 +173,7 @@ export class Game {
 export class GameRound {
   startedAt: Date;
   endedAt?: Date;
-  playerPoints: PlayerPointsMap = {};
+  playerResults: PlayerResultMap = {};
 
   public constructor(public game: Game, public cardRank: CardRank) {
     this.startedAt = new Date();
@@ -179,8 +183,8 @@ export class GameRound {
     return Boolean(this.endedAt);
   }
 
-  recordPointsForPlayer(points: PlayerRoundPoints) {
-    this.playerPoints[points.userId] = points;
+  recordPlayerResult(result: PlayerRoundResult) {
+    this.playerResults[result.userId] = result;
   }
 
   finish() {
@@ -193,11 +197,11 @@ export class GameRound {
 
 const PERFECT_DECK_CUT_BONUS = -20;
 
-interface PlayerPointsMap {
-  [userId: string]: PlayerRoundPoints;
+interface PlayerResultMap {
+  [userId: string]: PlayerRoundResult;
 }
 
-export class PlayerRoundPoints {
+export class PlayerRoundResult {
   public userId: string;
 
   constructor(
