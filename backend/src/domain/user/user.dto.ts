@@ -3,6 +3,7 @@ import { User } from "./user.model";
 export interface UserPublicDto {
   id?: string;
   displayName?: string;
+  isAnon: boolean;
 }
 
 export interface UserPrivateDto extends UserPublicDto {
@@ -10,8 +11,8 @@ export interface UserPrivateDto extends UserPublicDto {
 }
 
 export function userToDto(user: User): UserPublicDto {
-  const { id, displayName } = user;
-  return { id, displayName };
+  const { id, displayName, isAnon } = user;
+  return { id, displayName, isAnon };
 }
 
 export function userToPrivateDto(user: User): UserPrivateDto {

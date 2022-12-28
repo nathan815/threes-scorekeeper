@@ -4,7 +4,7 @@ import * as v from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
 
 import { gameToDto } from '../domain/game/game.dto';
-import { userToPrivateDto } from '../domain/user/user.dto';
+import { userToDto, userToPrivateDto } from '../domain/user/user.dto';
 import {
   requiresNoAuth,
   checkRequestValidation,
@@ -68,6 +68,13 @@ router.post(
     });
   }
 );
+
+router.get('/users', async (req, res) => {
+  const users = await req.di.userService.getUsers();
+  console.log('users', users);
+  return res.json(users.map(userToDto));
+});
+
 
 router.get('/games', async (req, res) => {
   const games = await req.di.gameService.getGames();

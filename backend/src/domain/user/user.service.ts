@@ -9,6 +9,10 @@ export class UserService {
     return await this.userRepo.getById(id);
   }
 
+  getUsers(): Promise<User[]> {
+    return this.userRepo.getUsers();
+  }
+
   async checkGuestUserSecret(
     id: string,
     secret: string
