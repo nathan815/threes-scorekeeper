@@ -11,6 +11,12 @@ export enum GameStage {
   Done = 'Done',
 }
 
+export class NonOwnerCannotStartGame extends Error {
+  constructor(msg: string) {
+    super(msg);
+  }
+}
+
 export class Game {
   id!: string;
   stage: GameStage = GameStage.Pre;
@@ -84,7 +90,11 @@ export class Game {
       .reduce((prev, cur) => prev + cur, 0);
   }
 
-  start() {
+  start(user: User) {
+    if (user.id != this.owner!.id) {
+      throw new NonOwnerCannotStartGame('You are not the game owner. Only the owner can start the game.');
+    }
+
     if (this.stage != GameStage.Pre) {
       throw new Error('Cannot start game in this stage: ' + this.stage);
     }

@@ -18,4 +18,8 @@ export class GameService {
     const game = new Game(name, owner);
     return await this.gameRepo.create(game);
   }
+
+  async startGame(game: Game, user: User) {
+
+  }
 }

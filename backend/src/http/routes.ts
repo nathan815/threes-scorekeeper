@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import Router from 'express-promise-router';
 import * as v from 'express-validator';
+import { Request, Response, NextFunction } from 'express';
 
 import { gameToDto } from '../domain/game/game.dto';
 import { userToPrivateDto } from '../domain/user/user.dto';
@@ -9,6 +10,7 @@ import {
   checkRequestValidation,
   requiresAuth,
 } from './middleware';
+import { NonOwnerCannotStartGame } from '../domain/game/game.model';
 
 export const router = Router();
 
@@ -103,11 +105,9 @@ router.post(
   requiresAuth,
   checkRequestValidation,
   async (req, res) => {
-    const game = await req.di.gameService.getByShortId(req.params.id);
+    const game = await getGameOrSendFailure(req, res);
     if (!game) {
-      return res.status(StatusCodes.NOT_FOUND).send({
-        error: 'Game not found',
-      });
+      return;
     }
     try {
       game.addPlayer(req.user!);
@@ -116,11 +116,50 @@ router.post(
         return res.status(StatusCodes.CONFLICT).send({
           errorMessage: `Unable to join game: ${err.message}`,
         });
-      } else {
-        throw err;
       }
+      throw err;
     }
     req.di.repositories.game.update(game);
     res.json(gameToDto(game));
   }
 );
+
+router.post(
+  '/games/:id/start',
+  requiresAuth,
+  checkRequestValidation,
+  async (req, res) => {
+    const game = await getGameOrSendFailure(req, res);
+    if (!game) {
+      return;
+    }
+    try {
+      game.start(req.user!);
+    } catch (err) {
+      if (err instanceof NonOwnerCannotStartGame) {
+        return res.status(StatusCodes.FORBIDDEN).send({
+          errorMessage: err.message,
+        });
+      }
+      if (err instanceof Error) {
+        return res.status(StatusCodes.CONFLICT).send({
+          errorMessage: `Unable to start game: ${err.message}`,
+        });
+      }
+      throw err;
+    }
+    req.di.repositories.game.update(game);
+    res.json(gameToDto(game));
+  }
+);
+
+async function getGameOrSendFailure(req: Request, res: Response) {
+  const game = await req.di.gameService.getByShortId(req.params.id);
+  if (!game) {
+    res.status(StatusCodes.NOT_FOUND).send({
+      errorMessage: 'Game not found',
+    });
+    return false;
+  }
+  return game;
+}
