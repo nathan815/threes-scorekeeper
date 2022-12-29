@@ -37,6 +37,9 @@ const theme = extendTheme({
       variants: {
         black: {
           bg: 'blackAlpha.800',
+          _disabled: {
+            pointerEvents: 'none',
+          },
           _hover: {
             bg: 'blackAlpha.900',
           },

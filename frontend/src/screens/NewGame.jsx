@@ -15,26 +15,27 @@ import {
 } from '@chakra-ui/react';
 import { IoArrowForward } from 'react-icons/io5';
 import InternalLink from '../components/InternalLink';
+import { LogoHeader } from '../components/LogoHeader';
 import config from '../config';
 
-export default function JoinTable() {
+export function NewGame() {
   const bg = useColorModeValue('whiteAlpha.900', 'blackAlpha.100');
   return (
-    <Flex
-      justifyContent="center"
-      direction="column"
+    <Stack
+      justifyContent="start"
+      alignContent="center"
       alignItems="center"
-      marginTop={20}
+      minHeight="100%"
+      paddingBottom={10}
     >
-      <Heading>{config.appName}</Heading>
-      <Box bg={bg} padding={10} borderRadius={10} maxWidth={600} marginTop={20}>
-        <Heading size="lg">Join a table</Heading>
+      <LogoHeader width={200} />
+
+      <Box bg={bg} padding={10} borderRadius={10} maxWidth={600}>
+        <Heading size="lg">New game</Heading>
         <br />
         <Stack spacing={5}>
           <FormControl isRequired>
-            <FormLabel htmlFor="display-name">
-              Hi there! What's your name?
-            </FormLabel>
+            <FormLabel htmlFor="display-name">Hello! What is your name?</FormLabel>
             <Input id="display-name" placeholder="Your Name" size="lg" />
             <FormHelperText>
               To save your game history,{' '}
@@ -42,24 +43,24 @@ export default function JoinTable() {
             </FormHelperText>
           </FormControl>
           <FormControl isRequired>
-            <FormLabel>Which table are you joining?</FormLabel>
-            <Input id="first-name" placeholder="Table ID" size="lg" />
+            <FormLabel>Name for this game</FormLabel>
+            <Input placeholder="Game Name" size="lg" autoComplete="off" autoCorrect="off"/>
             <FormHelperText>
-              Tip: You can scan the host's QR code to join the table!
+              Can't think of anything? <Link href="">Generate a name</Link>
             </FormHelperText>
           </FormControl>
         </Stack>
         <Button
           mt={4}
-          colorScheme="green"
+          variant="black"
           isLoading={false}
           type="submit"
           size="lg"
           rightIcon={<IoArrowForward />}
         >
-          Join
+          Create
         </Button>
       </Box>
-    </Flex>
+    </Stack>
   );
 }
