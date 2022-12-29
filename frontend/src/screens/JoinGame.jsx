@@ -3,22 +3,24 @@ import {
   Button,
   FormControl,
   FormHelperText,
-  FormLabel,
   Heading,
   Input,
   Stack,
   useColorModeValue,
   Text,
   Center,
+  useDisclosure,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import {
   IoArrowForward,
+  IoCamera,
   IoLogoApple,
   IoLogoGoogle,
   IoPerson,
 } from 'react-icons/io5';
 import { LogoHeader } from '../components/LogoHeader';
+import { JoinGameQrCodeScannerModal } from '../components/JoinGameQrCodeScannerModal';
 
 export function AuthStep({ authState, selectAuthOption, onLogin, onComplete }) {
   const { option, optionInProgress, displayName } = authState;
@@ -30,7 +32,6 @@ export function AuthStep({ authState, selectAuthOption, onLogin, onComplete }) {
     <>
       <Button
         mt={4}
-        variant="black"
         onClick={() => onLogin('apple')}
         isLoading={optionInProgress === 'apple'}
         loadingText="Signing in with Apple..."
@@ -43,7 +44,6 @@ export function AuthStep({ authState, selectAuthOption, onLogin, onComplete }) {
       </Button>
       <Button
         mt={4}
-        variant="black"
         onClick={() => onLogin('google')}
         isLoading={optionInProgress === 'google'}
         loadingText="Signing in with Google..."
@@ -67,7 +67,6 @@ export function AuthStep({ authState, selectAuthOption, onLogin, onComplete }) {
         <Text>To join a game, please identify yourself first.</Text>
         <Button
           mt={4}
-          variant="black"
           isLoading={false}
           type="submit"
           size="lg"
@@ -85,8 +84,8 @@ export function AuthStep({ authState, selectAuthOption, onLogin, onComplete }) {
       <Stack spacing={5}>
         <Text>
           {option === 'guest'
-            ? 'You are joining as a guest. Please enter a display name.'
-            : `You are signed in with ${selectedAuthService}. Please enter a display name.`}
+            ? 'Please enter your name. This is how others will see you.'
+            : `Signed in with ${selectedAuthService}. Next, please enter your name.  This is how others will see you.`}
         </Text>
         <form
           onSubmit={(e) => {
@@ -98,7 +97,7 @@ export function AuthStep({ authState, selectAuthOption, onLogin, onComplete }) {
             <FormControl isRequired>
               <Input
                 id="display-name"
-                placeholder="Enter a display name"
+                placeholder="Enter your name"
                 size="lg"
                 value={displayNameInput}
                 onChange={(e) => setDisplayNameInput(e.target.value)}
@@ -112,7 +111,7 @@ export function AuthStep({ authState, selectAuthOption, onLogin, onComplete }) {
             </FormControl>
             <Button
               mt={4}
-              variant="black"
+              colorScheme="blue"
               isLoading={false}
               type="submit"
               size="lg"
@@ -148,7 +147,8 @@ export function JoinGame() {
     complete: false,
     displayName: null,
   });
-  const bg = useColorModeValue('whiteAlpha.900', 'blackAlpha.300');
+  const [joinCode, setJoinCode] = useState('');
+  const qrModalState = useDisclosure();
 
   const selectAuthOption = (option) => {
     setAuthState({
@@ -163,12 +163,20 @@ export function JoinGame() {
       optionInProgress: option,
     });
     setTimeout(() => {
-      setAuthState({
-        ...authState,
-        option: option,
-        optionInProgress: null,
-      });
-    }, 1000);
+      // TEMP
+      if (window.confirm('Simulate login success?')) {
+        setAuthState({
+          ...authState,
+          option: option,
+          optionInProgress: null,
+        });
+      } else {
+        setAuthState({
+          ...authState,
+          optionInProgress: null,
+        });
+      }
+    }, 500);
   };
 
   const onAuthComplete = (displayName) => {
@@ -181,53 +189,96 @@ export function JoinGame() {
     }
   };
 
-  return (
-    <Stack
-      justifyContent="start"
-      alignContent="center"
-      alignItems="center"
-      minHeight="100%"
-      paddingBottom={10}
-    >
-      <LogoHeader width={200} />
+  const onCodeSubmit = () => {};
 
-      <Box bg={bg} padding={10} borderRadius={10} width={430} maxWidth="100%">
-        <Heading size="lg">Join game</Heading>
-        <br />
-        <AuthStep
-          selectAuthOption={selectAuthOption}
-          authState={authState}
-          onLogin={onLogin}
-          onComplete={onAuthComplete}
-        />
-        {authState.complete && (
-          <Stack spacing={5} mt={5}>
-            <FormControl isRequired>
-              <FormLabel>Which game are you joining?</FormLabel>
-              <Input
-                placeholder="Enter Join Code"
-                size="lg"
-                autoComplete="off"
-                autoCorrect="off"
-                autoFocus={true}
-              />
-              <FormHelperText>
-                Tip: You can scan the host's QR code to join!
-              </FormHelperText>
-            </FormControl>
-            <Button
-              mt={4}
-              variant="black"
-              isLoading={false}
-              type="submit"
-              size="lg"
-              rightIcon={<IoArrowForward />}
-            >
-              Join Game
-            </Button>
-          </Stack>
-        )}
-      </Box>
-    </Stack>
+  const onScanJoinCode = (code) => {
+    setJoinCode(code);
+    onCodeSubmit();
+  };
+
+  return (
+    <>
+      <JoinGameQrCodeScannerModal
+        isOpen={qrModalState.isOpen}
+        onClose={qrModalState.onClose}
+        onScanJoinCode={onScanJoinCode}
+      />
+
+      <Stack
+        justifyContent="start"
+        alignContent="center"
+        alignItems="center"
+        minHeight="100%"
+        paddingBottom={10}
+      >
+        <LogoHeader width={200} />
+
+        <Box
+          bg={useColorModeValue('whiteAlpha.900', 'blackAlpha.300')}
+          padding={10}
+          borderRadius={10}
+          width={430}
+          maxWidth="100%"
+        >
+          <Heading size="lg">Join game</Heading>
+          <br />
+          <AuthStep
+            selectAuthOption={selectAuthOption}
+            authState={authState}
+            onLogin={onLogin}
+            onComplete={onAuthComplete}
+          />
+          {authState.complete && (
+            <Stack spacing={5} mt={5}>
+              <Button
+                padding={10}
+                bgColor="#eee"
+                onClick={() => {
+                  qrModalState.onOpen();
+                  console.log('hi');
+                }}
+              >
+                <IoCamera size={25} />
+                <Text ml={2}>Scan QR Code</Text>
+              </Button>
+
+              <Center>
+                <Text color="grey">— OR —</Text>
+              </Center>
+
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  onCodeSubmit();
+                }}
+              >
+                <Stack spacing={5}>
+                  <FormControl isRequired>
+                    <Input
+                      placeholder="Enter Code"
+                      size="lg"
+                      autoComplete="off"
+                      autoCorrect="off"
+                      value={joinCode}
+                      onChange={(e) => setJoinCode(e.target.value)}
+                    />
+                  </FormControl>
+                  <Button
+                    mt={4}
+                    colorScheme="blue"
+                    isLoading={false}
+                    type="submit"
+                    size="lg"
+                    rightIcon={<IoArrowForward />}
+                  >
+                    Join Game
+                  </Button>
+                </Stack>
+              </form>
+            </Stack>
+          )}
+        </Box>
+      </Stack>
+    </>
   );
 }
