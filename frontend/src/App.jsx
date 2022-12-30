@@ -8,20 +8,20 @@ import {
   MenuItem,
   MenuList,
   useColorMode,
-  useToast,
+  useToast
 } from '@chakra-ui/react';
 import React from 'react';
 import { IoCaretDown } from 'react-icons/io5';
 import { MdDarkMode, MdLightMode } from 'react-icons/md';
-import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Link as RouterLink, Outlet, Route, Routes } from 'react-router-dom';
 import { useAuthContext } from './auth/authContext';
 import Home from './screens/Home';
 import { JoinGame } from './screens/JoinGame';
 import { NewGame } from './screens/NewGame';
-import { Link as RouterLink } from 'react-router-dom';
 
-import './style/global.css';
 import { GameScreen } from './screens/Game';
+import { ScreenNotFound } from './screens/ScreenNotFound';
+import './style/global.css';
 
 const MAX_WIDTH = '5xl';
 
@@ -42,7 +42,9 @@ function AuthOptionMenu() {
         {authCtx.user.displayName}
       </MenuButton>
       <MenuList>
-        <MenuItem as={RouterLink} to="/games">My Games</MenuItem>
+        <MenuItem as={RouterLink} to="/games">
+          My Games
+        </MenuItem>
         <MenuItem
           onClick={() =>
             toast({
@@ -85,6 +87,7 @@ function App() {
           <Route path="/join/:gameId" element={<JoinGame />} />
           <Route path="/games/:gameId" element={<GameScreen />} />
         </Route>
+        <Route path="*" element={<ScreenNotFound />} />
       </Routes>
     </BrowserRouter>
   );
