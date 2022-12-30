@@ -29,13 +29,12 @@ export class QrCodeScanner extends React.Component {
 
         if (devices && devices.length && !this.html5QrCode) {
           this.html5QrCode = new Html5Qrcode(qrcodeRegionId);
-          const boxDim = window.innerWidth / 2;
           this.html5QrCode
             .start(
               { facingMode: 'environment' },
               {
                 fps: 10, // Optional, frame per seconds for qr code scanning
-                qrbox: { width: boxDim, height: boxDim }, // Optional, if you want bounded box UI
+                qrbox: (w, h) => ({ width: w / 2, height: w / 2 }), // Optional, if you want bounded box UI
                 aspectRatio: window.innerHeight / window.innerWidth,
               },
               (decodedText, decodedResult) => {

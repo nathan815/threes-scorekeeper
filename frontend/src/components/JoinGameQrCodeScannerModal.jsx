@@ -6,7 +6,9 @@ import {
   Button,
   Toast,
   LightMode,
+  useBreakpointValue,
 } from '@chakra-ui/react';
+import { useEffect } from 'react';
 import { QrCodeScanner } from './QrCodeScanner';
 
 export function JoinGameQrCodeScannerModal({
@@ -23,6 +25,15 @@ export function JoinGameQrCodeScannerModal({
     ),
   });
   const toastId = 'qr-code-scanner-toast';
+  const size = useBreakpointValue({ lg: 'lg', base: 'full' });
+
+  useEffect(() => {
+    function onResize() {
+      onClose();
+    }
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [onClose]);
 
   function showError({ title, msg }) {
     if (!toast.isActive(toastId)) {
@@ -63,7 +74,7 @@ export function JoinGameQrCodeScannerModal({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="full">
+    <Modal isOpen={isOpen} onClose={onClose} size={size}>
       <ModalOverlay />
       <ModalContent>
         <QrCodeScanner
