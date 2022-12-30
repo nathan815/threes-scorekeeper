@@ -34,8 +34,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/" element={<ScreenContainer />}>
-            <Route path="/games/new" element={<NewGame />} />
-            <Route path="/games/join" element={<JoinGame />} />
+            <Route path="/new" element={<NewGame />} />
+            <Route path="/join" element={<JoinGame />} />
           </Route>
         </Routes>
       </BrowserRouter>

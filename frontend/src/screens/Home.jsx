@@ -71,10 +71,10 @@ export default function Home() {
       >
         <LogoHeader mb={20} />
         <Stack direction="column" spacing={8}>
-          <ActionButton to="/games/join" leftIcon={<IoEnter />}>
+          <ActionButton to="/join" leftIcon={<IoEnter />}>
             Join Game
           </ActionButton>
-          <ActionButton to="/games/new" leftIcon={<IoAddCircle />}>
+          <ActionButton to="/new" leftIcon={<IoAddCircle />}>
             New Game
           </ActionButton>
         </Stack>
