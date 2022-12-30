@@ -1,75 +1,34 @@
 import {
   Box,
-  Button, Center, FormControl,
+  Button,
+  Center,
+  FormControl,
   FormHelperText,
   Heading,
   Input,
-  Stack, Text, useColorModeValue, useDisclosure
+  Stack,
+  Text,
+  useColorModeValue,
+  useDisclosure,
 } from '@chakra-ui/react';
 import { useState } from 'react';
-import {
-  IoArrowForward,
-  IoCamera
-} from 'react-icons/io5';
+import { IoArrowForward, IoCamera } from 'react-icons/io5';
+import { useAuthFlow } from '../auth';
 import { AuthFlowForm } from '../components/AuthFlowForm';
 import { JoinGameQrCodeScannerModal } from '../components/JoinGameQrCodeScannerModal';
 import { LogoHeader } from '../components/LogoHeader';
 
 export function JoinGame() {
-  const [authState, setAuthState] = useState({
-    option: null,
-    optionInProgress: null,
-    complete: false,
-    displayName: null,
-  });
+  const authFlow = useAuthFlow();
   const [joinCode, setJoinCode] = useState('');
   const qrModalState = useDisclosure();
 
-  const selectAuthOption = (option) => {
-    setAuthState({
-      ...authState,
-      option,
-    });
-  };
+  function onCodeSubmit() {}
 
-  const onLogin = (option) => {
-    setAuthState({
-      ...authState,
-      optionInProgress: option,
-    });
-    setTimeout(() => {
-      // TEMP
-      if (window.confirm('Simulate login success?')) {
-        setAuthState({
-          ...authState,
-          option: option,
-          optionInProgress: null,
-        });
-      } else {
-        setAuthState({
-          ...authState,
-          optionInProgress: null,
-        });
-      }
-    }, 500);
-  };
-
-  const onAuthComplete = (displayName) => {
-    if (displayName) {
-      setAuthState({
-        ...authState,
-        complete: true,
-        displayName,
-      });
-    }
-  };
-
-  const onCodeSubmit = () => {};
-
-  const onScanJoinCode = (code) => {
+  function onScanJoinCode(code) {
     setJoinCode(code);
     onCodeSubmit();
-  };
+  }
 
   return (
     <>
@@ -98,27 +57,21 @@ export function JoinGame() {
           <Heading size="lg">Join game</Heading>
           <br />
 
-          {!authState.complete && (
+          {!authFlow.state.complete && (
             <AuthFlowForm
-              selectAuthOption={selectAuthOption}
-              authState={authState}
-              onLogin={onLogin}
-              onComplete={onAuthComplete}
+              selectAuthOption={authFlow.selectAuthOption}
+              authState={authFlow.state}
+              onLogin={authFlow.onLogin}
+              onComplete={authFlow.onAuthFlowComplete}
             />
           )}
 
-          {authState.complete && (
+          {authFlow.state.complete && (
             <Stack spacing={5}>
               <Text>
-                Joining as <b>{authState.displayName}</b>
+                Joining as <b>{authFlow.state.displayName}</b>
               </Text>
-              <Button
-                padding={10}
-                onClick={() => {
-                  qrModalState.onOpen();
-                  console.log('hi');
-                }}
-              >
+              <Button padding={10} onClick={() => qrModalState.onOpen()}>
                 <IoCamera size={25} />
                 <Text ml={2}>Scan QR Code</Text>
               </Button>

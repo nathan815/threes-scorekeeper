@@ -57,7 +57,6 @@ export function JoinGameQrCodeScannerModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="full">
       <ModalOverlay />
-      <ModalCloseButton />
       <ModalContent>
         <QrCodeScanner
           onScanSuccess={handleScan}
