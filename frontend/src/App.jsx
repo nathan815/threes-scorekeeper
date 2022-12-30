@@ -8,12 +8,18 @@ import {
   MenuItem,
   MenuList,
   useColorMode,
-  useToast
+  useToast,
 } from '@chakra-ui/react';
 import React from 'react';
 import { IoCaretDown } from 'react-icons/io5';
 import { MdDarkMode, MdLightMode } from 'react-icons/md';
-import { BrowserRouter, Link as RouterLink, Outlet, Route, Routes } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Link as RouterLink,
+  Outlet,
+  Route,
+  Routes,
+} from 'react-router-dom';
 import { useAuthContext } from './auth/authContext';
 import Home from './screens/Home';
 import { JoinGame } from './screens/JoinGame';

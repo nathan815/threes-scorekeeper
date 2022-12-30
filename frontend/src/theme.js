@@ -24,8 +24,8 @@ const theme = extendTheme({
         50: '#444',
         500: '#222',
         900: '#000',
-      }
-    }
+      },
+    },
   },
   styles: {
     global: (props) => ({

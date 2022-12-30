@@ -59,7 +59,7 @@ export function AuthFlowForm() {
         isClosable: true,
         position: 'top-right',
       });
-    })
+    });
   }
 
   const signInButtons = (

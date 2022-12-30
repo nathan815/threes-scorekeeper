@@ -35,7 +35,9 @@ export function NewGame() {
         <br />
         <Stack spacing={5}>
           <FormControl isRequired>
-            <FormLabel htmlFor="display-name">Hello! What is your name?</FormLabel>
+            <FormLabel htmlFor="display-name">
+              Hello! What is your name?
+            </FormLabel>
             <Input id="display-name" placeholder="Your Name" size="lg" />
             <FormHelperText>
               To save your game history,{' '}
@@ -44,7 +46,12 @@ export function NewGame() {
           </FormControl>
           <FormControl isRequired>
             <FormLabel>Name for this game</FormLabel>
-            <Input placeholder="Game Name" size="lg" autoComplete="off" autoCorrect="off"/>
+            <Input
+              placeholder="Game Name"
+              size="lg"
+              autoComplete="off"
+              autoCorrect="off"
+            />
             <FormHelperText>
               Can't think of anything? <Link href="">Generate a name</Link>
             </FormHelperText>
