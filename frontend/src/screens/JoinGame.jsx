@@ -41,7 +41,7 @@ export function JoinGame() {
       let msg = 'An error occurred. Please try again in a moment.';
       let retryable = true;
       if (err instanceof api.ApiError) {
-        if (err.context && err.context.error === 'IllegalGameStageError') {
+        if (err.context && err.context.errorType === 'IllegalGameStageError') {
           retryable = false;
           msg = `This game has already started so you won't be able to join it.`;
           // setJoinCode('');
@@ -107,7 +107,7 @@ export function JoinGame() {
         <LogoHeader width={200} />
 
         <Box bg={bg} padding={10} borderRadius={10} width={430} maxWidth="100%">
-          <Heading size="lg">Join game</Heading>
+          <Heading size="lg">Join Game</Heading>
           <br />
 
           {!authCtx.loggedIn && <AuthFlowForm />}

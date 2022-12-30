@@ -104,7 +104,7 @@ router.get(
 router.post(
   '/games',
   requiresAuth,
-  v.body('name').isString(),
+  v.body('name').isString().isLength({ min: 5 }),
   checkRequestValidation,
   async (req, res) => {
     const game = await req.di.gameService.createGame({
@@ -130,7 +130,7 @@ router.post(
       if (err instanceof GameError) {
         return res.status(StatusCodes.CONFLICT).send({
           errorMessage: `Unable to join game: ${err.message}`,
-          error: err.constructor.name,
+          errorType: err.constructor.name,
         });
       }
       throw err;
@@ -155,13 +155,13 @@ router.post(
       if (err instanceof NonOwnerCannotStartGameError) {
         return res.status(StatusCodes.FORBIDDEN).send({
           errorMessage: err.message,
-          error: err.constructor.name,
+          errorType: err.constructor.name,
         });
       }
       if (err instanceof GameError) {
         return res.status(StatusCodes.BAD_REQUEST).send({
           errorMessage: err.message,
-          error: err.constructor.name,
+          errorType: err.constructor.name,
         });
       }
       throw err;
@@ -214,7 +214,7 @@ router.put(
         return res.status(StatusCodes.BAD_REQUEST).send({
           errorMessage: err.message,
           details: { ...err },
-          error: err.constructor.name,
+          errorType: err.constructor.name,
         });
       }
       throw err;

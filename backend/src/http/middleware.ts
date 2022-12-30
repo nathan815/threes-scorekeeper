@@ -31,6 +31,7 @@ export function checkRequestValidation(
       errorMessage:
         "There were errors in your request. See the 'errors' property for details.",
       errors: errors.array(),
+      errorType: 'validation',
     });
   }
   next();

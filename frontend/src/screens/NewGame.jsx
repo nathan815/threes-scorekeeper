@@ -2,24 +2,75 @@ import {
   Box,
   Button,
   FormControl,
+  FormErrorMessage,
   FormHelperText,
   FormLabel,
-  GridItem,
   Heading,
   Input,
   Link,
-  SimpleGrid,
   Stack,
-  Flex,
   useColorModeValue,
+  useToast,
 } from '@chakra-ui/react';
+import { useCallback, useState } from 'react';
 import { IoArrowForward } from 'react-icons/io5';
-import InternalLink from '../components/InternalLink';
+import { useNavigate } from 'react-router-dom';
+import { useAuthContext } from '../auth/authContext';
+import { AuthFlowForm } from '../components/AuthFlowForm';
 import { LogoHeader } from '../components/LogoHeader';
-import config from '../config';
+import * as api from '../api';
 
 export function NewGame() {
   const bg = useColorModeValue('whiteAlpha.900', 'blackAlpha.100');
+  const authCtx = useAuthContext();
+  const navigate = useNavigate();
+  const toast = useToast();
+
+  const [gameName, setGameName] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState({ msg: null, retryable: true });
+
+  const createGame = useCallback(
+    async (name) => {
+      setError({ msg: null, retryable: true });
+      setLoading(true);
+      try {
+        const game = await api.createGame(name);
+        toast({
+          description: 'Game created successfully!',
+          status: 'success',
+          position: 'bottom-right',
+        });
+        navigate(`/games/${game.shortId}`);
+      } catch (err) {
+        console.error(err, err.message);
+        let msg = 'An error occurred. Please try again in a moment.';
+        if (err instanceof api.ApiError) {
+          if (err instanceof api.ValidationError) {
+            msg = err.humanReadableErrors.join(', ');
+          } else if (err.message) {
+            msg = `${err.message}`;
+          }
+        }
+        setError({ msg, retryable: true });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [navigate, toast]
+  );
+
+  const handleSubmit = useCallback(
+    async (event) => {
+      event.preventDefault();
+      if (!authCtx.user || loading) {
+        return;
+      }
+      await createGame(gameName);
+    },
+    [authCtx.user, loading, gameName, createGame]
+  );
+
   return (
     <Stack
       justifyContent="start"
@@ -30,43 +81,45 @@ export function NewGame() {
     >
       <LogoHeader width={200} />
 
-      <Box bg={bg} padding={10} borderRadius={10} maxWidth={600}>
-        <Heading size="lg">New game</Heading>
+      <Box bg={bg} padding={10} borderRadius={10} width={430} maxWidth="100%">
+        <Heading size="lg">New Game</Heading>
         <br />
-        <Stack spacing={5}>
-          <FormControl isRequired>
-            <FormLabel htmlFor="display-name">
-              Hello! What is your name?
-            </FormLabel>
-            <Input id="display-name" placeholder="Your Name" size="lg" />
-            <FormHelperText>
-              To save your game history,{' '}
-              <InternalLink to="/login">sign in or create account</InternalLink>
-            </FormHelperText>
-          </FormControl>
-          <FormControl isRequired>
-            <FormLabel>Name for this game</FormLabel>
-            <Input
-              placeholder="Game Name"
-              size="lg"
-              autoComplete="off"
-              autoCorrect="off"
-            />
-            <FormHelperText>
-              Can't think of anything? <Link href="">Generate a name</Link>
-            </FormHelperText>
-          </FormControl>
-        </Stack>
-        <Button
-          mt={4}
-          variant="black"
-          isLoading={false}
-          type="submit"
-          size="lg"
-          rightIcon={<IoArrowForward />}
-        >
-          Create
-        </Button>
+
+        {!authCtx.loggedIn && <AuthFlowForm />}
+
+        {authCtx.loggedIn && (
+          <form onSubmit={handleSubmit}>
+            <Stack spacing={5}>
+              <FormControl isRequired isInvalid={Boolean(error.msg)}>
+                <FormLabel>Name for this game</FormLabel>
+                <Input
+                  id="game-name"
+                  placeholder="Game Name"
+                  minLength={5}
+                  size="lg"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  value={gameName}
+                  onChange={(e) => setGameName(e.target.value)}
+                />
+                {error.msg && <FormErrorMessage>{error.msg}</FormErrorMessage>}
+                <FormHelperText>
+                  Can't think of anything? <Link href="">Generate a name</Link>
+                </FormHelperText>
+              </FormControl>
+              <Button
+                mt={4}
+                colorScheme="blue"
+                isLoading={loading}
+                type="submit"
+                size="lg"
+                rightIcon={<IoArrowForward />}
+              >
+                Create
+              </Button>
+            </Stack>
+          </form>
+        )}
       </Box>
     </Stack>
   );
