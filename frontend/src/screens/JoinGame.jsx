@@ -64,7 +64,7 @@ export function AuthStep({ authState, selectAuthOption, onLogin, onComplete }) {
   if (option == null) {
     return (
       <Stack spacing={5}>
-        <Text>To join a game, please identify yourself first.</Text>
+        <Text>Sign in to save your game scores.</Text>
         <Button
           mt={4}
           isLoading={false}
@@ -130,12 +130,6 @@ export function AuthStep({ authState, selectAuthOption, onLogin, onComplete }) {
           </>
         )}
       </Stack>
-    );
-  } else {
-    return (
-      <Text>
-        Joining as <b>{displayName}</b>
-      </Text>
     );
   }
 }
@@ -222,17 +216,23 @@ export function JoinGame() {
         >
           <Heading size="lg">Join game</Heading>
           <br />
-          <AuthStep
-            selectAuthOption={selectAuthOption}
-            authState={authState}
-            onLogin={onLogin}
-            onComplete={onAuthComplete}
-          />
+
+          {!authState.complete && (
+            <AuthStep
+              selectAuthOption={selectAuthOption}
+              authState={authState}
+              onLogin={onLogin}
+              onComplete={onAuthComplete}
+            />
+          )}
+
           {authState.complete && (
-            <Stack spacing={5} mt={5}>
+            <Stack spacing={5}>
+              <Text>
+                Joining as <b>{authState.displayName}</b>
+              </Text>
               <Button
                 padding={10}
-                bgColor="#eee"
                 onClick={() => {
                   qrModalState.onOpen();
                   console.log('hi');
