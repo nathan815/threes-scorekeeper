@@ -259,7 +259,7 @@ async function getGameOrSendFailure(
   const game = await req.di.gameService.getByShortId(id);
   if (!game) {
     res.status(StatusCodes.NOT_FOUND).send({
-      errorMessage: `Game '${id}' does not exist`,
+      errorMessage: `Game not found`,
     });
     return false;
   }
