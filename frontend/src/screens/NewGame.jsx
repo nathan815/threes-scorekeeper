@@ -15,6 +15,8 @@ import {
 import { useCallback, useState } from 'react';
 import { IoArrowForward } from 'react-icons/io5';
 import { useNavigate } from 'react-router-dom';
+import generateName from 'project-name-generator';
+
 import { useAuthContext } from '../auth/authContext';
 import { AuthFlowForm } from '../components/AuthFlowForm';
 import { LogoHeader } from '../components/LogoHeader';
@@ -71,6 +73,11 @@ export function NewGame() {
     [authCtx.user, loading, gameName, createGame]
   );
 
+  const handleClickGenerateName = (e) => {
+    e.preventDefault();
+    setGameName(generateName({ words: 2, alliterative: true }).spaced);
+  };
+
   return (
     <Stack
       justifyContent="start"
@@ -104,7 +111,10 @@ export function NewGame() {
                 />
                 {error.msg && <FormErrorMessage>{error.msg}</FormErrorMessage>}
                 <FormHelperText>
-                  Can't think of anything? <Link href="">Generate a name</Link>
+                  Can't think of anything?{' '}
+                  <Link href="#" onClick={handleClickGenerateName}>
+                    Generate a name
+                  </Link>
                 </FormHelperText>
               </FormControl>
               <Button
