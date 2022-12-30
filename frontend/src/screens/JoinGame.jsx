@@ -3,17 +3,19 @@ import {
   Button,
   FormControl,
   FormErrorMessage,
+  FormHelperText,
   Heading,
   Input,
   Stack,
   Text,
   useColorModeValue,
   useDisclosure,
+  useToast,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useState } from 'react';
 import { isMobile } from 'react-device-detect';
 import { IoCamera } from 'react-icons/io5';
-import { Navigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import * as api from '../api';
 import { useAuthContext } from '../auth/authContext';
 import { AuthFlowForm } from '../components/AuthFlowForm';
@@ -23,43 +25,57 @@ import { LogoHeader } from '../components/LogoHeader';
 export function JoinGame() {
   const { gameId: gameIdParam } = useParams();
   const authCtx = useAuthContext();
-  const [joinCode, setJoinCode] = useState(gameIdParam);
-  const [joined, setJoined] = useState(false);
-  const [joinLoading, setJoinLoading] = useState(false);
-  const [error, setError] = useState({ msg: null, retryable: true });
+  const toast = useToast();
+  const navigate = useNavigate();
   const qrModalState = useDisclosure();
   const bg = useColorModeValue('whiteAlpha.900', 'blackAlpha.300');
+  const [joinCode, setJoinCode] = useState(gameIdParam);
+  const [joinLoading, setJoinLoading] = useState(false);
+  const [error, setError] = useState({ msg: null, retryable: true });
 
-  async function joinGame(code) {
-    setError({ msg: null, retryable: true });
-    setJoinLoading(true);
-    try {
-      await api.joinGame(code);
-      setJoined(true);
-    } catch (err) {
-      console.error(err, err.message);
-      let msg = 'An error occurred. Please try again in a moment.';
-      let retryable = true;
-      if (err instanceof api.ApiError) {
-        if (err.context && err.context.errorType === 'IllegalGameStageError') {
-          retryable = false;
-          msg = `This game has already started so you won't be able to join it.`;
-          // setJoinCode('');
-        } else if (err.message) {
-          msg = `${err.message}`;
+  const joinGame = useCallback(
+    async (code) => {
+      setError({ msg: null, retryable: true });
+      setJoinLoading(true);
+      try {
+        await api.joinGame(code);
+        if (!toast.isActive('joined')) {
+          toast({
+            id: 'joined',
+            description: 'You have joined this game!',
+            status: 'success',
+            position: 'bottom-right',
+          });
         }
+        navigate(`/games/${code}`, { replace: true });
+      } catch (err) {
+        console.error(err, err.message);
+        let msg = 'An error occurred. Please try again in a moment.';
+        let retryable = true;
+        if (err instanceof api.ApiError) {
+          if (
+            err.context &&
+            err.context.errorType === 'IllegalGameStageError'
+          ) {
+            retryable = false;
+            msg = `This game has already started so you won't be able to join it.`;
+          } else if (err.message) {
+            msg = `${err.message}`;
+          }
+        }
+        setError({ msg, retryable });
+      } finally {
+        setJoinLoading(false);
       }
-      setError({ msg, retryable });
-    } finally {
-      setJoinLoading(false);
-    }
-  }
+    },
+    [navigate, toast]
+  );
 
   useEffect(() => {
     if (gameIdParam) {
       joinGame(gameIdParam);
     }
-  }, [gameIdParam]);
+  }, [joinGame, gameIdParam]);
 
   const handleJoinSubmit = useCallback(
     async (event) => {
@@ -72,7 +88,7 @@ export function JoinGame() {
       }
       await joinGame(joinCode);
     },
-    [authCtx.user, joinCode, joinLoading]
+    [authCtx.user, joinCode, joinLoading, joinGame]
   );
 
   function handleJoinCodeInput(event) {
@@ -83,10 +99,6 @@ export function JoinGame() {
   function onScanJoinCode(code) {
     setJoinCode(code);
     joinGame(code);
-  }
-
-  if (joined) {
-    return <Navigate to={`/games/${joinCode}`} />;
   }
 
   return (
@@ -125,10 +137,6 @@ export function JoinGame() {
                     <IoCamera size={25} />
                     <Text ml={2}>Scan QR Code</Text>
                   </Button>
-
-                  {/* <Center>
-                  <Text color="grey">— OR —</Text>
-                </Center> */}
                 </>
               )}
 
@@ -149,6 +157,9 @@ export function JoinGame() {
                     {error.msg && (
                       <FormErrorMessage>{error.msg}</FormErrorMessage>
                     )}
+                    <FormHelperText>{`The host has the game code ${
+                      isMobile ? 'and QR code' : ''
+                    } on their screen.`}</FormHelperText>
                   </FormControl>
                   <Button
                     mt={4}
