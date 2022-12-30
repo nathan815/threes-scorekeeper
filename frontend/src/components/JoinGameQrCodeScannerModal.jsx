@@ -1,10 +1,9 @@
 import {
-  Button,
-  Modal,
-  ModalCloseButton,
-  ModalContent,
-  ModalOverlay,
   useToast,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  Button,
 } from '@chakra-ui/react';
 import { QrCodeScanner } from './QrCodeScanner';
 

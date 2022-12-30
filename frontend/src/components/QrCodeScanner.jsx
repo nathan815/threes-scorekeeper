@@ -1,5 +1,6 @@
 import { Html5Qrcode } from 'html5-qrcode';
 import React from 'react';
+import PropTypes from 'prop-types';
 
 const qrcodeRegionId = 'html5qr-code-full-region';
 
@@ -28,12 +29,13 @@ export class QrCodeScanner extends React.Component {
 
         if (devices && devices.length && !this.html5QrCode) {
           this.html5QrCode = new Html5Qrcode(qrcodeRegionId);
+          const boxDim = window.innerWidth / 2;
           this.html5QrCode
             .start(
               { facingMode: 'environment' },
               {
                 fps: 10, // Optional, frame per seconds for qr code scanning
-                qrbox: { width: 220, height: 220 }, // Optional, if you want bounded box UI
+                qrbox: { width: boxDim, height: boxDim }, // Optional, if you want bounded box UI
                 aspectRatio: window.innerHeight / window.innerWidth,
               },
               (decodedText, decodedResult) => {
@@ -41,7 +43,7 @@ export class QrCodeScanner extends React.Component {
                 this.props.onScanSuccess(decodedText);
               },
               (errorMessage) => {
-                console.error('Decode failed', errorMessage);
+                // console.error('Decode failed', errorMessage);
                 this.props.onScanError(errorMessage);
               }
             )
@@ -57,3 +59,10 @@ export class QrCodeScanner extends React.Component {
       });
   }
 }
+
+QrCodeScanner.propTypes = {
+  onScanSuccess: PropTypes.func.isRequired,
+  onScanError: PropTypes.func,
+  onStartError: PropTypes.func,
+  onPermissionsError: PropTypes.func,
+};
