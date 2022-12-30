@@ -17,6 +17,7 @@ import { useAuthFlow } from '../auth';
 import { AuthFlowForm } from '../components/AuthFlowForm';
 import { JoinGameQrCodeScannerModal } from '../components/JoinGameQrCodeScannerModal';
 import { LogoHeader } from '../components/LogoHeader';
+import { isMobile } from 'react-device-detect';
 
 export function JoinGame() {
   const authFlow = useAuthFlow();
@@ -71,14 +72,19 @@ export function JoinGame() {
               <Text>
                 Joining as <b>{authFlow.state.displayName}</b>
               </Text>
-              <Button padding={10} onClick={() => qrModalState.onOpen()}>
-                <IoCamera size={25} />
-                <Text ml={2}>Scan QR Code</Text>
-              </Button>
 
-              <Center>
-                <Text color="grey">— OR —</Text>
-              </Center>
+              {isMobile && (
+                <>
+                  <Button padding={10} onClick={() => qrModalState.onOpen()}>
+                    <IoCamera size={25} />
+                    <Text ml={2}>Scan QR Code</Text>
+                  </Button>
+
+                  <Center>
+                    <Text color="grey">— OR —</Text>
+                  </Center>
+                </>
+              )}
 
               <form
                 onSubmit={(e) => {
