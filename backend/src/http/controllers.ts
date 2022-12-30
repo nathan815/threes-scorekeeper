@@ -22,7 +22,7 @@ router.get('/', (req, res) => {
 });
 
 router.post(
-  '/auth/register/guest',
+  '/auth/guest/register',
   requiresNoAuth,
   v.body('displayName').isString().notEmpty(),
   checkRequestValidation,
@@ -40,7 +40,7 @@ router.post(
 );
 
 router.post(
-  '/auth/login/guest',
+  '/auth/guest/login',
   requiresNoAuth,
   v.body('userId').isString().notEmpty(),
   v.body('secret').isString().notEmpty(),
