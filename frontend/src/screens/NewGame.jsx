@@ -22,6 +22,13 @@ import { AuthFlowForm } from '../components/AuthFlowForm';
 import { LogoHeader } from '../components/LogoHeader';
 import * as api from '../api';
 
+function generateGameName() {
+  return generateName({ words: 2 })
+    .raw.map((w) => w.toString())
+    .map((w) => w.charAt(0).toUpperCase() + w.substring(1))
+    .join(' ');
+}
+
 export function NewGame() {
   const bg = useColorModeValue('whiteAlpha.900', 'blackAlpha.100');
   const authCtx = useAuthContext();
@@ -75,7 +82,7 @@ export function NewGame() {
 
   const handleClickGenerateName = (e) => {
     e.preventDefault();
-    setGameName(generateName({ words: 2, alliterative: true }).spaced);
+    setGameName(generateGameName);
   };
 
   return (
@@ -96,7 +103,7 @@ export function NewGame() {
 
         {authCtx.loggedIn && (
           <form onSubmit={handleSubmit}>
-            <Stack spacing={5}>
+            <Stack spacing={8}>
               <FormControl isRequired isInvalid={Boolean(error.msg)}>
                 <FormLabel>Name for this game</FormLabel>
                 <Input
@@ -118,7 +125,6 @@ export function NewGame() {
                 </FormHelperText>
               </FormControl>
               <Button
-                mt={4}
                 colorScheme="blue"
                 isLoading={loading}
                 type="submit"
