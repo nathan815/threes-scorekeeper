@@ -4,6 +4,8 @@ import {
   ModalOverlay,
   ModalContent,
   Button,
+  Toast,
+  LightMode,
 } from '@chakra-ui/react';
 import { QrCodeScanner } from './QrCodeScanner';
 
@@ -12,7 +14,14 @@ export function JoinGameQrCodeScannerModal({
   onClose,
   onScanJoinCode,
 }) {
-  const toast = useToast();
+  const toast = useToast({
+    render: (props) => (
+      <LightMode>
+        {' '}
+        <Toast {...props} />
+      </LightMode>
+    ),
+  });
   const toastId = 'qr-code-scanner-toast';
 
   function showError({ title, msg }) {
@@ -22,7 +31,7 @@ export function JoinGameQrCodeScannerModal({
         title,
         description: msg,
         status: 'error',
-        duration: 5000,
+        duration: 3000,
         isClosable: true,
         position: 'top',
       });
