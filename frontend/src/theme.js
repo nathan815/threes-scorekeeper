@@ -3,7 +3,7 @@ import { mode } from '@chakra-ui/theme-tools';
 
 const colors = {
   white: '#ffffff',
-  offWhite: '#F3F3F3',
+  offWhite: '#eaeaea',
   black: '#000000',
   blue: '#022946',
   darkGray: '#1a202c',

@@ -5,6 +5,7 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { ChakraProvider, ColorModeScript } from '@chakra-ui/react';
 import theme from './theme';
+import { AuthProvider } from './auth/authContext';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -12,7 +13,9 @@ root.render(
     <ChakraProvider theme={theme}>
       <ColorModeScript initialColorMode={theme.config.initialColorMode} />
       <React.StrictMode>
-        <App />
+        <AuthProvider>
+          <App />
+        </AuthProvider>
       </React.StrictMode>
     </ChakraProvider>
   </>

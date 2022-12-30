@@ -12,15 +12,15 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 import { useState } from 'react';
-import { IoArrowForward, IoCamera } from 'react-icons/io5';
-import { useAuthFlow } from '../auth';
+import { IoCamera } from 'react-icons/io5';
 import { AuthFlowForm } from '../components/AuthFlowForm';
 import { JoinGameQrCodeScannerModal } from '../components/JoinGameQrCodeScannerModal';
 import { LogoHeader } from '../components/LogoHeader';
 import { isMobile } from 'react-device-detect';
+import { useAuthContext } from '../auth/authContext';
 
 export function JoinGame() {
-  const authFlow = useAuthFlow();
+  const authCtx = useAuthContext();
   const [joinCode, setJoinCode] = useState('');
   const qrModalState = useDisclosure();
 
@@ -58,19 +58,13 @@ export function JoinGame() {
           <Heading size="lg">Join game</Heading>
           <br />
 
-          {!authFlow.state.complete && (
-            <AuthFlowForm
-              selectAuthOption={authFlow.selectAuthOption}
-              authState={authFlow.state}
-              onLogin={authFlow.onLogin}
-              onComplete={authFlow.onAuthFlowComplete}
-            />
-          )}
+          {!authCtx.loggedIn && <AuthFlowForm />}
 
-          {authFlow.state.complete && (
+          {authCtx.loggedIn && (
             <Stack spacing={5}>
-              <Text>
-                Joining as <b>{authFlow.state.displayName}</b>
+              <Text fontSize="xl">
+                Joining as{' '}
+                <b>{authCtx.user ? authCtx.user.displayName : '--'}</b>
               </Text>
 
               {isMobile && (
@@ -100,7 +94,13 @@ export function JoinGame() {
                       autoComplete="off"
                       autoCorrect="off"
                       value={joinCode}
-                      onChange={(e) => setJoinCode(e.target.value)}
+                      type="text"
+                      pattern="[A-Z0-9]+"
+                      onChange={(e) =>
+                        setJoinCode(
+                          e.target.value.toUpperCase().replace(' ', '')
+                        )
+                      }
                     />
                   </FormControl>
                   <Button
@@ -109,7 +109,6 @@ export function JoinGame() {
                     isLoading={false}
                     type="submit"
                     size="lg"
-                    rightIcon={<IoArrowForward />}
                   >
                     Join Game
                   </Button>

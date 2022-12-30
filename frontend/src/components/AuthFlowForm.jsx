@@ -4,23 +4,63 @@ import {
   FormControl,
   FormHelperText,
   Input,
+  Progress,
   Stack,
   Text,
+  useToast,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import { IoLogoApple, IoLogoGoogle, IoPerson } from 'react-icons/io5';
-import PropTypes from 'prop-types';
+import { useAuthContext } from '../auth/authContext';
 
-export function AuthFlowForm({
-  authState,
-  selectAuthOption,
-  onLogin,
-  onComplete,
-}) {
-  const { option, optionInProgress, displayName } = authState;
+export function AuthFlowForm() {
+  const auth = useAuthContext();
+  const { option, optionInProgress } = auth.authFlow;
   const [displayNameInput, setDisplayNameInput] = useState('');
+  const toast = useToast();
 
   const buttonsDisabled = optionInProgress != null;
+
+  function onSelectAuthOption(option) {
+    auth.setAuthFlow({
+      option,
+    });
+  }
+
+  function onLogin(option) {
+    auth.setAuthFlow({
+      optionInProgress: option,
+    });
+    setTimeout(() => {
+      // TEMP
+      if (window.confirm('Simulate login success?')) {
+        auth.setAuthFlow({
+          option: option,
+          optionInProgress: null,
+        });
+      } else {
+        auth.setAuthFlow({
+          optionInProgress: null,
+        });
+      }
+    }, 500);
+  }
+
+  function onSubmitDisplayName(displayName) {
+    if (!displayName) {
+      return;
+    }
+    auth.finishLogIn(displayName).catch((err) => {
+      toast({
+        title: 'An error occurred',
+        description: `Failed to save display name. Please try again. (${err})`,
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+        position: 'top-right',
+      });
+    })
+  }
 
   const signInButtons = (
     <>
@@ -55,7 +95,11 @@ export function AuthFlowForm({
     option || optionInProgress
   ];
 
-  if (option == null) {
+  if (!auth.initialized) {
+    return <Progress size="xs" isIndeterminate />;
+  }
+
+  if (option == null && !auth.user) {
     return (
       <Stack spacing={5}>
         <Text>Sign in to save your game history.</Text>
@@ -64,7 +108,7 @@ export function AuthFlowForm({
           isLoading={false}
           type="submit"
           size="lg"
-          onClick={() => selectAuthOption('guest')}
+          onClick={() => onSelectAuthOption('guest')}
           disabled={buttonsDisabled}
           leftIcon={<IoPerson />}
         >
@@ -73,7 +117,7 @@ export function AuthFlowForm({
         {signInButtons}
       </Stack>
     );
-  } else if (!displayName) {
+  } else if (!auth.user || !auth.user.displayName) {
     return (
       <Stack spacing={5}>
         <Text>
@@ -84,7 +128,7 @@ export function AuthFlowForm({
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            onComplete(displayNameInput);
+            onSubmitDisplayName(displayNameInput);
           }}
         >
           <Stack spacing={5}>
@@ -106,10 +150,11 @@ export function AuthFlowForm({
             <Button
               mt={4}
               colorScheme="blue"
-              isLoading={false}
+              isLoading={auth.authFlow.finishLoginLoading}
               type="submit"
               size="lg"
               disabled={buttonsDisabled}
+              loadingText="Saving name..."
             >
               {option === 'guest' ? 'Continue as Guest' : 'Continue'}
             </Button>
@@ -128,14 +173,4 @@ export function AuthFlowForm({
   }
 }
 
-const loginOptions = PropTypes.oneOf(['guest', 'google', 'apple']);
-AuthFlowForm.propTypes = {
-  authState: PropTypes.shape({
-    option: loginOptions,
-    optionInProgress: loginOptions,
-    displayName: PropTypes.string,
-  }),
-  selectAuthOption: PropTypes.func,
-  onLogin: PropTypes.func,
-  onComplete: PropTypes.func,
-}
+AuthFlowForm.propTypes = {};

@@ -18,7 +18,13 @@ import {
 export const router = Router();
 
 router.get('/', (req, res) => {
-  res.send('Threes');
+  res.json('Threes Scorekeeper API');
+});
+
+router.get('/auth/state', (req, res) => {
+  res.json({
+    user: req.user ? userToDto(req.user) : null,
+  });
 });
 
 router.post(
