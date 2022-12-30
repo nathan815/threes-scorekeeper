@@ -26,7 +26,7 @@ import { JoinGame } from './screens/JoinGame';
 import { NewGame } from './screens/NewGame';
 
 import { GameScreen } from './screens/Game';
-import { ScreenNotFound } from './screens/ScreenNotFound';
+import { PageNotFound } from './screens/PageNotFound';
 import './style/global.css';
 
 const MAX_WIDTH = '5xl';
@@ -93,7 +93,7 @@ function App() {
           <Route path="/join/:gameId" element={<JoinGame />} />
           <Route path="/games/:gameId" element={<GameScreen />} />
         </Route>
-        <Route path="*" element={<ScreenNotFound />} />
+        <Route path="*" element={<PageNotFound />} />
       </Routes>
     </BrowserRouter>
   );

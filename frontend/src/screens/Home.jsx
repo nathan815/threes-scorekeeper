@@ -60,6 +60,18 @@ function ActionButton(props) {
   );
 }
 
+export function HomeButtons() {
+  return (
+    <Stack direction="column" spacing={8}>
+      <ActionButton to="/join" leftIcon={<IoEnter />}>
+        Join Game
+      </ActionButton>
+      <ActionButton to="/new" leftIcon={<IoAddCircle />}>
+        New Game
+      </ActionButton>
+    </Stack>
+  );
+}
 export default function Home() {
   return (
     <>
@@ -70,14 +82,7 @@ export default function Home() {
         minHeight="100%"
       >
         <LogoHeader mb={20} />
-        <Stack direction="column" spacing={8}>
-          <ActionButton to="/join" leftIcon={<IoEnter />}>
-            Join Game
-          </ActionButton>
-          <ActionButton to="/new" leftIcon={<IoAddCircle />}>
-            New Game
-          </ActionButton>
-        </Stack>
+        <HomeButtons />
         {/* <CardHero /> */}
       </Stack>
     </>
