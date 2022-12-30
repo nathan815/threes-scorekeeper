@@ -130,6 +130,7 @@ router.post(
       if (err instanceof GameError) {
         return res.status(StatusCodes.CONFLICT).send({
           errorMessage: `Unable to join game: ${err.message}`,
+          error: err.constructor.name,
         });
       }
       throw err;
@@ -154,11 +155,13 @@ router.post(
       if (err instanceof NonOwnerCannotStartGameError) {
         return res.status(StatusCodes.FORBIDDEN).send({
           errorMessage: err.message,
+          error: err.constructor.name,
         });
       }
       if (err instanceof GameError) {
         return res.status(StatusCodes.BAD_REQUEST).send({
           errorMessage: err.message,
+          error: err.constructor.name,
         });
       }
       throw err;
@@ -211,6 +214,7 @@ router.put(
         return res.status(StatusCodes.BAD_REQUEST).send({
           errorMessage: err.message,
           details: { ...err },
+          error: err.constructor.name,
         });
       }
       throw err;
@@ -251,10 +255,11 @@ async function getGameOrSendFailure(
   res: Response,
   idFn = (req: Request) => req.params.id
 ) {
-  const game = await req.di.gameService.getByShortId(idFn(req));
+  const id = idFn(req);
+  const game = await req.di.gameService.getByShortId(id);
   if (!game) {
     res.status(StatusCodes.NOT_FOUND).send({
-      errorMessage: 'Game not found',
+      errorMessage: `Game '${id}' does not exist`,
     });
     return false;
   }

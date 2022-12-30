@@ -21,6 +21,7 @@ import { NewGame } from './screens/NewGame';
 import { Link as RouterLink } from 'react-router-dom';
 
 import './style/global.css';
+import { GameScreen } from './screens/Game';
 
 const MAX_WIDTH = '5xl';
 
@@ -81,6 +82,8 @@ function App() {
         <Route path="/" element={<ScreenContainer />}>
           <Route path="/new" element={<NewGame />} />
           <Route path="/join" element={<JoinGame />} />
+          <Route path="/join/:gameId" element={<JoinGame />} />
+          <Route path="/games/:gameId" element={<GameScreen />} />
         </Route>
       </Routes>
     </BrowserRouter>
