@@ -1,6 +1,6 @@
 {
   "include": ["./src", "./@types"],
-  "files": ["./src/main.ts", "./src/DI.1.ts"],
+  "files": ["./src/main.ts"],
   "compilerOptions": {
     "strict": true,
     "target": "ES2021",
