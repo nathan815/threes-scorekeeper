@@ -1,7 +1,18 @@
-import { useToast, Modal, ModalOverlay, ModalCloseButton, ModalContent, Button } from "@chakra-ui/react";
-import { QrCodeScanner } from "./QrCodeScanner";
+import {
+  Button,
+  Modal,
+  ModalCloseButton,
+  ModalContent,
+  ModalOverlay,
+  useToast,
+} from '@chakra-ui/react';
+import { QrCodeScanner } from './QrCodeScanner';
 
-export function JoinGameQrCodeScannerModal({ isOpen, onClose, onScanJoinCode }) {
+export function JoinGameQrCodeScannerModal({
+  isOpen,
+  onClose,
+  onScanJoinCode,
+}) {
   const toast = useToast();
   const toastId = 'qr-code-scanner-toast';
 
@@ -19,7 +30,7 @@ export function JoinGameQrCodeScannerModal({ isOpen, onClose, onScanJoinCode }) 
     }
   }
 
-  const handleScan = (data) => {
+  function handleScan(data) {
     // console.log(data);
     let foundCode = false;
     try {
@@ -41,7 +52,7 @@ export function JoinGameQrCodeScannerModal({ isOpen, onClose, onScanJoinCode }) 
         msg: 'The QR code scanned does not appear to be for this app.',
       });
     }
-  };
+  }
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="full">
