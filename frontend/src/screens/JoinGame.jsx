@@ -14,9 +14,9 @@ import {
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useState } from 'react';
 import { isMobile } from 'react-device-detect';
-import { IoCamera } from 'react-icons/io5';
-import { useNavigate, useParams } from 'react-router-dom';
-import { api } from '../api';
+import { IoArrowForward, IoCamera } from 'react-icons/io5';
+import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
+import { api, ApiError } from '../api';
 import { useAuthContext } from '../auth/authContext';
 import { AuthFlowForm } from '../components/AuthFlowForm';
 import { JoinGameQrCodeScannerModal } from '../components/JoinGameQrCodeScannerModal';
@@ -32,10 +32,16 @@ export function JoinGame() {
   const [joinCode, setJoinCode] = useState(gameIdParam);
   const [joinLoading, setJoinLoading] = useState(false);
   const [error, setError] = useState({ msg: null, retryable: true });
+  const [showViewGameBtn, setShowViewGameBtn] = useState(false);
+
+  const reset = () => {
+    setError({ msg: null, retryable: true });
+    setShowViewGameBtn(false);
+  };
 
   const joinGame = useCallback(
     async (code) => {
-      setError({ msg: null, retryable: true });
+      reset();
       setJoinLoading(true);
       try {
         await api.joinGame(code);
@@ -52,13 +58,14 @@ export function JoinGame() {
         console.error(err, err.message);
         let msg = 'An error occurred. Please try again in a moment.';
         let retryable = true;
-        if (err instanceof api.ApiError) {
+        if (err instanceof ApiError) {
           if (
             err.context &&
             err.context.errorType === 'IllegalGameStageError'
           ) {
             retryable = false;
             msg = `This game has already started so you won't be able to join it.`;
+            setShowViewGameBtn(true);
           } else if (err.message) {
             msg = `${err.message}`;
           }
@@ -92,7 +99,7 @@ export function JoinGame() {
   );
 
   function handleJoinCodeInput(event) {
-    setError({ msg: null, retryable: true });
+    reset();
     setJoinCode(event.target.value.toUpperCase().replace(' ', ''));
   }
 
@@ -157,21 +164,34 @@ export function JoinGame() {
                     {error.msg && (
                       <FormErrorMessage>{error.msg}</FormErrorMessage>
                     )}
-                    <FormHelperText>{`Ask anyone already in game for the code ${
-                      isMobile ? 'or QR code' : ''
+                    <FormHelperText>{`Ask anyone already in the game for the code${
+                      isMobile ? ' or QR code' : ''
                     }.`}</FormHelperText>
                   </FormControl>
                   <Button
+                    type="submit"
                     mt={4}
                     colorScheme="blue"
-                    disabled={!error.retryable}
+                    disabled={!error.retryable || joinLoading}
                     isLoading={joinLoading}
                     loadingText="Join Game"
-                    type="submit"
                     size="lg"
                   >
                     Join Game
                   </Button>
+                  {showViewGameBtn && (
+                    <Button
+                      type="button"
+                      as={RouterLink}
+                      to={`/games/${joinCode}`}
+                      mt={4}
+                      colorScheme="blue"
+                      size="lg"
+                      rightIcon={<IoArrowForward />}
+                    >
+                      View Game
+                    </Button>
+                  )}
                 </Stack>
               </form>
             </Stack>

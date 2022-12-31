@@ -2,7 +2,6 @@ import axios from 'axios';
 
 const http = axios.create({
   baseURL: '/api',
-  timeout: 1000,
   withCredentials: true,
 });
 
@@ -18,11 +17,8 @@ const errorResponseInterceptor = async (err) => {
       throw new ApiError(msg, err.response.data, err);
     }
   }
-  throw new ApiError(
-    'An error occurred. Please try again in a moment.',
-    undefined,
-    err
-  );
+
+  throw new ApiError('Unable to connect to server.', undefined, err);
 };
 
 http.interceptors.response.use(
@@ -31,52 +27,40 @@ http.interceptors.response.use(
 );
 
 function getGame(id) {
-  return http.get(`/games/${id}`);
+  return http.get(`/games/${id}`).then((res) => res.data);
 }
 
 function getAuthState() {
-  return http.get(`/auth/state`).then((r) => r.data);
+  return http.get(`/auth/state`).then((res) => res.data);
 }
 
-async function guestRegister(displayName) {
-  const resp = await http.post('/auth/guest/register', {
-    displayName,
-  });
-  return resp.data;
+function guestRegister(displayName) {
+  return http
+    .post('/auth/guest/register', {
+      displayName,
+    })
+    .then((res) => res.data);
 }
 
-async function guestLogin({ id, secret }) {
-  const resp = await http.post('/auth/guest/login', {
-    userId: id,
-    secret: secret,
-  });
-  return resp.data;
+function guestLogin({ id, secret }) {
+  return http
+    .post('/auth/guest/login', {
+      userId: id,
+      secret: secret,
+    })
+    .then((res) => res.data);
 }
 
-async function createGame(name) {
-  const resp = await http.post(`/games`, {
-    name: name,
-  });
-  return resp.data;
+function createGame(name) {
+  return http
+    .post(`/games`, {
+      name: name,
+    })
+    .then((res) => res.data);
 }
 
-async function joinGame(shortId) {
-  try {
-    const resp = await http.post(`/games/${shortId}/join`);
-    return resp.data;
-  } catch (err) {
-    if (err.response && err.response.data) {
-      const msg = err.response.data && err.response.data.errorMessage;
-      if (msg) {
-        throw new ApiError(msg, err.response.data);
-      }
-    }
-    throw new ApiError(
-      'An error occurred. Please try again in a moment.',
-      undefined,
-      err
-    );
-  }
+function joinGame(shortId) {
+  return http.post(`/games/${shortId}/join`).then((res) => res.data);
 }
 
 export const api = {
