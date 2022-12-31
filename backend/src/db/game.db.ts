@@ -88,7 +88,6 @@ export class GameSchema extends TimeStamps {
     });
     game.startedAt = this.startedAt;
     game.endedAt = this.endedAt;
-    console.debug('toDomain - GAME', game);
     return game;
   }
 

@@ -7,7 +7,6 @@ export async function injectCurrentUser(
   res: Response,
   next: NextFunction
 ) {
-  console.log(req.sessionID, req.session);
   if (req.session.userId) {
     const user = await req.di.userService.getUser(req.session.userId);
     if (user) {
@@ -16,7 +15,7 @@ export async function injectCurrentUser(
       console.error('User ID in session does not exist: ' + req.session.userId);
     }
   }
-  console.log('user', req.user);
+  console.log(req.method, req.url, 'Session ID:', req.sessionID, 'User ID:', req.session.userId, 'DisplayName:', req.user?.displayName);
   next();
 }
 

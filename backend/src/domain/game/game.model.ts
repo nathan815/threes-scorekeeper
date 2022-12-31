@@ -42,7 +42,7 @@ export class Game {
   }
 
   get totalPointsByPlayer(): { [userId: string]: number } {
-    console.log('enter totalPointsByPlayer', 'rounds', this.rounds);
+    // console.log('enter totalPointsByPlayer', 'rounds', this.rounds);
     const totals: { [userId: string]: number } = {};
     for (const player of this.players) {
       totals[player.id] =
