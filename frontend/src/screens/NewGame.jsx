@@ -20,7 +20,7 @@ import generateName from 'project-name-generator';
 import { useAuthContext } from '../auth/authContext';
 import { AuthFlowForm } from '../components/AuthFlowForm';
 import { LogoHeader } from '../components/LogoHeader';
-import * as api from '../api';
+import { api, ApiError, ValidationError } from '../api';
 
 function generateGameName() {
   return generateName({ words: 2 })
@@ -54,8 +54,8 @@ export function NewGame() {
       } catch (err) {
         console.error(err, err.message);
         let msg = 'An error occurred. Please try again in a moment.';
-        if (err instanceof api.ApiError) {
-          if (err instanceof api.ValidationError) {
+        if (err instanceof ApiError) {
+          if (err instanceof ValidationError) {
             msg = err.humanReadableErrors.join(', ');
           } else if (err.message) {
             msg = `${err.message}`;
@@ -79,6 +79,11 @@ export function NewGame() {
     },
     [authCtx.user, loading, gameName, createGame]
   );
+
+  const handleGameNameInput = (event) => {
+    setError({ msg: null, retryable: true });
+    setGameName(event.target.value);
+  };
 
   const handleClickGenerateName = (e) => {
     e.preventDefault();
@@ -114,7 +119,7 @@ export function NewGame() {
                   autoComplete="off"
                   autoCorrect="off"
                   value={gameName}
-                  onChange={(e) => setGameName(e.target.value)}
+                  onChange={handleGameNameInput}
                 />
                 {error.msg && <FormErrorMessage>{error.msg}</FormErrorMessage>}
                 <FormHelperText>

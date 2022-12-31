@@ -104,7 +104,7 @@ router.get(
 router.post(
   '/games',
   requiresAuth,
-  v.body('name').isString().isLength({ min: 5 }),
+  v.body('name').isString().isLength({ min: 5 }).withMessage('must be at least 5 chars'),
   checkRequestValidation,
   async (req, res) => {
     const game = await req.di.gameService.createGame({

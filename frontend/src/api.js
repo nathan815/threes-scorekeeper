@@ -4,25 +4,48 @@ const http = axios.create({
   baseURL: '/api',
   timeout: 1000,
   withCredentials: true,
-  // headers: {'X-Custom-Header': 'foobar'}
 });
 
-export function getGame(id) {
+const successfulResponseInterceptor = async (response) => response;
+const errorResponseInterceptor = async (err) => {
+  console.log('Request: ', err.request, 'Response Error:', err);
+  if (err.response && err.response.data) {
+    if (err.response.data.errorType === 'validation') {
+      throw new ValidationError(err);
+    }
+    const msg = err.response.data && err.response.data.errorMessage;
+    if (msg) {
+      throw new ApiError(msg, err.response.data, err);
+    }
+  }
+  throw new ApiError(
+    'An error occurred. Please try again in a moment.',
+    undefined,
+    err
+  );
+};
+
+http.interceptors.response.use(
+  successfulResponseInterceptor,
+  errorResponseInterceptor
+);
+
+function getGame(id) {
   return http.get(`/games/${id}`);
 }
 
-export function getAuthState() {
+function getAuthState() {
   return http.get(`/auth/state`).then((r) => r.data);
 }
 
-export async function guestRegister(displayName) {
+async function guestRegister(displayName) {
   const resp = await http.post('/auth/guest/register', {
     displayName,
   });
   return resp.data;
 }
 
-export async function guestLogin({ id, secret }) {
+async function guestLogin({ id, secret }) {
   const resp = await http.post('/auth/guest/login', {
     userId: id,
     secret: secret,
@@ -30,31 +53,14 @@ export async function guestLogin({ id, secret }) {
   return resp.data;
 }
 
-export async function createGame(name) {
-  try {
-    const resp = await http.post(`/games`, {
-      name: name,
-    });
-    return resp.data;
-  } catch (err) {
-    if (err.response && err.response.data) {
-      if (err.response.data.errorType === 'validation') {
-        throw new ValidationError(err.response.data);
-      }
-      const msg = err.response.data && err.response.data.errorMessage;
-      if (msg) {
-        throw new ApiError(msg, err.response.data);
-      }
-    }
-    throw new ApiError(
-      'An error occurred. Please try again in a moment.',
-      undefined,
-      err
-    );
-  }
+async function createGame(name) {
+  const resp = await http.post(`/games`, {
+    name: name,
+  });
+  return resp.data;
 }
 
-export async function joinGame(shortId) {
+async function joinGame(shortId) {
   try {
     const resp = await http.post(`/games/${shortId}/join`);
     return resp.data;
@@ -73,21 +79,33 @@ export async function joinGame(shortId) {
   }
 }
 
+export const api = {
+  getAuthState,
+  guestLogin,
+  guestRegister,
+  getGame,
+  joinGame,
+  createGame,
+};
+
 export class ApiError extends Error {
   constructor(message, context, cause = undefined) {
     super(message);
-    this.cause = cause;
+    if (cause) {
+      this.cause = cause;
+    }
     this.errorMessage = message;
     this.context = context;
   }
 }
 
 export class ValidationError extends ApiError {
-  constructor(responseData) {
-    super('Validation failure');
-    this.errors = responseData.errors;
-    this.humanReadableErrors = this.errors.map(
-      (e) => `Field '${e.param}': ${e.msg}`
-    );
+  constructor(error) {
+    super('Validation failure', { errors: error.response.data.errors }, error);
+    this.humanReadableErrors = this.context.errors.map((e) => {
+      const field = `${e.param.charAt(0).toUpperCase()}${e.param.substring(1)}`;
+      const message = `${e.msg.charAt(0).toLowerCase()}${e.msg.substring(1)}`;
+      return `${field} ${message}`;
+    });
   }
 }

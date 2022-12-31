@@ -1,6 +1,6 @@
 import React from 'react';
 import { useContext, useState, useEffect } from 'react';
-import * as api from '../api';
+import { api } from '../api';
 
 /***
  * @typedef {'guest' | 'apple' | 'google'} AuthOption

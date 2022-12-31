@@ -16,7 +16,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { isMobile } from 'react-device-detect';
 import { IoCamera } from 'react-icons/io5';
 import { useNavigate, useParams } from 'react-router-dom';
-import * as api from '../api';
+import { api } from '../api';
 import { useAuthContext } from '../auth/authContext';
 import { AuthFlowForm } from '../components/AuthFlowForm';
 import { JoinGameQrCodeScannerModal } from '../components/JoinGameQrCodeScannerModal';
@@ -44,7 +44,7 @@ export function JoinGame() {
             id: 'joined',
             description: 'You have joined this game!',
             status: 'success',
-            position: 'bottom-right',
+            position: 'bottom',
           });
         }
         navigate(`/games/${code}`, { replace: true });
@@ -157,9 +157,9 @@ export function JoinGame() {
                     {error.msg && (
                       <FormErrorMessage>{error.msg}</FormErrorMessage>
                     )}
-                    <FormHelperText>{`The host has the game code ${
-                      isMobile ? 'and QR code' : ''
-                    } on their screen.`}</FormHelperText>
+                    <FormHelperText>{`Ask anyone already in game for the code ${
+                      isMobile ? 'or QR code' : ''
+                    }.`}</FormHelperText>
                   </FormControl>
                   <Button
                     mt={4}
