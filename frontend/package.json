@@ -6,9 +6,6 @@
     "@chakra-ui/react": "^2.2.4",
     "@emotion/react": "^11.9.3",
     "@emotion/styled": "^11.9.3",
-    "@testing-library/jest-dom": "^5.16.4",
-    "@testing-library/react": "^13.3.0",
-    "@testing-library/user-event": "^13.5.0",
     "axios": "^1.2.2",
     "framer-motion": "^6.4.3",
     "html5-qrcode": "^2.3.4",
@@ -25,7 +22,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "ngrok": "WDS_SOCKET_PORT=443 npm start",
+    "start:https": "WDS_SOCKET_PORT=443 npm start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
@@ -50,6 +47,9 @@
     ]
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^14.4.3",
     "prettier": "^2.7.1",
     "prop-types": "^15.8.1"
   }
