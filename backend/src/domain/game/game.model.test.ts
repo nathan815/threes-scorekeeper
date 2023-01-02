@@ -47,54 +47,54 @@ describe(Game, () => {
 
     g.start(userA);
 
-    // Ace
-    expect(g.currentRound?.cardRank).toEqual(CardRank.of(CardRankName.Ace));
+    // 3
+    expect(g.currentRound?.cardRank).toEqual(CardRank.of(3));
     g.recordPlayerRoundResult(userA, 0);
     g.recordPlayerRoundResult(userB, 10);
-    expect(g.currentRound?.cardRank).toEqual(CardRank.of(CardRankName.Ace));
+    expect(g.currentRound?.cardRank).toEqual(CardRank.of(3));
     expect(g.getPlayerPoints(userA)).toBe(0);
     expect(g.getPlayerPoints(userB)).toBe(10);
     expect(g.winningPlayer).toEqual(userA);
 
-    // 2
+    // 4
     g.nextRound();
-    expect(g.currentRound?.cardRank).toEqual(CardRank.of(2));
+    expect(g.currentRound?.cardRank).toEqual(CardRank.of(4));
     g.recordPlayerRoundResult(userA, 25);
     g.recordPlayerRoundResult(userB, 5);
     expect(g.getPlayerPoints(userA)).toBe(25);
     expect(g.getPlayerPoints(userB)).toBe(15);
     expect(g.winningPlayer).toEqual(userB);
 
-    // 3
+    // 5
     g.nextRound();
-    expect(g.currentRound?.cardRank).toEqual(CardRank.of(3));
+    expect(g.currentRound?.cardRank).toEqual(CardRank.of(5));
     g.recordPlayerRoundResult(userA, 5);
     g.recordPlayerRoundResult(userB, 10);
     expect(g.getPlayerPoints(userA)).toBe(30);
     expect(g.getPlayerPoints(userB)).toBe(25);
     expect(g.winningPlayer).toEqual(userB);
 
-    // 4
+    // 6
     g.nextRound();
-    expect(g.currentRound?.cardRank).toEqual(CardRank.of(4));
+    expect(g.currentRound?.cardRank).toEqual(CardRank.of(6));
     g.recordPlayerRoundResult(userA, 0);
     g.recordPlayerRoundResult(userB, 10);
     expect(g.getPlayerPoints(userA)).toBe(30);
     expect(g.getPlayerPoints(userB)).toBe(35);
     expect(g.winningPlayer).toEqual(userA);
 
-    // 5
+    // 7
     g.nextRound();
-    expect(g.currentRound?.cardRank).toEqual(CardRank.of(5));
+    expect(g.currentRound?.cardRank).toEqual(CardRank.of(7));
     g.recordPlayerRoundResult(userA, 5);
     g.recordPlayerRoundResult(userB, 5);
     expect(g.getPlayerPoints(userA)).toBe(35);
     expect(g.getPlayerPoints(userB)).toBe(40);
     expect(g.winningPlayer).toEqual(userA);
 
-    // 6
+    // 8
     g.nextRound();
-    expect(g.currentRound?.cardRank).toEqual(CardRank.of(6));
+    expect(g.currentRound?.cardRank).toEqual(CardRank.of(8));
     g.recordPlayerRoundResult(userA, 5, true); // user gets -20 bonus for cutting deck perfectly. effectively -15.
     g.recordPlayerRoundResult(userB, 8);
     expect(g.getPlayerPoints(userA)).toBe(20);
@@ -157,7 +157,7 @@ describe(Game, () => {
   });
 
   describe(Game.prototype.start, () => {
-    it('starts game with first round as Ace', () => {
+    it('starts game with first round as card rank 3', () => {
       const g = new Game('test', userA);
       g.addPlayer(userB);
       g.start(userA);
@@ -165,7 +165,7 @@ describe(Game, () => {
       expect(g.stage).toBe(GameStage.InProgress);
       expect(g.startedAt).not.toBeUndefined();
       expect(g.currentRound).not.toBeUndefined();
-      expect(g.currentRound?.cardRank).toEqual(CardRank.ACE);
+      expect(g.currentRound?.cardRank).toEqual(CardRank.of(3));
       expect(g.currentRound?.startedAt).toBeTruthy();
     });
 
@@ -200,22 +200,22 @@ describe(Game, () => {
       g.addPlayer(userB);
       g.start(userA);
 
-      expect(g.currentRound?.cardRank).toEqual(CardRank.ACE);
-      expect(g.currentRound?.cardRank?.number).toBe(1);
-
-      g.recordPlayerRoundResult(userA, 0);
-      g.recordPlayerRoundResult(userB, 0);
-
-      g.nextRound();
-
-      expect(g.currentRound?.cardRank?.number).toBe(2);
-
-      g.recordPlayerRoundResult(userA, 0);
-      g.recordPlayerRoundResult(userB, 0);
-
-      g.nextRound();
-
+      expect(g.currentRound?.cardRank).toEqual(CardRank.of(3));
       expect(g.currentRound?.cardRank?.number).toBe(3);
+
+      g.recordPlayerRoundResult(userA, 0);
+      g.recordPlayerRoundResult(userB, 0);
+
+      g.nextRound();
+
+      expect(g.currentRound?.cardRank?.number).toBe(4);
+
+      g.recordPlayerRoundResult(userA, 0);
+      g.recordPlayerRoundResult(userB, 0);
+
+      g.nextRound();
+
+      expect(g.currentRound?.cardRank?.number).toBe(5);
     });
 
     it('throws if no result was recorded for a player', () => {
@@ -280,7 +280,7 @@ describe(Game, () => {
       expect(g.currentRound?.playerResults[userA.id].cardPoints).toBe(13);
       expect(g.currentRound?.playerResults[userB.id].cardPoints).toBe(8);
 
-      g.recordPlayerRoundResult(userB, 16, false, 1); // change userB round1 points to 16
+      g.recordPlayerRoundResult(userB, 16, false, 3); // change userB round1 (which is card 3) points to 16
       expect(g.rounds[0].playerResults[userA.id].cardPoints).toBe(3); // userA unchanged
       expect(g.rounds[0].playerResults[userB.id].cardPoints).toBe(16); // userB is now 16
     });
