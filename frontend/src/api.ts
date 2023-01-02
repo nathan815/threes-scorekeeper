@@ -1,5 +1,32 @@
 import axios from 'axios';
 
+export interface Player {
+  id: string;
+  displayName: string;
+}
+
+export interface Game {
+  id: string;
+  shortId: string;
+  name: string;
+  owner: Player;
+  players: Player[];
+  totalPointsByPlayer: { [id: string]: number };
+  rounds: GameRound[];
+}
+
+export interface GameRound {
+  cardRank: number;
+  isFinished: boolean;
+  playerResults: { [id: string]: PlayerResult };
+}
+
+export interface PlayerResult {
+  runningTotal: number;
+  cardPoints: number;
+  cutDeckPerfect: true;
+}
+
 const http = axios.create({
   baseURL: '/api',
   withCredentials: true,
@@ -26,7 +53,7 @@ http.interceptors.response.use(
   errorResponseInterceptor
 );
 
-function getGame(id) {
+function getGame(id): Promise<Game> {
   return http.get(`/games/${id}`).then((res) => res.data);
 }
 
@@ -73,6 +100,10 @@ export const api = {
 };
 
 export class ApiError extends Error {
+  cause?: Error;
+  errorMessage?: string;
+  context?: any;
+
   constructor(message, context, cause = undefined) {
     super(message);
     if (cause) {
@@ -84,6 +115,8 @@ export class ApiError extends Error {
 }
 
 export class ValidationError extends ApiError {
+  humanReadableErrors?: string[];
+
   constructor(error) {
     super('Validation failure', { errors: error.response.data.errors }, error);
     this.humanReadableErrors = this.context.errors.map((e) => {
