@@ -1,3 +1,5 @@
+import crypto from 'crypto';
+
 export class User {
   public constructor(obj: Partial<User>) {
     this.id = obj.id!;
@@ -11,5 +13,9 @@ export class User {
 
   get isAnon(): boolean {
     return Boolean(this.guestSecret);
+  }
+
+  get gravatarHash(): string {
+    return crypto.createHash('md5').update(this.email || this.id).digest('hex');
   }
 }

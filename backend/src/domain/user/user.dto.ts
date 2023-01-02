@@ -4,6 +4,7 @@ export interface UserPublicDto {
   id?: string;
   displayName?: string;
   isGuest: boolean;
+  gravatarHash: string;
 }
 
 export interface UserPrivateDto extends UserPublicDto {
@@ -11,8 +12,8 @@ export interface UserPrivateDto extends UserPublicDto {
 }
 
 export function userToDto(user: User): UserPublicDto {
-  const { id, displayName, isAnon } = user;
-  return { id, displayName, isGuest: isAnon };
+  const { id, displayName, isAnon, gravatarHash } = user;
+  return { id, displayName, isGuest: isAnon, gravatarHash };
 }
 
 export function userToPrivateDto(user: User): UserPrivateDto {

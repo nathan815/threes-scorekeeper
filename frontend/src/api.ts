@@ -3,6 +3,8 @@ import axios from 'axios';
 export interface Player {
   id: string;
   displayName: string;
+  gravatarHash: string;
+  isGuest: boolean;
 }
 
 export interface Game {
@@ -11,8 +13,9 @@ export interface Game {
   name: string;
   owner: Player;
   players: Player[];
-  totalPointsByPlayer: { [id: string]: number };
   rounds: GameRound[];
+  totalPointsByPlayer: { [id: string]: number };
+  currentWinnerIds: string[];
 }
 
 export interface GameRound {
