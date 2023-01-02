@@ -12,7 +12,7 @@ import {
   useDisclosure,
   useToast,
 } from '@chakra-ui/react';
-import { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { isMobile } from 'react-device-detect';
 import { IoArrowForward, IoCamera } from 'react-icons/io5';
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';

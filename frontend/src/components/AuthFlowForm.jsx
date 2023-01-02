@@ -9,7 +9,7 @@ import {
   Text,
   useToast,
 } from '@chakra-ui/react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { IoLogoApple, IoLogoGoogle, IoPerson } from 'react-icons/io5';
 import { useAuthContext } from '../auth/authContext';
 

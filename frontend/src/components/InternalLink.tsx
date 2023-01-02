@@ -8,10 +8,7 @@ import {
   LinkProps as RouterLinkProps,
 } from 'react-router-dom';
 
-/**
- * @param {ChakraLinkProps & RouterLinkProps} props
- */
-export default function InternalLink(props) {
+export default function InternalLink(props: ChakraLinkProps & RouterLinkProps) {
   return <ChakraLink as={RouterLink} {...props} />;
 }
 

@@ -1,5 +1,5 @@
-import { Box, Image, useColorMode, useColorModeValue } from '@chakra-ui/react';
-import { Link } from 'react-router-dom';
+import { Box, Image, useColorMode } from '@chakra-ui/react';
+import React, { Link } from 'react-router-dom';
 import logo from '../assets/images/logo_transparent.png';
 import logoDark from '../assets/images/logo_transparent_dark.png';
 

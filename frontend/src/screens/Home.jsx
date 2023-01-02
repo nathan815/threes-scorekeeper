@@ -11,6 +11,7 @@ import {
   Box,
   Image,
 } from '@chakra-ui/react';
+import React from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { IoEnter, IoAddCircle } from 'react-icons/io5';
 

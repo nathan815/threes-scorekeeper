@@ -7,6 +7,7 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react';
+import React from 'react';
 import { LogoHeader } from '../components/LogoHeader';
 import { HomeButtons } from './Home';
 

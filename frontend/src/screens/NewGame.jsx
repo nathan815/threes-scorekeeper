@@ -12,7 +12,7 @@ import {
   useColorModeValue,
   useToast,
 } from '@chakra-ui/react';
-import { useCallback, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { IoArrowForward } from 'react-icons/io5';
 import { useNavigate } from 'react-router-dom';
 import generateName from 'project-name-generator';

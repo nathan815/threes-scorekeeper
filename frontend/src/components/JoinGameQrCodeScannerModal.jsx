@@ -8,7 +8,7 @@ import {
   LightMode,
   useBreakpointValue,
 } from '@chakra-ui/react';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { QrCodeScanner } from './QrCodeScanner';
 
 export function JoinGameQrCodeScannerModal({
