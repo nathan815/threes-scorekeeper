@@ -42,30 +42,37 @@ export class Game {
     return this.currentRound?.cardRank.number;
   }
 
-  get totalPointsByPlayer(): { [userId: string]: number } {
+  totalPointsByPlayer(includeUnfinished = false): { [userId: string]: number } {
     // console.log('enter totalPointsByPlayer', 'rounds', this.rounds);
     const totals: { [userId: string]: number } = {};
     for (const player of this.players) {
       totals[player.id] =
-        (totals[player.id] || 0) + this.getPlayerPoints(player);
+        (totals[player.id] || 0) +
+        this.getPlayerPoints(player, includeUnfinished);
     }
     return totals;
   }
 
-  get winningPlayer(): User | undefined {
+  /**
+   * The current winner (player with least amount of points) as of the latest completed round.
+   * Multiple players will be returned when there is a tie.
+   * */
+  get currentWinners(): User[] {
     if (this.stage == GameStage.Pre) {
-      return;
+      return [];
     }
 
-    let minPointsUserId: string;
+    let minPointsUserIds: string[] = [];
     let minPoints = Number.MAX_VALUE;
-    for (const userId of Object.keys(this.totalPointsByPlayer)) {
-      if (this.totalPointsByPlayer[userId] < minPoints) {
-        minPoints = this.totalPointsByPlayer[userId];
-        minPointsUserId = userId;
+    for (const [userId, points] of Object.entries(this.totalPointsByPlayer())) {
+      if (points == minPoints) {
+        minPointsUserIds.push(userId);
+      } else if (points < minPoints) {
+        minPoints = points;
+        minPointsUserIds = [userId];
       }
     }
-    return this.players.find((u) => u.id == minPointsUserId);
+    return this.players.filter((u) => minPointsUserIds.includes(u.id));
   }
 
   addPlayer(player: User): boolean {
@@ -88,8 +95,9 @@ export class Game {
     return true;
   }
 
-  getPlayerPoints(player: User): number {
+  getPlayerPoints(player: User, includeUnfinished = false): number {
     return this.rounds
+      .filter((round) => includeUnfinished || round.isFinished)
       .map((round) => {
         const result = round.playerResults[player.id];
         return result ? result.cardPoints + (result.perfectCutBonus || 0) : 0;
@@ -189,13 +197,10 @@ export class Game {
     console.log('new round', round, 'ROUNDS', this.rounds);
   }
 
-  private finishCurrentRound() {
+  finishCurrentRound() {
     const currentRound = this.currentRound;
     // console.log('currentRound', currentRound);
-    if (!currentRound) {
-      return;
-    }
-    if (currentRound.isFinished) {
+    if (!currentRound || currentRound.isFinished) {
       return;
     }
     const missingPlayerIds = this.players

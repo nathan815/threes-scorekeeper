@@ -20,7 +20,7 @@ export interface GameDto {
   currentRound: number | null;
   rounds: GameRoundDto[];
   totalPointsByPlayer: { [userId: string]: number };
-  winningPlayerId?: string;
+  currentWinnerIds: string[];
 }
 
 function gameRoundToDto({
@@ -39,18 +39,18 @@ function gameRoundToDto({
   };
 }
 
-export function gameToDto({
-  id,
-  name,
-  shortId,
-  owner,
-  players,
-  stage,
-  currentRound,
-  rounds,
-  totalPointsByPlayer,
-  winningPlayer,
-}: Game): GameDto {
+export function gameToDto(game: Game): GameDto {
+  const {
+    id,
+    name,
+    shortId,
+    owner,
+    players,
+    stage,
+    currentRound,
+    rounds,
+    currentWinners,
+  } = game;
   return {
     id,
     name,
@@ -60,7 +60,7 @@ export function gameToDto({
     players: players.map(userToDto),
     currentRound: currentRound?.cardRank.number || null,
     rounds: rounds.map(gameRoundToDto),
-    totalPointsByPlayer: totalPointsByPlayer,
-    winningPlayerId: winningPlayer?.id,
+    totalPointsByPlayer: game.totalPointsByPlayer(),
+    currentWinnerIds: currentWinners.map((p) => p.id),
   };
 }
