@@ -1,5 +1,14 @@
 import { UserPublicDto, userToDto } from '../user/user.dto';
-import { Game, GameRound, GameStage } from './game.model';
+import { CardRank } from './cards';
+import { Game, GameRound, GameStage, PlayerResultMap } from './game.model';
+
+export interface GameRoundDto {
+  cardRank: number;
+  isFinished: boolean;
+  startedAt: Date;
+  endedAt?: Date;
+  playerResults: PlayerResultMap;
+}
 
 export interface GameDto {
   id: string;
@@ -9,9 +18,25 @@ export interface GameDto {
   players: UserPublicDto[];
   stage: GameStage;
   currentRound: number | null;
-  rounds: GameRound[];
+  rounds: GameRoundDto[];
   totalPointsByPlayer: { [userId: string]: number };
   winningPlayerId?: string;
+}
+
+function gameRoundToDto({
+  startedAt,
+  endedAt,
+  cardRank,
+  playerResults,
+  isFinished,
+}: GameRound): GameRoundDto {
+  return {
+    cardRank: cardRank.number,
+    isFinished,
+    startedAt,
+    endedAt,
+    playerResults,
+  };
 }
 
 export function gameToDto({
@@ -26,16 +51,15 @@ export function gameToDto({
   totalPointsByPlayer,
   winningPlayer,
 }: Game): GameDto {
-  const playerDtos = players.map(userToDto);
   return {
     id,
     name,
     shortId,
     stage,
     owner: userToDto(owner!),
-    players: playerDtos,
+    players: players.map(userToDto),
     currentRound: currentRound?.cardRank.number || null,
-    rounds,
+    rounds: rounds.map(gameRoundToDto),
     totalPointsByPlayer: totalPointsByPlayer,
     winningPlayerId: winningPlayer?.id,
   };
