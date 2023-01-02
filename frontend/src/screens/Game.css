@@ -1,0 +1,22 @@
+.game-table th,
+.game-table td {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+.spin-infinite {
+  animation: spin 4s ease infinite;
+  animation-delay: 1s;
+}
+
+@keyframes spin {
+  0% {
+    transform:rotate(-180deg); 
+  }
+  25% { 
+      transform:rotate(0deg); 
+  } 
+  100% { 
+      transform:rotate(0deg); 
+  }
+}

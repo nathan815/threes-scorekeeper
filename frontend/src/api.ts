@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 export interface Player {
   id: string;
@@ -16,6 +16,8 @@ export interface Game {
   rounds: GameRound[];
   totalPointsByPlayer: { [id: string]: number };
   currentWinnerIds: string[];
+  startedAt?: Date;
+  endedAt?: Date;
 }
 
 export interface GameRound {
@@ -25,9 +27,8 @@ export interface GameRound {
 }
 
 export interface PlayerResult {
-  runningTotal: number;
   cardPoints: number;
-  cutDeckPerfect: true;
+  perfectCutBonus: unknown;
 }
 
 const http = axios.create({
@@ -103,14 +104,19 @@ export const api = {
 };
 
 export class ApiError extends Error {
-  cause?: Error;
+  cause?: AxiosError;
   errorMessage?: string;
   context?: any;
+  retryable: boolean;
 
-  constructor(message, context, cause = undefined) {
+  constructor(message, context, cause?: AxiosError) {
     super(message);
+    this.retryable = true;
     if (cause) {
       this.cause = cause;
+      if (cause.response.status === 404) {
+        this.retryable = false;
+      }
     }
     this.errorMessage = message;
     this.context = context;

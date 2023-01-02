@@ -8,6 +8,7 @@ import {
   MenuItem,
   MenuList,
   useColorMode,
+  useColorModeValue,
   useToast,
 } from '@chakra-ui/react';
 import React from 'react';
@@ -29,11 +30,11 @@ import { GameScreen } from './screens/Game';
 import { PageNotFound } from './screens/PageNotFound';
 import './style/global.css';
 
-const MAX_WIDTH = '5xl';
+const MAX_WIDTH = '7xl';
 
 function ScreenContainer() {
   return (
-    <Container maxWidth={MAX_WIDTH} height="100%">
+    <Container maxWidth={MAX_WIDTH} minHeight="100vh" bg={useColorModeValue('white', 'inherit')} boxShadow={useColorModeValue('0 0 5px #ccc', 'none')} mt={0} paddingX={{ base: 5, lg: 10 }}>
       <Outlet />
     </Container>
   );

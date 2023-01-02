@@ -106,6 +106,10 @@ describe(Game, () => {
     g.finishCurrentRound();
     expect(g.getPlayerPoints(userA)).toBe(20);
     expect(g.getPlayerPoints(userB)).toBe(48);
+    expect(g.totalPointsByPlayer()).toEqual({
+      [userA.id]: 20,
+      [userB.id]: 48,
+    });
     expect(g.currentWinners).toEqual([userA]);
   });
 

@@ -14,13 +14,15 @@ export interface GameDto {
   id: string;
   name: string;
   shortId: string;
+  stage: GameStage;
   owner: UserPublicDto;
   players: UserPublicDto[];
-  stage: GameStage;
+  currentWinnerIds: string[];
+  totalPointsByPlayer: { [userId: string]: number };
+  startedAt?: Date;
+  endedAt?: Date;
   currentRound: number | null;
   rounds: GameRoundDto[];
-  totalPointsByPlayer: { [userId: string]: number };
-  currentWinnerIds: string[];
 }
 
 function gameRoundToDto({
@@ -50,6 +52,8 @@ export function gameToDto(game: Game): GameDto {
     currentRound,
     rounds,
     currentWinners,
+    startedAt,
+    endedAt,
   } = game;
   return {
     id,
@@ -62,5 +66,7 @@ export function gameToDto(game: Game): GameDto {
     rounds: rounds.map(gameRoundToDto),
     totalPointsByPlayer: game.totalPointsByPlayer(),
     currentWinnerIds: currentWinners.map((p) => p.id),
+    startedAt,
+    endedAt,
   };
 }

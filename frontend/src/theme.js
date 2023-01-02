@@ -3,7 +3,7 @@ import { mode } from '@chakra-ui/theme-tools';
 
 const colors = {
   white: '#ffffff',
-  offWhite: '#eaeaea',
+  offWhite: '#f1f1f1',
   black: '#000000',
   blue: '#022946',
   darkGray: '#1a202c',
@@ -12,7 +12,7 @@ const colors = {
 const theme = extendTheme({
   config: {
     initialColorMode: 'dark',
-    useSystemColorMode: false,
+    useSystemColorMode: true,
   },
   colors: {
     primary: colors.blue,

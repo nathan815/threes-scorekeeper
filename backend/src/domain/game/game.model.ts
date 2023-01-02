@@ -42,7 +42,7 @@ export class Game {
     return this.currentRound?.cardRank.number;
   }
 
-  totalPointsByPlayer(includeUnfinished = false): { [userId: string]: number } {
+  totalPointsByPlayer(includeUnfinished = true): { [userId: string]: number } {
     // console.log('enter totalPointsByPlayer', 'rounds', this.rounds);
     const totals: { [userId: string]: number } = {};
     for (const player of this.players) {
@@ -54,7 +54,7 @@ export class Game {
   }
 
   /**
-   * The current winner (player with least amount of points) as of the latest completed round.
+   * The current winner (player with least amount of points).
    * Multiple players will be returned when there is a tie.
    * */
   get currentWinners(): User[] {
