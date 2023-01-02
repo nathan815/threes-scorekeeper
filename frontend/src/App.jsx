@@ -79,7 +79,6 @@ function App() {
           onClick={toggleColorMode}
           icon={colorMode === 'light' ? <MdLightMode /> : <MdDarkMode />}
           aria-label={'Toggle Dark Mode'}
-          variant="ghost"
         />
       </Box>
       <Box position="fixed" top={15} right={15}>

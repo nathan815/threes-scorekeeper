@@ -34,14 +34,14 @@ export function JoinGame() {
   const [error, setError] = useState({ msg: null, retryable: true });
   const [showViewGameBtn, setShowViewGameBtn] = useState(false);
 
-  const reset = () => {
+  const clearError = () => {
     setError({ msg: null, retryable: true });
     setShowViewGameBtn(false);
   };
 
   const joinGame = useCallback(
     async (code) => {
-      reset();
+      clearError();
       setJoinLoading(true);
       try {
         await api.joinGame(code);
@@ -99,7 +99,7 @@ export function JoinGame() {
   );
 
   function handleJoinCodeInput(event) {
-    reset();
+    clearError();
     setJoinCode(event.target.value.toUpperCase().replace(' ', ''));
   }
 
