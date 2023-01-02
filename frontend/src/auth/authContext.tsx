@@ -2,45 +2,38 @@ import React from 'react';
 import { useContext, useState, useEffect } from 'react';
 import { api } from '../api';
 
-/***
- * @typedef {'guest' | 'apple' | 'google'} AuthOption
- *
- *
- * @typedef {{
- *  option: AuthOption
- *  optionInProgress: AuthOption
- *  finishLoginLoading: boolean
- * }} AuthFlowState
- *
- *
- * @typedef {{
- *  displayName: string
- *  isGuest: boolean
- *  id?: string
- *  providers?: Array<'apple' | 'google'>
- * }} AuthUser
- *
- *
- * @typedef {{
- *  loggedIn: boolean
- *  token: string | null
- *  user: AuthUser
- *  authFlow: AuthFlowState
- *  initialized: boolean
- * }} AuthState
- *
- *
- * @typedef {(displayName: string) => Promise<AuthUser>} LogInFunction
- *
- * @typedef {{
- *  finishLogIn: LogInFunction
- *  logOut: () => void
- *  setAuthFlow: (authFlow: Partial<AuthFlowState>) => void
- * } & AuthState} AuthContext
- */
+type AuthOption = 'guest' | 'apple' | 'google';
 
-/** @type {AuthState} */
-const DEFAULT_AUTH_STATE = {
+type AuthFlowState = {
+  option: AuthOption;
+  optionInProgress: AuthOption;
+  finishLoginLoading: boolean;
+};
+
+type AuthUser = {
+  displayName: string;
+  isGuest: boolean;
+  id?: string;
+  providers?: Array<'apple' | 'google'>;
+};
+
+type AuthState = {
+  loggedIn: boolean;
+  token: string | null;
+  user: AuthUser;
+  authFlow: AuthFlowState;
+  initialized: boolean;
+};
+
+type LogInFunction = (displayName: string) => Promise<AuthUser>;
+
+type AuthCtx = {
+  finishLogIn: LogInFunction;
+  logOut: () => void;
+  setAuthFlow: (authFlow: Partial<AuthFlowState>) => void;
+} & AuthState;
+
+const DEFAULT_AUTH_STATE: AuthState = {
   loggedIn: false,
   user: null,
   token: null,
@@ -53,8 +46,7 @@ const DEFAULT_AUTH_STATE = {
 };
 const AuthContext = React.createContext(undefined);
 
-/** @type {() => AuthContext} */
-export const useAuthContext = () => useContext(AuthContext);
+export const useAuthContext = () => useContext<AuthCtx>(AuthContext);
 
 export function AuthProvider({ children }) {
   const [auth, setAuthData] = useState(DEFAULT_AUTH_STATE);

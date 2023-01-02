@@ -56,7 +56,7 @@ http.interceptors.response.use(
   errorResponseInterceptor
 );
 
-function getGame(id): Promise<Game> {
+function getGame(id: string): Promise<Game> {
   return http.get(`/games/${id}`).then((res) => res.data);
 }
 
@@ -64,7 +64,7 @@ function getAuthState() {
   return http.get(`/auth/state`).then((res) => res.data);
 }
 
-function guestRegister(displayName) {
+function guestRegister(displayName: string) {
   return http
     .post('/auth/guest/register', {
       displayName,
@@ -72,7 +72,7 @@ function guestRegister(displayName) {
     .then((res) => res.data);
 }
 
-function guestLogin({ id, secret }) {
+function guestLogin({ id, secret }: { id: string; secret: string }) {
   return http
     .post('/auth/guest/login', {
       userId: id,
@@ -81,7 +81,7 @@ function guestLogin({ id, secret }) {
     .then((res) => res.data);
 }
 
-function createGame(name) {
+function createGame(name: string) {
   return http
     .post(`/games`, {
       name: name,
@@ -89,7 +89,7 @@ function createGame(name) {
     .then((res) => res.data);
 }
 
-function joinGame(shortId) {
+function joinGame(shortId: string) {
   return http.post(`/games/${shortId}/join`).then((res) => res.data);
 }
 
