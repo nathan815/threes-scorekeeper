@@ -1,4 +1,5 @@
 import { api, Game, GameRound, Player, PlayerResult } from '../api';
+import { sleep } from '../utils/general';
 
 export interface PlayerAugmented extends Player {
   isHost: boolean;
@@ -21,8 +22,10 @@ export interface GameRoundAugmented extends GameRound {
 
 export interface GameAugmented extends Game {
   rounds: GameRoundAugmented[];
-  currentRound?: GameRoundAugmented;
+  currentRound?: GameRoundAugmented | null;
   players: PlayerAugmented[];
+  hasStarted: boolean;
+  ableToStart: boolean;
 }
 
 const START_ROUND = 3;
@@ -91,6 +94,8 @@ function augmentGame(game: Game): GameAugmented {
     currentRound,
     rounds: augmentedRounds,
     players: augmentedPlayers,
+    hasStarted: Boolean(game.startedAt),
+    ableToStart: augmentedPlayers.length > 1,
   };
 }
 
@@ -102,6 +107,7 @@ let gameCache: GameAugmented | null = null;
  */
 export async function getGameCached(id: string): Promise<GameAugmented> {
   const game = augmentGame(await api.getGame(id));
+  // await sleep(2000);
   if (gameCache != null && JSON.stringify(game) === JSON.stringify(gameCache)) {
     return gameCache;
   }
