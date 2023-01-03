@@ -1,0 +1,4 @@
+{
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "typescript.inlayHints.parameterTypes.enabled": true
+}

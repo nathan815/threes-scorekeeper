@@ -5,22 +5,22 @@ import { api } from '../api';
 type AuthOption = 'guest' | 'apple' | 'google';
 
 type AuthFlowState = {
-  option: AuthOption;
-  optionInProgress: AuthOption;
+  option: AuthOption | null;
+  optionInProgress: AuthOption | null;
   finishLoginLoading: boolean;
 };
 
 type AuthUser = {
   displayName: string;
   isGuest: boolean;
-  id?: string;
+  id: string;
   providers?: Array<'apple' | 'google'>;
 };
 
 type AuthState = {
   loggedIn: boolean;
   token: string | null;
-  user: AuthUser;
+  user: AuthUser | null;
   authFlow: AuthFlowState;
   initialized: boolean;
 };
@@ -44,15 +44,14 @@ const DEFAULT_AUTH_STATE: AuthState = {
     finishLoginLoading: false,
   },
 };
-const AuthContext = React.createContext(undefined);
+const AuthContext = React.createContext<AuthCtx | undefined>(undefined);
 
-export const useAuthContext = () => useContext<AuthCtx>(AuthContext);
+export const useAuthContext = () => useContext(AuthContext);
 
 export function AuthProvider({ children }) {
   const [auth, setAuthData] = useState(DEFAULT_AUTH_STATE);
 
-  /** @param {Partial<AuthState>} newData */
-  const setAuth = (newData) => {
+  const setAuth = (newData: Partial<AuthState>) => {
     setAuthData((prevState) => {
       const newState = {
         ...prevState,
@@ -103,8 +102,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {}, []);
 
-  /** @type {LogInFunction} */
-  const finishLogIn = async (displayName) => {
+  const finishLogIn: LogInFunction = async (displayName) => {
     if (auth.authFlow.option === 'guest') {
       setAuth({
         authFlow: {
@@ -133,6 +131,7 @@ export function AuthProvider({ children }) {
       const user = {
         displayName,
         isGuest: false,
+        id: '',
       };
       setAuth({
         loggedIn: true,
@@ -148,8 +147,7 @@ export function AuthProvider({ children }) {
     });
   };
 
-  /** @param {AuthFlowState} newAuthFlow */
-  const setAuthFlow = (newAuthFlow) => {
+  const setAuthFlow = (newAuthFlow: AuthFlowState) => {
     console.log('newAuthFlow', newAuthFlow);
     setAuth({
       authFlow: {
@@ -175,9 +173,8 @@ export function AuthProvider({ children }) {
 
 /**
  * Reads auth state persisted in Local Storage
- * @returns {AuthState}
  */
-function readPersistedAuth() {
+function readPersistedAuth(): AuthState {
   const authJson = window.localStorage.getItem('auth');
   if (authJson) {
     try {
@@ -203,9 +200,8 @@ function readPersistedAuth() {
 
 /**
  * Persists auth state to Local Storage
- * @param {AuthState} auth
  */
-function persistAuth(auth) {
+function persistAuth(auth: AuthState) {
   window.localStorage.setItem(
     'auth',
     JSON.stringify({

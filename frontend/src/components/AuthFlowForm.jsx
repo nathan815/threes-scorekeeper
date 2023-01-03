@@ -15,31 +15,31 @@ import { useAuthContext } from '../auth/authContext';
 
 export function AuthFlowForm() {
   const auth = useAuthContext();
-  const { option, optionInProgress } = auth.authFlow;
+  const authFlow = auth?.authFlow;
   const [displayNameInput, setDisplayNameInput] = useState('');
   const toast = useToast();
 
-  const buttonsDisabled = optionInProgress != null;
+  const buttonsDisabled = authFlow?.optionInProgress != null;
 
   function onSelectAuthOption(option) {
-    auth.setAuthFlow({
+    auth?.setAuthFlow({
       option,
     });
   }
 
   function onLogin(option) {
-    auth.setAuthFlow({
+    auth?.setAuthFlow({
       optionInProgress: option,
     });
     setTimeout(() => {
       // TEMP
       if (window.confirm('Simulate login success?')) {
-        auth.setAuthFlow({
+        auth?.setAuthFlow({
           option: option,
           optionInProgress: null,
         });
       } else {
-        auth.setAuthFlow({
+        auth?.setAuthFlow({
           optionInProgress: null,
         });
       }
@@ -50,7 +50,7 @@ export function AuthFlowForm() {
     if (!displayName) {
       return;
     }
-    auth.finishLogIn(displayName).catch((err) => {
+    auth?.finishLogIn(displayName).catch((err) => {
       toast({
         title: 'An error occurred',
         description: `Failed to save display name. Please try again. (${err})`,
@@ -67,7 +67,7 @@ export function AuthFlowForm() {
       <Button
         mt={4}
         onClick={() => onLogin('apple')}
-        isLoading={optionInProgress === 'apple'}
+        isLoading={authFlow?.optionInProgress === 'apple'}
         loadingText="Signing in with Apple..."
         type="submit"
         size="lg"
@@ -79,7 +79,7 @@ export function AuthFlowForm() {
       <Button
         mt={4}
         onClick={() => onLogin('google')}
-        isLoading={optionInProgress === 'google'}
+        isLoading={authFlow?.optionInProgress === 'google'}
         loadingText="Signing in with Google..."
         type="submit"
         size="lg"
@@ -92,12 +92,14 @@ export function AuthFlowForm() {
   );
 
   const selectedAuthService = { apple: 'Apple', google: 'Google' }[
-    option || optionInProgress
+    authFlow?.option || authFlow?.optionInProgress
   ];
 
-  if (!auth.initialized) {
+  if (!auth || !auth.initialized) {
     return <Progress size="xs" isIndeterminate />;
   }
+
+  const option = authFlow?.option;
 
   if (option == null && !auth.user) {
     return (
@@ -170,6 +172,8 @@ export function AuthFlowForm() {
         )}
       </Stack>
     );
+  } else {
+    return null;
   }
 }
 

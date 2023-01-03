@@ -114,7 +114,7 @@ export class ApiError extends Error {
     this.retryable = true;
     if (cause) {
       this.cause = cause;
-      if (cause.response.status === 404) {
+      if (cause.response?.status === 404) {
         this.retryable = false;
       }
     }
@@ -124,7 +124,7 @@ export class ApiError extends Error {
 }
 
 export class ValidationError extends ApiError {
-  humanReadableErrors?: string[];
+  humanReadableErrors: string[];
 
   constructor(error) {
     super('Validation failure', { errors: error.response.data.errors }, error);

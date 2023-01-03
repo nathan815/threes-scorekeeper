@@ -37,7 +37,7 @@ export function NewGame() {
 
   const [gameName, setGameName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState({ msg: null, retryable: true });
+  const [error, setError] = useState<{ msg: string | null, retryable: boolean}>({ msg: null, retryable: true });
 
   const createGame = useCallback(
     async (name) => {
@@ -72,12 +72,12 @@ export function NewGame() {
   const handleSubmit = useCallback(
     async (event) => {
       event.preventDefault();
-      if (!authCtx.user || loading) {
+      if (!authCtx?.user || loading) {
         return;
       }
       await createGame(gameName);
     },
-    [authCtx.user, loading, gameName, createGame]
+    [authCtx?.user, loading, gameName, createGame]
   );
 
   const handleGameNameInput = (event) => {
@@ -104,9 +104,9 @@ export function NewGame() {
         <Heading size="lg">New Game</Heading>
         <br />
 
-        {!authCtx.loggedIn && <AuthFlowForm />}
+        {!authCtx?.loggedIn && <AuthFlowForm />}
 
-        {authCtx.loggedIn && (
+        {authCtx?.loggedIn && (
           <form onSubmit={handleSubmit}>
             <Stack spacing={8}>
               <FormControl isRequired isInvalid={Boolean(error.msg)}>

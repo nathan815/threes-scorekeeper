@@ -12,6 +12,7 @@ import {
   useDisclosure,
   useToast,
 } from '@chakra-ui/react';
+import { string } from 'prop-types';
 import React, { useCallback, useEffect, useState } from 'react';
 import { isMobile } from 'react-device-detect';
 import { IoArrowForward, IoCamera } from 'react-icons/io5';
@@ -31,7 +32,7 @@ export function JoinGame() {
   const bg = useColorModeValue('whiteAlpha.900', 'blackAlpha.300');
   const [joinCode, setJoinCode] = useState(gameIdParam);
   const [joinLoading, setJoinLoading] = useState(false);
-  const [error, setError] = useState({ msg: null, retryable: true });
+  const [error, setError] = useState<{msg:string | null, retryable:boolean}>({ msg: null, retryable: true });
   const [showViewGameBtn, setShowViewGameBtn] = useState(false);
 
   const clearError = () => {
@@ -90,12 +91,12 @@ export function JoinGame() {
       if (joinLoading) {
         return;
       }
-      if (!authCtx.user) {
+      if (!authCtx?.user) {
         return;
       }
       await joinGame(joinCode);
     },
-    [authCtx.user, joinCode, joinLoading, joinGame]
+    [authCtx?.user, joinCode, joinLoading, joinGame]
   );
 
   function handleJoinCodeInput(event) {
@@ -129,13 +130,13 @@ export function JoinGame() {
           <Heading size="lg">Join Game</Heading>
           <br />
 
-          {!authCtx.loggedIn && <AuthFlowForm />}
+          {!authCtx?.loggedIn && <AuthFlowForm />}
 
-          {authCtx.loggedIn && (
+          {authCtx?.loggedIn && (
             <Stack spacing={5}>
               <Text fontSize="xl">
                 Joining as{' '}
-                <b>{authCtx.user ? authCtx.user.displayName : '--'}</b>
+                <b>{authCtx?.user ? authCtx?.user.displayName : '--'}</b>
               </Text>
 
               {isMobile && (

@@ -19,13 +19,7 @@ const theme = extendTheme({
     light: {
       500: colors.white,
     },
-    colors: {
-      blackWhite: {
-        50: '#444',
-        500: '#222',
-        900: '#000',
-      },
-    },
+    darkGray: colors.darkGray,
   },
   styles: {
     global: (props) => ({
