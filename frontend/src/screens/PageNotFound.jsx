@@ -8,7 +8,7 @@ import {
   Text,
 } from '@chakra-ui/react';
 import React from 'react';
-import { LogoHeader } from '../components/LogoHeader';
+import { LogoHeader } from '../components/Logo';
 import { HomeButtons } from './Home';
 
 export function PageNotFound() {

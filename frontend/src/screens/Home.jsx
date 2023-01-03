@@ -19,7 +19,7 @@ import { ReactComponent as CardAceOfHearts } from '../assets/cards/ace_of_hearts
 import { ReactComponent as JackOfClubs } from '../assets/cards/jack_of_clubs2.svg';
 import { ReactComponent as QueenOfClubs } from '../assets/cards/queen_of_clubs2.svg';
 import { ReactComponent as KingOfClubs } from '../assets/cards/king_of_clubs2.svg';
-import { LogoHeader } from '../components/LogoHeader';
+import { LogoHeader } from '../components/Logo';
 
 function CardHero(props) {
   const brightness = useColorModeValue(1, 0.8);

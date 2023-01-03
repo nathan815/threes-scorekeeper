@@ -19,7 +19,7 @@ import generateName from 'project-name-generator';
 
 import { useAuthContext } from '../auth/authContext';
 import { AuthFlowForm } from '../components/AuthFlowForm';
-import { LogoHeader } from '../components/LogoHeader';
+import { LogoHeader } from '../components/Logo';
 import { api, ApiError, ValidationError } from '../api';
 
 function generateGameName() {

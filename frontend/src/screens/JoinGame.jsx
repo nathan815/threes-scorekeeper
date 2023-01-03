@@ -20,7 +20,7 @@ import { api, ApiError } from '../api';
 import { useAuthContext } from '../auth/authContext';
 import { AuthFlowForm } from '../components/AuthFlowForm';
 import { JoinGameQrCodeScannerModal } from '../components/JoinGameQrCodeScannerModal';
-import { LogoHeader } from '../components/LogoHeader';
+import { LogoHeader } from '../components/Logo';
 
 export function JoinGame() {
   const { gameId: gameIdParam } = useParams();
