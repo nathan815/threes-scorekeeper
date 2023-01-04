@@ -32,7 +32,10 @@ export function JoinGame() {
   const bg = useColorModeValue('whiteAlpha.900', 'blackAlpha.300');
   const [joinCode, setJoinCode] = useState(gameIdParam);
   const [joinLoading, setJoinLoading] = useState(false);
-  const [error, setError] = useState<{msg:string | null, retryable:boolean}>({ msg: null, retryable: true });
+  const [error, setError] = useState<{
+    msg: string | null;
+    retryable: boolean;
+  }>({ msg: null, retryable: true });
   const [showViewGameBtn, setShowViewGameBtn] = useState(false);
 
   const clearError = () => {

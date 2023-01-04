@@ -60,6 +60,14 @@ function AuthOptionMenu() {
           >
             Change Name
           </MenuItem>
+          <MenuItem
+            title="Copy to clipboard"
+            onClick={() =>
+              authCtx?.user && navigator.clipboard.writeText(authCtx.user.id)
+            }
+          >
+            ID: {authCtx.user.id}
+          </MenuItem>
           {!authCtx.user.isGuest && <MenuItem>Logout</MenuItem>}
         </MenuList>
       </Menu>

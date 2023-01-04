@@ -18,6 +18,10 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
+  Modal,
+  ModalContent,
+  ModalCloseButton,
+  ModalOverlay,
   SimpleGrid,
   Spinner,
   Stack,
@@ -25,10 +29,24 @@ import {
   Textarea,
   Tooltip,
   useColorModeValue,
+  useDisclosure,
+  UseDisclosureProps,
   useToast,
   VStack,
+  ModalBody,
+  ModalHeader,
+  ModalFooter,
+  FormLabel,
+  FormControl,
+  NumberInput,
+  NumberInputField,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInputStepper,
+  Checkbox,
 } from '@chakra-ui/react';
 import { createColumnHelper } from '@tanstack/react-table';
+import { mapValues} from 'lodash';
 import React, {
   useCallback,
   useEffect,
@@ -52,16 +70,19 @@ import {
 import { MdStars } from 'react-icons/md';
 import QRCode from 'react-qr-code';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ApiError } from '../api';
+import { ApiError, PlayerResultInput } from '../api';
 import { useAuthContext } from '../auth/authContext';
 import { ALL_SUITS, CardIcon, CardSuit } from '../components/CardIcon';
 import { DataTable } from '../components/DataTable';
 import {
+  completeCurrentRound,
   GameAugmented,
   GameRoundAugmented,
   getGameCached,
   PlayerAugmented,
   PlayerResultAugmented,
+  recordPlayerResults,
+  startGame,
 } from '../services/game';
 
 import './Game.css';
@@ -106,7 +127,7 @@ const roundStatusDisplays = {
   },
 };
 
-function roundToRank(round: GameRoundAugmented): string | undefined {
+function rankToName(round: GameRoundAugmented): string | undefined {
   return {
     11: 'Jacks',
     12: 'Queens',
@@ -116,7 +137,7 @@ function roundToRank(round: GameRoundAugmented): string | undefined {
 
 function RoundDescriptionCell({ round }: { round: GameRoundAugmented }) {
   const statusDisplay = roundStatusDisplays[round.status];
-  const name = roundToRank(round);
+  const name = rankToName(round);
   return (
     <Tooltip
       label={`${name || round.cardRank} - ${statusDisplay.label}`}
@@ -143,7 +164,7 @@ function PlayerResultCell({ result }: { result: PlayerResultAugmented }) {
   return (
     <>
       <Text color="grey" fontSize="sm" fontFamily="monospace">
-        {result.previousTotal}+{result.cardPoints}
+        {result.previousTotal}+{result.cardPoints || 0}
         {bonus}=
       </Text>
       <Text fontSize="md">{result.newTotal}</Text>
@@ -203,7 +224,7 @@ function GameQRCode({ id, ...boxProps }) {
 
 function CurrentRoundCard({ game }: { game: GameAugmented }) {
   const [suitIdx, setSuitIdx] = useState(0);
-  const round = game?.currentRound;
+  const round = game?.currentRoundObj;
 
   useEffect(() => {
     if (round) {
@@ -245,10 +266,7 @@ function gameStatusText(game: GameAugmented) {
     return `Finished ${game.endedAt}`;
   }
   if (game.startedAt) {
-    return (
-      'In Progress' +
-      (game.currentRound ? ` - ${roundToRank(game.currentRound)}` : '')
-    );
+    return 'Currently in progress';
   }
   if (game.ableToStart) {
     return 'Waiting for the host to start';
@@ -256,17 +274,254 @@ function gameStatusText(game: GameAugmented) {
   return 'Waiting for others to join';
 }
 
+type PlayerPointsState = { [userId: string]: string | number };
+type PlayerPerfectCutState = { [userId: string]: boolean };
+
+function buildPlayerResult(
+  playerPoints: PlayerPointsState,
+  playerPerfectCut: PlayerPerfectCutState
+): PlayerResultInput {
+  const playerResults: PlayerResultInput = {};
+
+  for (const [id, points] of Object.entries(playerPoints)) {
+    playerResults[id] = playerResults[id] || {};
+    const p = parseInt(`${points}`);
+    if (p || p === 0) {
+      playerResults[id].points = p;
+    }
+  }
+
+  for (const [id, perfectCut] of Object.entries(playerPerfectCut)) {
+    playerResults[id] = {
+      ...playerResults[id],
+      perfectDeckCut: Boolean(perfectCut),
+      points: playerResults[id]?.points || 0,
+    };
+  }
+
+  // console.log(playerResults);
+
+  return playerResults;
+}
+
+/**
+ * Submit provided player results to the server.
+ */
+async function submitPlayerResults(
+  gameId: string,
+  playerPoints: PlayerPointsState,
+  playerPerfectCut: PlayerPerfectCutState
+): Promise<GameAugmented | undefined> {
+  const results = buildPlayerResult(playerPoints, playerPerfectCut);
+  // console.log('submitPlayerResults', gameId, results);
+  if (Object.keys(results).length > 0) {
+    return recordPlayerResults(gameId, results);
+  }
+}
+
+function FinishRoundModal(props: {
+  game?: GameAugmented;
+  modalState: UseDisclosureProps;
+  onGameUpdate: (game: GameAugmented) => void;
+}) {
+  const toast = useToast();
+  const { game, onGameUpdate } = props;
+  // console.log('FinishRoundModal', game);
+  const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  const [playerPoints, setPlayerPoints] = useState<PlayerPointsState>({});
+  const [playerPerfectCut, setPlayerPerfectCut] =
+    useState<PlayerPerfectCutState>({});
+
+  const anyPerfectCut = Object.values(playerPerfectCut).some((v) => v === true);
+
+  const modalState = {
+    ...props.modalState,
+    isOpen: props.modalState.isOpen || false,
+    onClose: () => props.modalState.onClose && props.modalState.onClose(),
+  };
+  const { isOpen, onClose } = modalState;
+
+  const save = async (complete = false) => {
+    if (!game) {
+      return;
+    }
+    setSaving(true);
+    try {
+      const updatedGame = await submitPlayerResults(
+        game.shortId,
+        playerPoints,
+        playerPerfectCut
+      );
+
+      if (updatedGame) {
+        onGameUpdate(updatedGame);
+        setDirty(false);
+
+        if (complete) {
+          onGameUpdate(await completeCurrentRound(game.shortId));
+        }
+      }
+    } catch (error) {
+      toast({
+        title: 'Failed to save points',
+        description: `${error}`,
+        status: 'error',
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    save(true);
+    onClose();
+  };
+
+  useEffect(() => {
+    if (!game || !isOpen || dirty) {
+      return;
+    }
+
+    // Whenever the game object changes, we synchronize our input states.
+
+    setPlayerPerfectCut(
+      mapValues(
+        game?.currentRoundObj?.playerResults,
+        (r) => r.perfectCutBonus !== 0
+      )
+    );
+    setPlayerPoints(
+      mapValues(game?.currentRoundObj?.playerResults, (r) => r.cardPoints)
+    );
+  }, [game, isOpen, dirty]);
+
+  if (!game) {
+    return null;
+  }
+
+  const onChangePoints = (id: string, value) => {
+    setPlayerPoints((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
+    setDirty(true);
+  };
+
+  const onChangePerfectCut = (id: string, event) => {
+    setPlayerPerfectCut((prev) => ({
+      ...prev,
+      [id]: event.target.checked,
+    }));
+    setDirty(true);
+  };
+
+  return (
+    <Modal
+      {...modalState}
+      blockScrollOnMount={false}
+      closeOnOverlayClick={false}
+    >
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>
+          Finish Round
+          <ModalCloseButton />
+        </ModalHeader>
+
+        <form onSubmit={onSubmit}>
+          <ModalBody>
+            <Text>Record each player's points for this round.</Text>
+
+            <Alert status="info" mt={3} mb={5} size="sm" fontSize="sm">
+              <AlertIcon />
+              <AlertDescription>
+                If the dealer did a <i>perfect cut</i> of the deck at start of
+                this round, check the box to award the bonus.
+              </AlertDescription>
+            </Alert>
+
+            <SimpleGrid minChildWidth="35%" spacing={5}>
+              {game.players.map((player) => {
+                const points = playerPoints[player.id];
+                // console.log(
+                //   player.displayName,
+                //   points,
+                //   typeof points,
+                //   'undefined?',
+                //   points === undefined,
+                //   'null?',
+                //   points === null
+                // );
+                const cutBonus = playerPerfectCut[player.id];
+                return (
+                  <VStack key={player.id}>
+                    <FormControl flexDir="column">
+                      <FormLabel>{player.displayName}</FormLabel>
+                      <NumberInput
+                        value={
+                          points === undefined || points === null ? '' : points
+                        }
+                        onChange={(value) => onChangePoints(player.id, value)}
+                        min={0}
+                        isRequired={true}
+                      >
+                        <NumberInputField
+                          id={`score-${player.id}`}
+                          placeholder="Card Points"
+                        />
+                        <NumberInputStepper>
+                          <NumberIncrementStepper />
+                          <NumberDecrementStepper />
+                        </NumberInputStepper>
+                      </NumberInput>
+                    </FormControl>
+
+                    <FormControl>
+                      <Checkbox
+                        isChecked={cutBonus}
+                        onChange={(e) => onChangePerfectCut(player.id, e)}
+                        isDisabled={!cutBonus && anyPerfectCut}
+                      >
+                        Perfect Cut <Badge>-20</Badge>
+                      </Checkbox>
+                    </FormControl>
+                  </VStack>
+                );
+              })}
+            </SimpleGrid>
+          </ModalBody>
+
+          <ModalFooter>
+            <ButtonGroup>
+              <Button disabled={!dirty || saving} onClick={() => save()}>
+                Apply
+              </Button>
+              <Button disabled={saving} colorScheme="blue" type="submit">
+                Save & Finish
+              </Button>
+            </ButtonGroup>
+          </ModalFooter>
+        </form>
+      </ModalContent>
+    </Modal>
+  );
+}
+
 export function GameScreen() {
   const { gameId } = useParams();
   const navigate = useNavigate();
-  const toast = useToast();
-  const [game, setGame] = useState<GameAugmented>();
   const authCtx = useAuthContext();
+  const toast = useToast();
+  const finishRoundModal = useDisclosure();
+  const [game, setGame] = useState<GameAugmented>();
   const [showQrCode, setShowQrCode] = useState(false);
   const [showJsonData, setShowJsonData] = useState(false);
   const [loading, setLoading] = useState(true);
   const timerId = useRef<number>();
   const [error, setError] = useState('');
+  const [gameStarting, setGameStarting] = useState(false);
 
   const getGame = useCallback(() => {
     if (!gameId) {
@@ -332,6 +587,31 @@ export function GameScreen() {
     [game, currentUser]
   );
 
+  const onClickGameStart = async () => {
+    if (!game) {
+      return;
+    }
+    setGameStarting(true);
+    try {
+      let updatedGame = await startGame(game?.shortId);
+      setGame(updatedGame);
+    } catch (err) {
+      toast({
+        title: 'Failed to start game',
+        description: `${err.message || err}`,
+        status: 'error',
+      });
+    }
+    setGameStarting(false);
+  };
+
+  const onClickFinishRound = async () => {
+    if (!game) {
+      return;
+    }
+    finishRoundModal.onOpen();
+  };
+
   return (
     <Container
       maxWidth="7xl"
@@ -342,6 +622,11 @@ export function GameScreen() {
       paddingTop={100}
       paddingBottom={20}
     >
+      <FinishRoundModal
+        game={game}
+        modalState={finishRoundModal}
+        onGameUpdate={setGame}
+      />
       <VStack align="flex-start" alignItems="start" width="100%">
         {loading && <Spinner size="xl" alignSelf="center" />}
 
@@ -369,7 +654,7 @@ export function GameScreen() {
                 mb={5}
                 width={{ lg: '30%', base: 'full' }}
               >
-                <Card width="full" size="sm" mb={5}>
+                <Card className="game-ctrl-box" width="full" size="sm" mb={5}>
                   <CardBody>
                     <Flex direction="column" alignItems="start" width="full">
                       <HStack spacing={1}>
@@ -379,13 +664,16 @@ export function GameScreen() {
                           {game.name}
                         </Heading>
                       </HStack>
+
                       <Text fontSize="sm" fontWeight="normal">
                         <b>{game.players.length}</b>{' '}
                         {`player${game.players.length > 1 ? 's' : ''}`} here
                       </Text>
+
                       <Text fontSize="sm" fontWeight="normal">
                         {gameStatusText(game)}
                       </Text>
+
                       <ButtonGroup flexWrap="wrap" mt={3} size="md">
                         {showJoinGameBtn && (
                           <Tooltip
@@ -419,7 +707,10 @@ export function GameScreen() {
                                 <Button
                                   colorScheme="green"
                                   leftIcon={<IoPlay />}
-                                  disabled={!game.ableToStart}
+                                  disabled={!game.ableToStart || gameStarting}
+                                  isLoading={gameStarting}
+                                  loadingText="Start"
+                                  onClick={onClickGameStart}
                                 >
                                   Start
                                 </Button>
@@ -438,9 +729,9 @@ export function GameScreen() {
                             {game.hasStarted && (
                               <Button
                                 colorScheme="blue"
-                                leftIcon={<IoPersonAdd />}
+                                onClick={onClickFinishRound}
                               >
-                                Next Round
+                                Finish Round
                               </Button>
                             )}
                           </>

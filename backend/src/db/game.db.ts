@@ -73,7 +73,8 @@ export class GameSchema extends TimeStamps {
     if (!isDocumentArray(this.players) && this.players) {
       throw new Error('Players must be documents');
     }
-    const game = new Game(this.name!, this.owner?.toDomain(), this.shortId);
+    // TODO: better handling for this.owner nullable?
+    const game = new Game(this.name!, this.owner!.toDomain(), this.shortId);
     game.id = this._id.toHexString();
     game.players = this.players.map((p) => {
       return p.toDomain();

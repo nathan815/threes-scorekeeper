@@ -104,7 +104,11 @@ router.get(
 router.post(
   '/games',
   requiresAuth,
-  v.body('name').isString().isLength({ min: 5 }).withMessage('must be at least 5 chars'),
+  v
+    .body('name')
+    .isString()
+    .isLength({ min: 5 })
+    .withMessage('must be at least 5 chars'),
   checkRequestValidation,
   async (req, res) => {
     const game = await req.di.gameService.createGame({
@@ -220,16 +224,18 @@ router.post(
   }
 );
 
+const validateRoundParam = v.oneOf(
+  [
+    v.param('round').isInt().withMessage('not an integer').toInt(),
+    v.param('round').equals('current').withMessage('not equal to current'),
+  ],
+  "round must be 'current' or a previous round number"
+);
+
 router.put(
   '/games/:id/rounds/:round/playerResult/:userId',
   requiresAuth,
-  v.oneOf(
-    [
-      v.param('round').isInt().withMessage('not an integer').toInt(),
-      v.param('round').equals('current').withMessage('not equal to current'),
-    ],
-    "round must be 'current' or a previous round number"
-  ),
+  validateRoundParam,
   v.param('userId').isMongoId(),
   v.body('points').isInt().toInt(),
   v.body('perfectDeckCut').isBoolean({ strict: true }),
@@ -267,6 +273,67 @@ router.put(
         });
       }
       throw err;
+    }
+
+    req.di.repositories.game.update(game);
+    res.json(gameToDto(game));
+  }
+);
+
+interface PlayerResultBody {
+  results: {
+    [userId: string]: { points: number; perfectDeckCut?: boolean };
+  };
+}
+
+router.put(
+  '/games/:id/rounds/:round/playerResults',
+  requiresAuth,
+  validateRoundParam,
+  v.body('results').isObject().notEmpty(),
+  v.body('results.*.points').isInt().toInt(),
+  v.body('results.*.perfectDeckCut').optional().isBoolean({ strict: true }),
+  checkRequestValidation,
+  async (req, res) => {
+    const { round } = req.params;
+    const { results } = req.body as PlayerResultBody;
+
+    const game = await getGameOrSendFailure(req, res);
+    if (!game) {
+      return;
+    }
+
+    const userIds = Object.keys(results);
+    const users = await Promise.all(
+      userIds.map((userId) => req.di.userService.getUser(userId))
+    );
+
+    for (const [userId, result] of Object.entries(results)) {
+      const user = users.find((user) => user && user.id === userId);
+      if (!user) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          errorMessage: `User ${userId} does not exist`,
+        });
+      }
+
+      try {
+        const roundNumber = round === 'current' ? undefined : parseInt(round);
+        game.recordPlayerRoundResult(
+          user,
+          result.points,
+          result.perfectDeckCut,
+          roundNumber
+        );
+      } catch (err) {
+        if (err instanceof GameError) {
+          return res.status(StatusCodes.BAD_REQUEST).send({
+            errorMessage: err.message,
+            details: { ...err },
+            errorType: err.constructor.name,
+          });
+        }
+        throw err;
+      }
     }
 
     req.di.repositories.game.update(game);

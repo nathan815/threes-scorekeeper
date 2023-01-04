@@ -13,6 +13,7 @@ export interface Game {
   name: string;
   owner: Player;
   players: Player[];
+  currentRound: number | null;
   rounds: GameRound[];
   totalPointsByPlayer: { [id: string]: number };
   currentWinnerIds: string[];
@@ -82,7 +83,7 @@ function guestLogin({ id, secret }: { id: string; secret: string }) {
     .then((res) => res.data);
 }
 
-function createGame(name: string) {
+function createGame(name: string): Promise<Game> {
   return http
     .post(`/games`, {
       name: name,
@@ -90,17 +91,47 @@ function createGame(name: string) {
     .then((res) => res.data);
 }
 
-function joinGame(shortId: string) {
-  return http.post(`/games/${shortId}/join`).then((res) => res.data);
+function joinGame(gameId: string): Promise<Game> {
+  return http.post(`/games/${gameId}/join`).then((res) => res.data);
+}
+
+function startGame(gameId: string): Promise<Game> {
+  return http.post(`/games/${gameId}/start`).then((res) => res.data);
+}
+
+function completeCurrentRound(gameId: string): Promise<Game> {
+  return http
+    .post(`/games/${gameId}/rounds/current/end`)
+    .then((res) => res.data);
+}
+
+export interface PlayerResultInput {
+  [id: string]: {
+    points?: number;
+    perfectDeckCut?: boolean;
+  };
+}
+function recordPlayerResults(
+  gameId: string,
+  playerResults: PlayerResultInput
+): Promise<Game> {
+  return http
+    .put(`/games/${gameId}/rounds/current/playerResults`, {
+      results: playerResults,
+    })
+    .then((res) => res.data);
 }
 
 export const api = {
   getAuthState,
   guestLogin,
   guestRegister,
+  createGame,
   getGame,
   joinGame,
-  createGame,
+  startGame,
+  completeCurrentRound,
+  recordPlayerResults,
 };
 
 export class ApiError extends Error {

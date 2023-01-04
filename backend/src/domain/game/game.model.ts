@@ -23,7 +23,7 @@ export class Game {
 
   constructor(
     public name: string,
-    public owner: User | undefined,
+    public owner: User,
     public shortId: string = generateShortId()
   ) {
     if (owner) {
@@ -54,11 +54,11 @@ export class Game {
   }
 
   /**
-   * The current winner (player with least amount of points).
+   * The current winner (player with least amount of points) once there is at least one finished
    * Multiple players will be returned when there is a tie.
    * */
   get currentWinners(): User[] {
-    if (this.stage == GameStage.Pre) {
+    if (this.stage == GameStage.Pre || this.rounds.length <= 1) {
       return [];
     }
 
@@ -112,7 +112,7 @@ export class Game {
       .filter((round) => includeUnfinished || round.isFinished)
       .map((round) => {
         const result = round.playerResults[player.id];
-        return result ? result.cardPoints + (result.perfectCutBonus || 0) : 0;
+        return result ? (result.cardPoints || 0) + (result.perfectCutBonus || 0) : 0;
       })
       .reduce((prev, cur) => prev + cur, 0);
   }
@@ -261,7 +261,7 @@ export interface PlayerResultMap {
 export interface PlayerRoundResult {
   userId: string;
   cardPoints: number;
-  perfectCutBonus: number;
+  perfectCutBonus?: number;
 }
 
 export class GameError extends Error {

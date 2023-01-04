@@ -1,5 +1,15 @@
-import { api, Game, GameRound, Player, PlayerResult } from '../api';
+import {
+  api,
+  Game,
+  GameRound,
+  Player,
+  PlayerResult,
+  PlayerResultInput,
+} from '../api';
 import { sleep } from '../utils/general';
+
+const START_ROUND = 3;
+const END_ROUND = 13;
 
 export interface PlayerAugmented extends Player {
   isHost: boolean;
@@ -22,14 +32,39 @@ export interface GameRoundAugmented extends GameRound {
 
 export interface GameAugmented extends Game {
   rounds: GameRoundAugmented[];
-  currentRound?: GameRoundAugmented | null;
+  currentRoundObj?: GameRoundAugmented | null;
   players: PlayerAugmented[];
   hasStarted: boolean;
   ableToStart: boolean;
 }
 
-const START_ROUND = 3;
-const END_ROUND = 13;
+/**
+ * Fetches game from API. If data is unchanged, the exact same object reference is returned as previous.
+ * @param id Short game ID ("join code")
+ */
+export async function getGameCached(id: string): Promise<GameAugmented> {
+  return augmentAndCacheGame(await api.getGame(id));
+}
+
+export async function startGame(id: string): Promise<GameAugmented> {
+  return augmentAndCacheGame(await api.startGame(id));
+}
+
+export async function joinGame(id: string): Promise<GameAugmented> {
+  return augmentAndCacheGame(await api.joinGame(id));
+}
+
+export async function completeCurrentRound(id: string): Promise<GameAugmented> {
+  return augmentAndCacheGame(await api.completeCurrentRound(id));
+}
+
+export async function recordPlayerResults(
+  id: string,
+  results: PlayerResultInput
+): Promise<GameAugmented> {
+  return augmentAndCacheGame(await api.recordPlayerResults(id, results));
+}
+
 
 /**
  * Augments a game object from API with additional computed details.
@@ -41,7 +76,7 @@ function augmentGame(game: Game): GameAugmented {
 
     for (const [id, result] of Object.entries(round.playerResults)) {
       const bonusPoints = parseInt(result.perfectCutBonus as string) || 0;
-      const netPoints = result.cardPoints + bonusPoints;
+      const netPoints = (result.cardPoints || 0) + bonusPoints;
       const prevTotal = runningTotals[id] || 0;
       runningTotals[id] = prevTotal + netPoints;
       playerResults[id] = {
@@ -68,7 +103,7 @@ function augmentGame(game: Game): GameAugmented {
 
   // Add rounds not yet started
   for (
-    let i = Math.max(START_ROUND, augmentedRounds.length + 1);
+    let i = Math.max(START_ROUND, (currentRound?.cardRank || 0) + 1);
     i <= END_ROUND;
     i++
   ) {
@@ -91,7 +126,7 @@ function augmentGame(game: Game): GameAugmented {
 
   return {
     ...game,
-    currentRound,
+    currentRoundObj: currentRound,
     rounds: augmentedRounds,
     players: augmentedPlayers,
     hasStarted: Boolean(game.startedAt),
@@ -99,18 +134,17 @@ function augmentGame(game: Game): GameAugmented {
   };
 }
 
-let gameCache: GameAugmented | null = null;
+let gameCache: { [id: string]: GameAugmented } = {};
 
-/**
- * Fetches game from API. If data is unchanged, the exact same object reference is returned as previous.
- * @param id Short game ID ("join code")
- */
-export async function getGameCached(id: string): Promise<GameAugmented> {
-  const game = augmentGame(await api.getGame(id));
-  // await sleep(2000);
-  if (gameCache != null && JSON.stringify(game) === JSON.stringify(gameCache)) {
-    return gameCache;
+function augmentAndCacheGame(game: Game): GameAugmented {
+  const augmented = augmentGame(game);
+  if (
+    gameCache[game.shortId] &&
+    JSON.stringify(augmented) === JSON.stringify(gameCache[game.shortId])
+  ) {
+    return gameCache[game.shortId];
   }
-  gameCache = game;
-  return game;
+  console.log('CACHE MISS');
+  gameCache[game.shortId] = augmented;
+  return augmented;
 }
