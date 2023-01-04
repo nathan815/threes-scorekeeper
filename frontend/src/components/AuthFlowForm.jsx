@@ -142,6 +142,8 @@ export function AuthFlowForm() {
                 value={displayNameInput}
                 onChange={(e) => setDisplayNameInput(e.target.value)}
                 autoFocus
+                minLength={3}
+                maxLength={15}
               />
               {option !== 'guest' && (
                 <FormHelperText>

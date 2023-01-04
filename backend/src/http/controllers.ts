@@ -30,7 +30,13 @@ router.get('/auth/state', (req, res) => {
 router.post(
   '/auth/guest/register',
   requiresNoAuth,
-  v.body('displayName').isString().notEmpty(),
+  v
+    .body('displayName')
+    .isString()
+    .notEmpty()
+    .withMessage('must be a string')
+    .isLength({ min: 3, max: 15 })
+    .withMessage('must be between 3 and 15 chars long'),
   checkRequestValidation,
   async (req, res) => {
     const user = await req.di.userService.createGuestUser({
@@ -106,6 +112,7 @@ router.post(
   requiresAuth,
   v
     .body('name')
+    .trim()
     .isString()
     .isLength({ min: 5 })
     .withMessage('must be at least 5 chars'),
@@ -151,7 +158,7 @@ interface UpdateGameBody {
 router.patch(
   '/games/:id',
   requiresAuth,
-  v.body('name').isString().isLength({ min: 5 }).optional(),
+  v.body('name').isString().isLength({ min: 5 }).optional().trim(),
   v.body('ownerId').isString().optional(),
   checkRequestValidation,
   async (req, res) => {
