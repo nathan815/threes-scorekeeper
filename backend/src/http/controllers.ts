@@ -192,10 +192,9 @@ router.patch(
 
     if (updated) {
       req.di.repositories.game.update(game);
-      res.status(StatusCodes.OK).json(gameToDto(game));
-    } else {
-      res.status(StatusCodes.NOT_MODIFIED).json();
     }
+
+    res.status(StatusCodes.OK).json(gameToDto(game));
   }
 );
 

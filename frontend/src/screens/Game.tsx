@@ -38,6 +38,7 @@ import {
   ModalFooter,
   FormLabel,
   FormControl,
+  Input,
   NumberInput,
   NumberInputField,
   NumberDecrementStepper,
@@ -60,6 +61,8 @@ import { BsChevronDoubleRight } from 'react-icons/bs';
 import {
   IoCaretDown,
   IoCheckmark,
+  IoCheckmarkCircle,
+  IoCheckmarkCircleSharp,
   IoEllipsisHorizontalOutline,
   IoEnter,
   IoHourglass,
@@ -432,23 +435,14 @@ function FinishRoundModal(props: {
             <Alert status="info" mt={3} mb={5} size="sm" fontSize="sm">
               <AlertIcon />
               <AlertDescription>
-                If the dealer did a <i>perfect cut</i> of the deck at start of
-                this round, check the box to award the bonus.
+                If the dealer cut the deck perfectly at the start of
+                the round, check the box to award the bonus.
               </AlertDescription>
             </Alert>
 
             <SimpleGrid minChildWidth="35%" spacing={5}>
               {game.players.map((player) => {
                 const points = playerPoints[player.id];
-                // console.log(
-                //   player.displayName,
-                //   points,
-                //   typeof points,
-                //   'undefined?',
-                //   points === undefined,
-                //   'null?',
-                //   points === null
-                // );
                 const cutBonus = playerPerfectCut[player.id];
                 return (
                   <VStack key={player.id}>
@@ -590,6 +584,80 @@ function TransferOwnershipModal(props: {
   );
 }
 
+function ChangeGameNameModal(props: {
+  game: GameAugmented;
+  modalState: UseDisclosureProps;
+  onGameUpdate: (game: GameAugmented) => void;
+}) {
+  const { game, modalState, onGameUpdate } = props;
+  const toast = useToast();
+  const modal = convertDisclosureProps(modalState);
+  const [name, setName] = useState(game.name);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (modal.isOpen) {
+      setName(game.name);
+    }
+  }, [modal.isOpen, game.name]);
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setSaving(true);
+      const updated = await updateGame(game.shortId, { name: name });
+      if (updated) {
+        onGameUpdate(updated);
+      }
+      toast({
+        description: 'Saved',
+        status: 'success',
+      });
+      modal.onClose();
+    } catch (error) {
+      toast({ description: `${error}`})
+    }
+    finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Modal {...modal}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>
+          Name
+          <ModalCloseButton />
+        </ModalHeader>
+        <form onSubmit={onSubmit}>
+          <ModalBody>
+            <FormControl>
+              <Input
+                placeholder="Select new host..."
+                aria-label="Select new host to transfer ownership to"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                autoFocus={true}
+              />
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <ButtonGroup>
+              <Button type="button" onClick={modal.onClose}>
+                Cancel
+              </Button>
+              <Button type="submit" colorScheme="blue" isLoading={saving}>
+                Save
+              </Button>
+            </ButtonGroup>
+          </ModalFooter>
+        </form>
+      </ModalContent>
+    </Modal>
+  );
+}
+
 export function GameScreen() {
   const { gameId } = useParams();
   const navigate = useNavigate();
@@ -597,6 +665,7 @@ export function GameScreen() {
   const toast = useToast();
   const finishRoundModal = useDisclosure();
   const transferOwnershipModal = useDisclosure();
+  const changeNameModal = useDisclosure();
   const [game, setGame] = useState<GameAugmented>();
   const [showQrCode, setShowQrCode] = useState(false);
   const [showJsonData, setShowJsonData] = useState(false);
@@ -645,8 +714,8 @@ export function GameScreen() {
   }, [getGame]);
 
   useEffect(() => {
-    setShowQrCode(Boolean(game && !game.startedAt));
-  }, [game]);
+    setShowQrCode(!loading && !Boolean(game?.startedAt));
+  }, [loading, game?.startedAt]);
 
   const gameRounds = game?.rounds;
   const tableData = useMemo(() => gameRounds || [], [gameRounds]);
@@ -709,6 +778,11 @@ export function GameScreen() {
           <FinishRoundModal
             game={game}
             modalState={finishRoundModal}
+            onGameUpdate={setGame}
+          />
+          <ChangeGameNameModal
+            game={game}
+            modalState={changeNameModal}
             onGameUpdate={setGame}
           />
           <TransferOwnershipModal
@@ -821,6 +895,7 @@ export function GameScreen() {
                               <Button
                                 colorScheme="blue"
                                 onClick={onClickFinishRound}
+                                leftIcon={<IoCheckmarkCircleSharp />}
                               >
                                 Finish Round
                               </Button>
@@ -836,9 +911,7 @@ export function GameScreen() {
                             {currentPlayer?.isHost && (
                               <>
                                 <MenuItem
-                                  onClick={() =>
-                                    toast({ title: 'Rename game WIP' })
-                                  }
+                                  onClick={() => changeNameModal.onOpen()}
                                 >
                                   Rename Game
                                 </MenuItem>
