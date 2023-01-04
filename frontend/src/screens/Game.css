@@ -4,6 +4,18 @@
   padding-right: 4px;
 }
 
+.game-table tr.status-notStarted {
+  opacity: 0.5;
+}
+.game-table tr.status-inProgress,
+.game-table td.current-user {
+  background: rgba(255, 255, 255, 0.05);
+}
+.chakra-ui-light .game-table tr.status-inProgress,
+.chakra-ui-light .game-table td.current-user {
+  background: rgba(0, 0, 0, 0.03);
+}
+
 .spin-infinite {
   animation: spin 4s ease infinite;
   animation-delay: 1s;
@@ -26,7 +38,6 @@
   width: 100%;
   position: relative;
   max-width: 310px;
-  margin-bottom: 30px;
 }
 
 .current-card-container::after {

@@ -48,8 +48,10 @@ import {
   Select,
   AvatarBadge,
   useColorMode,
+  BoxProps,
+  Tag,
 } from '@chakra-ui/react';
-import { createColumnHelper } from '@tanstack/react-table';
+import { CoreRow, createColumnHelper } from '@tanstack/react-table';
 import { mapValues } from 'lodash';
 import React, {
   useCallback,
@@ -60,11 +62,10 @@ import React, {
 } from 'react';
 import { IconBaseProps } from 'react-icons';
 import { BsChevronDoubleRight } from 'react-icons/bs';
+import { SlPencil } from 'react-icons/sl';
 import {
   IoCaretDown,
   IoCheckmark,
-  IoCheckmarkCircle,
-  IoCheckmarkCircleSharp,
   IoEllipsisHorizontalOutline,
   IoEnter,
   IoHourglass,
@@ -77,8 +78,15 @@ import { MdStars } from 'react-icons/md';
 import QRCode from 'react-qr-code';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ApiError, PlayerResultInput } from '../api';
-import { useAuthContext } from '../auth/authContext';
-import { ALL_SUITS, CardIcon, CardSuit } from '../components/CardIcon';
+import { AuthUser, useAuthContext } from '../auth/authContext';
+import { CardIcon } from '../components/CardIcon';
+import {
+  ALL_SUITS,
+  cardRankName,
+  CardRankNumber,
+  cardRankShortName,
+  CardSuit,
+} from '../utils/card';
 import { DataTable } from '../components/DataTable';
 import {
   completeCurrentRound,
@@ -98,26 +106,30 @@ import './Game.css';
 interface PlayerAvatarProps extends AvatarProps {
   player: PlayerAugmented;
   showHostBadge?: boolean;
+  showShadow?: boolean;
 }
 function PlayerAvatar({
   player,
   showHostBadge = false,
+  showShadow = false,
   ...props
 }: PlayerAvatarProps) {
+  const shadow = useColorModeValue('0 0 5px #ccc', '0 0 5px #222');
   return (
     <Avatar
       name={player.displayName}
       src={`https://www.gravatar.com/avatar/${player.gravatarHash}?d=robohash&size=1`}
       bg="white"
-      boxShadow={useColorModeValue('0 0 5px #ccc', '0 0 5px #222')}
+      boxShadow={showShadow ? shadow : undefined}
       {...props}
     >
       {player.isHost && showHostBadge && (
         <AvatarBadge
           boxSize="1.5em"
-          bg="blue.300"
+          bg="blue.500"
           fontSize="0.8em"
           aria-label="Host"
+          color="white"
         >
           H
         </AvatarBadge>
@@ -163,26 +175,28 @@ const roundStatusDisplays = {
   },
 };
 
-function rankToName(round: GameRoundAugmented): string | undefined {
-  return {
-    11: 'Jacks',
-    12: 'Queens',
-    13: 'Kings',
-  }[round.cardRank];
+function roundRankName(
+  round: GameRoundAugmented,
+  plural = false
+): string | undefined {
+  return cardRankName(round.cardRank as CardRankNumber, plural);
+}
+
+function roundRankShortName(round: GameRoundAugmented): string {
+  return cardRankShortName(round.cardRank as CardRankNumber);
 }
 
 function RoundDescriptionCell({ round }: { round: GameRoundAugmented }) {
   const statusDisplay = roundStatusDisplays[round.status];
-  const name = rankToName(round);
   return (
     <Tooltip
-      label={`${name || round.cardRank} - ${statusDisplay.label}`}
+      label={`${roundRankName(round)} - ${statusDisplay.label}`}
       placement="right"
       shouldWrapChildren={true}
     >
       <HStack cursor="default">
         <GameRoundCard round={round} size={35} />
-        <Text>{name ? name.substring(0, 1) : round.cardRank}</Text>
+        <Text>{roundRankShortName(round)}</Text>
         {statusDisplay.icon && statusDisplay.icon()}
       </HStack>
     </Tooltip>
@@ -208,7 +222,10 @@ function PlayerResultCell({ result }: { result: PlayerResultAugmented }) {
   );
 }
 
-function buildRoundsTableColumns(game: GameAugmented) {
+function buildRoundsTableColumns(
+  game: GameAugmented,
+  currentUser?: AuthUser | null
+) {
   const columnHelper = createColumnHelper<GameRoundAugmented>();
   const playerCols = game.players.map((player) => {
     return columnHelper.accessor((round) => round.playerResults[player.id], {
@@ -225,6 +242,15 @@ function buildRoundsTableColumns(game: GameAugmented) {
         return aVal - bVal;
       },
       cell: (cell) => <PlayerResultCell result={cell.getValue()} />,
+      meta: {
+        cellProps: () => ({
+          'data-playerid': player.id,
+          className:
+            game.players.length > 1 && player.id === currentUser?.id
+              ? 'current-user'
+              : '',
+        }),
+      },
     });
   });
 
@@ -258,7 +284,10 @@ function GameQRCode({ id, ...boxProps }) {
   );
 }
 
-function CurrentRoundCard({ game }: { game: GameAugmented }) {
+function CurrentRoundCard({
+  game,
+  ...boxProps
+}: { game: GameAugmented } & BoxProps) {
   const [suitIdx, setSuitIdx] = useState(0);
   const cardDiv = useRef<HTMLDivElement>(null);
   const round = game?.currentRoundObj;
@@ -295,30 +324,33 @@ function CurrentRoundCard({ game }: { game: GameAugmented }) {
   }
 
   return (
-    <Box className="current-card-container" height={height}>
-      {ALL_SUITS.map((suit, idx) => (
-        <Box
-          key={idx}
-          className={`current-card ${colorMode} ${suit} ${
-            suitColor[suit] || ''
-          } ${idx === suitIdx ? 'active' : 'nonactive'}`}
-          ref={cardDiv}
-        >
-          <GameRoundCard
-            round={round}
-            cardSuit={suit}
-            size="100%"
-            color="#fff"
-          />
-        </Box>
-      ))}
-    </Box>
+    <>
+      <Tag mb={3}>{`${roundRankName(round, true)}`} are wild</Tag>
+      <Box className="current-card-container" height={height} {...boxProps}>
+        {ALL_SUITS.map((suit, idx) => (
+          <Box
+            key={idx}
+            className={`current-card ${colorMode} ${suit} ${
+              suitColor[suit] || ''
+            } ${idx === suitIdx ? 'active' : 'nonactive'}`}
+            ref={cardDiv}
+          >
+            <GameRoundCard
+              round={round}
+              cardSuit={suit}
+              size="100%"
+              color="#fff"
+            />
+          </Box>
+        ))}
+      </Box>
+    </>
   );
 }
 
 const tableMeta = {
-  rowStyle: (row: any) => ({
-    opacity: row.original.status === 'notStarted' ? 0.5 : 1,
+  rowProps: (row: CoreRow<GameRoundAugmented>) => ({
+    className: `status-${row.original.status}`,
   }),
 };
 
@@ -415,7 +447,14 @@ function FinishRoundModal(props: {
           toast({
             description: 'Round finished',
             status: 'success',
-            position: 'bottom-right',
+            position: 'top',
+          });
+        } else {
+          toast({
+            description: 'Points saved',
+            status: 'success',
+            position: 'top',
+            duration: 2000,
           });
         }
       }
@@ -424,6 +463,7 @@ function FinishRoundModal(props: {
         title: 'Failed to save points',
         description: `${error}`,
         status: 'error',
+        position: 'top',
       });
     } finally {
       setSaving(false);
@@ -564,6 +604,7 @@ function TransferOwnershipModal(props: {
   const modal = convertDisclosureProps(modalState);
   const [selectedOwner, setSelectedOwner] = useState('');
   const [confirmed, setConfirmed] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (modal.isOpen) {
@@ -574,10 +615,22 @@ function TransferOwnershipModal(props: {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    onGameUpdate(await updateGame(game.shortId, { ownerId: selectedOwner }));
+    setSaving(true);
+    try {
+      onGameUpdate(await updateGame(game.shortId, { ownerId: selectedOwner }));
+    } catch (err) {
+      toast({
+        description: 'Error transferring ownership',
+        status: 'error',
+        position: 'top',
+      });
+    } finally {
+      setSaving(false);
+    }
     toast({
       description: 'Game ownership transferred.',
       status: 'success',
+      position: 'top',
     });
     modal.onClose();
   };
@@ -615,7 +668,7 @@ function TransferOwnershipModal(props: {
               >
                 <Text>
                   I understand I will lose all host capabilities after clicking
-                  on Transfer.
+                  on "Transfer" below.
                 </Text>
               </Checkbox>
             </FormControl>
@@ -628,7 +681,8 @@ function TransferOwnershipModal(props: {
               <Button
                 type="submit"
                 colorScheme="red"
-                disabled={!confirmed || !selectedOwner}
+                disabled={!confirmed || !selectedOwner || saving}
+                isLoading={saving}
               >
                 Transfer
               </Button>
@@ -666,12 +720,14 @@ function ChangeGameNameModal(props: {
         onGameUpdate(updated);
       }
       toast({
-        description: 'Saved',
+        description: 'Saved changes',
         status: 'success',
+        position: 'top',
+        duration: 2000,
       });
       modal.onClose();
     } catch (error) {
-      toast({ description: `${error}` });
+      toast({ description: `${error}`, position: 'top' });
     } finally {
       setSaving(false);
     }
@@ -782,14 +838,15 @@ export function GameScreen() {
     [game?.players]
   );
 
+  const currentUser = authCtx?.user;
+
   const gameRounds = game?.rounds;
   const tableData = useMemo(() => gameRounds || [], [gameRounds]);
   const tableColumns = useMemo(
-    () => (game ? buildRoundsTableColumns(game) : []),
-    [game]
+    () => (game ? buildRoundsTableColumns(game, currentUser) : []),
+    [game, currentUser]
   );
 
-  const currentUser = authCtx?.user;
   const currentPlayer: PlayerAugmented | null | undefined = useMemo(
     () =>
       game && currentUser && game.players.find((p) => p.id === currentUser?.id),
@@ -863,7 +920,7 @@ export function GameScreen() {
         {!loading && !game && <Heading>{gameId}</Heading>}
 
         {error && (
-          <Alert status="error">
+          <Alert status="error" mb={5}>
             <AlertIcon />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
@@ -905,7 +962,13 @@ export function GameScreen() {
                         {gameStatusText(game)}
                       </Text>
 
-                      <ButtonGroup flexWrap="wrap" mt={3} size="md">
+                      <Flex
+                        className="game-ctrl-buttons"
+                        justifyContent="start"
+                        flexWrap="wrap"
+                        gap={2}
+                        mt={3}
+                      >
                         {showJoinGameBtn && (
                           <Tooltip
                             label={
@@ -961,7 +1024,7 @@ export function GameScreen() {
                               <Button
                                 colorScheme="blue"
                                 onClick={onClickFinishRound}
-                                leftIcon={<IoCheckmarkCircleSharp />}
+                                leftIcon={<SlPencil />}
                               >
                                 Record Points
                               </Button>
@@ -994,7 +1057,7 @@ export function GameScreen() {
                             <MenuItem
                               onClick={() => setShowQrCode(!showQrCode)}
                             >
-                              Toggle QR Code
+                              {showQrCode ? 'Hide QR Code' : 'Show QR Code'}
                             </MenuItem>
 
                             <MenuItem
@@ -1004,12 +1067,12 @@ export function GameScreen() {
                             </MenuItem>
                           </MenuList>
                         </Menu>
-                      </ButtonGroup>
+                      </Flex>
                     </Flex>
                   </CardBody>
                 </Card>
 
-                <CurrentRoundCard game={game} />
+                <CurrentRoundCard game={game} mb={5} />
 
                 <Flex
                   direction="column"
@@ -1024,7 +1087,9 @@ export function GameScreen() {
                     mb={5}
                   />
 
-                  {(!game.hasStarted || currentPlayer?.isHost) && (
+                  {(!game.hasStarted ||
+                    currentPlayer?.isHost ||
+                    showQrCode) && (
                     <Button
                       size="sm"
                       leftIcon={<IoQrCodeOutline />}
@@ -1047,6 +1112,7 @@ export function GameScreen() {
                     <SimpleGrid minChildWidth="100px" spacingY={5}>
                       {playersSorted.map((player) => (
                         <Tooltip
+                          key={player.id}
                           label={[
                             player.isHost ? '[Host]' : '',
                             `${player.points} points`,
@@ -1054,28 +1120,16 @@ export function GameScreen() {
                           ]
                             .filter(Boolean)
                             .join(' ')}
-                          shouldWrapChildren={true}
                         >
-                          <Box
-                            key={player.id}
-                            display="flex"
-                            alignItems="center"
-                            flexDirection="column"
-                          >
+                          <Flex direction="column" alignItems="center">
                             <PlayerAvatar
                               player={player}
                               showHostBadge={true}
+                              showShadow={true}
                               mb={1}
                             />
                             <Text fontSize="md" align="center">
                               {player.displayName}{' '}
-                              {/* {player.isHost ? (
-                              <Text as="span" color="grey">
-                                (host)
-                              </Text>
-                            ) : (
-                              ''
-                            )} */}
                             </Text>
                             <HStack
                               spacing={1}
@@ -1087,12 +1141,13 @@ export function GameScreen() {
                                 <MdStars color="gold" fontSize={21} />
                               )}
                             </HStack>
-                          </Box>
+                          </Flex>
                         </Tooltip>
                       ))}
                     </SimpleGrid>
                   </CardBody>
                 </Card>
+
                 <DataTable
                   columns={tableColumns}
                   data={tableData}

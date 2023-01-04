@@ -56,7 +56,6 @@ export function DataTable<Data extends object>({
               {headerGroup.headers.map((header) => {
                 // see https://tanstack.com/table/v8/docs/api/core/column-def#meta to type this correctly
                 const meta: any = header.column.columnDef.meta;
-                // console.log('header', header.column.id, header.column.columnDef.id);
                 return (
                   <Th
                     key={header.column.id}
@@ -89,16 +88,18 @@ export function DataTable<Data extends object>({
         </Thead>
         <Tbody>
           {table.getRowModel().rows.map((row) => {
-            const style =
-              (table.options.meta as any)?.rowStyle &&
-              (table.options.meta as any).rowStyle(row);
+            const tableMeta: any = (table.options.meta as any) || {};
+            const rowProps =
+              (tableMeta.rowProps && tableMeta.rowProps(row)) || {};
             return (
-              <Tr key={row.id} style={style}>
+              <Tr key={row.id} {...rowProps}>
                 {row.getVisibleCells().map((cell) => {
                   // see https://tanstack.com/table/v8/docs/api/core/column-def#meta to type this correctly
-                  const meta: any = cell.column.columnDef.meta;
+                  const meta: any = cell.column.columnDef.meta || {};
+                  const colProps =
+                    (meta.cellProps && meta.cellProps(cell)) || {};
                   return (
-                    <Td key={cell.id} isNumeric={meta?.isNumeric}>
+                    <Td key={cell.id} isNumeric={meta?.isNumeric} {...colProps}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

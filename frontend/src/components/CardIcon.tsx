@@ -54,8 +54,13 @@ import {
   GiCardQueenSpades,
   GiCardKingSpades,
 } from 'react-icons/gi';
+import { CardRankNumber, CardSuit } from '../utils/card';
 
-const cards = {
+export const cards: {
+  [suit in CardSuit]: {
+    [rank in CardRankNumber]: React.ComponentType;
+  };
+} = {
   diamonds: {
     1: GiCardAceDiamonds,
     2: GiCard2Diamonds,
@@ -117,10 +122,6 @@ const cards = {
     13: GiCardKingSpades,
   },
 };
-
-export type CardSuit = keyof typeof cards;
-
-export const ALL_SUITS: CardSuit[] = ['clubs', 'hearts', 'spades', 'diamonds'];
 
 interface CardIconProps {
   rank: number;

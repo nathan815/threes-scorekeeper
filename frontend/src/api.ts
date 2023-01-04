@@ -28,6 +28,7 @@ export interface GameRound {
 }
 
 export interface PlayerResult {
+  userId: string;
   cardPoints: number;
   perfectCutBonus: unknown;
 }

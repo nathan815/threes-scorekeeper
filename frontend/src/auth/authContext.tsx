@@ -10,7 +10,7 @@ type AuthFlowState = {
   finishLoginLoading: boolean;
 };
 
-type AuthUser = {
+export type AuthUser = {
   displayName: string;
   isGuest: boolean;
   id: string;
