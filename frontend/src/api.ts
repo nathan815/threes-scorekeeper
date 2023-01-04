@@ -95,6 +95,16 @@ function joinGame(gameId: string): Promise<Game> {
   return http.post(`/games/${gameId}/join`).then((res) => res.data);
 }
 
+export interface UpdateGameChanges {
+  id: string;
+  name?: string;
+  ownerId?: string;
+}
+function updateGame(updates: UpdateGameChanges): Promise<Game> {
+  const { id, ...updatePayload } = updates;
+  return http.patch(`/games/${id}`, updatePayload).then((res) => res.data);
+}
+
 function startGame(gameId: string): Promise<Game> {
   return http.post(`/games/${gameId}/start`).then((res) => res.data);
 }
@@ -129,6 +139,7 @@ export const api = {
   createGame,
   getGame,
   joinGame,
+  updateGame,
   startGame,
   completeCurrentRound,
   recordPlayerResults,

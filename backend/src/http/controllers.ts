@@ -161,6 +161,12 @@ router.patch(
       return;
     }
 
+    if (req.user!.id !== game.owner.id) {
+      return res.status(StatusCodes.FORBIDDEN).json({
+        errorMessage: 'You are not the owner of this game',
+      });
+    }
+
     let updated = false;
 
     try {
@@ -186,7 +192,7 @@ router.patch(
 
     if (updated) {
       req.di.repositories.game.update(game);
-      res.status(StatusCodes.OK).json(game);
+      res.status(StatusCodes.OK).json(gameToDto(game));
     } else {
       res.status(StatusCodes.NOT_MODIFIED).json();
     }

@@ -5,6 +5,7 @@ import {
   Player,
   PlayerResult,
   PlayerResultInput,
+  UpdateGameChanges,
 } from '../api';
 import { sleep } from '../utils/general';
 
@@ -54,6 +55,13 @@ export async function joinGame(id: string): Promise<GameAugmented> {
   return augmentAndCacheGame(await api.joinGame(id));
 }
 
+export async function updateGame(
+  id: string,
+  updates: Omit<UpdateGameChanges, 'id'>
+): Promise<GameAugmented> {
+  return augmentAndCacheGame(await api.updateGame({ id, ...updates }));
+}
+
 export async function completeCurrentRound(id: string): Promise<GameAugmented> {
   return augmentAndCacheGame(await api.completeCurrentRound(id));
 }
@@ -64,7 +72,6 @@ export async function recordPlayerResults(
 ): Promise<GameAugmented> {
   return augmentAndCacheGame(await api.recordPlayerResults(id, results));
 }
-
 
 /**
  * Augments a game object from API with additional computed details.

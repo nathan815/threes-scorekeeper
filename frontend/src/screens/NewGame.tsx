@@ -46,7 +46,7 @@ export function NewGame() {
       try {
         const game = await api.createGame(name);
         toast({
-          description: 'Game created successfully!',
+          description: 'Game created',
           status: 'success',
           position: 'bottom-right',
         });

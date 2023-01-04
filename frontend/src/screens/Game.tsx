@@ -44,9 +44,10 @@ import {
   NumberIncrementStepper,
   NumberInputStepper,
   Checkbox,
+  Select,
 } from '@chakra-ui/react';
 import { createColumnHelper } from '@tanstack/react-table';
-import { mapValues} from 'lodash';
+import { mapValues } from 'lodash';
 import React, {
   useCallback,
   useEffect,
@@ -83,7 +84,9 @@ import {
   PlayerResultAugmented,
   recordPlayerResults,
   startGame,
+  updateGame,
 } from '../services/game';
+import { convertDisclosureProps } from '../utils/disclosure';
 
 import './Game.css';
 
@@ -320,13 +323,14 @@ async function submitPlayerResults(
 }
 
 function FinishRoundModal(props: {
-  game?: GameAugmented;
+  game: GameAugmented;
   modalState: UseDisclosureProps;
   onGameUpdate: (game: GameAugmented) => void;
 }) {
-  const toast = useToast();
   const { game, onGameUpdate } = props;
-  // console.log('FinishRoundModal', game);
+  const toast = useToast();
+  const modal = convertDisclosureProps(props.modalState);
+  const { isOpen, onClose } = modal;
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [playerPoints, setPlayerPoints] = useState<PlayerPointsState>({});
@@ -335,17 +339,7 @@ function FinishRoundModal(props: {
 
   const anyPerfectCut = Object.values(playerPerfectCut).some((v) => v === true);
 
-  const modalState = {
-    ...props.modalState,
-    isOpen: props.modalState.isOpen || false,
-    onClose: () => props.modalState.onClose && props.modalState.onClose(),
-  };
-  const { isOpen, onClose } = modalState;
-
   const save = async (complete = false) => {
-    if (!game) {
-      return;
-    }
     setSaving(true);
     try {
       const updatedGame = await submitPlayerResults(
@@ -360,6 +354,11 @@ function FinishRoundModal(props: {
 
         if (complete) {
           onGameUpdate(await completeCurrentRound(game.shortId));
+          toast({
+            description: 'Round finished',
+            status: 'success',
+            position: 'bottom-right',
+          });
         }
       }
     } catch (error) {
@@ -418,11 +417,7 @@ function FinishRoundModal(props: {
   };
 
   return (
-    <Modal
-      {...modalState}
-      blockScrollOnMount={false}
-      closeOnOverlayClick={false}
-    >
+    <Modal {...modal} blockScrollOnMount={false} closeOnOverlayClick={false}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
@@ -509,12 +504,99 @@ function FinishRoundModal(props: {
   );
 }
 
+function TransferOwnershipModal(props: {
+  game: GameAugmented;
+  modalState: UseDisclosureProps;
+  onGameUpdate: (game: GameAugmented) => void;
+}) {
+  const { game, modalState, onGameUpdate } = props;
+  const toast = useToast();
+  const modal = convertDisclosureProps(modalState);
+  const [selectedOwner, setSelectedOwner] = useState('');
+  const [confirmed, setConfirmed] = useState(false);
+
+  useEffect(() => {
+    if (modal.isOpen) {
+      setSelectedOwner('');
+      setConfirmed(false);
+    }
+  }, [modal.isOpen]);
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    onGameUpdate(await updateGame(game.shortId, { ownerId: selectedOwner }));
+    toast({
+      description: 'Game ownership transferred.',
+      status: 'success',
+    });
+    modal.onClose();
+  };
+
+  return (
+    <Modal {...modal}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>
+          Transfer Ownership
+          <ModalCloseButton />
+        </ModalHeader>
+        <form onSubmit={onSubmit}>
+          <ModalBody>
+            <FormControl>
+              <Select
+                placeholder="Select new host..."
+                aria-label="Select new host to transfer ownership to"
+                value={selectedOwner}
+                onChange={(e) => setSelectedOwner(e.target.value)}
+              >
+                {game?.players
+                  .filter((p) => p.id !== game.owner.id)
+                  .map((player) => (
+                    <option value={player.id} key={player.id}>
+                      {player.displayName}
+                    </option>
+                  ))}
+              </Select>
+            </FormControl>
+            <FormControl mt={5}>
+              <Checkbox
+                isChecked={confirmed}
+                onChange={(e) => setConfirmed(e.target.checked)}
+              >
+                <Text>
+                  I understand I will lose all host capabilities after clicking
+                  on Transfer.
+                </Text>
+              </Checkbox>
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <ButtonGroup>
+              <Button type="button" onClick={modal.onClose}>
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                colorScheme="red"
+                disabled={!confirmed || !selectedOwner}
+              >
+                Transfer
+              </Button>
+            </ButtonGroup>
+          </ModalFooter>
+        </form>
+      </ModalContent>
+    </Modal>
+  );
+}
+
 export function GameScreen() {
   const { gameId } = useParams();
   const navigate = useNavigate();
   const authCtx = useAuthContext();
   const toast = useToast();
   const finishRoundModal = useDisclosure();
+  const transferOwnershipModal = useDisclosure();
   const [game, setGame] = useState<GameAugmented>();
   const [showQrCode, setShowQrCode] = useState(false);
   const [showJsonData, setShowJsonData] = useState(false);
@@ -622,11 +704,20 @@ export function GameScreen() {
       paddingTop={100}
       paddingBottom={20}
     >
-      <FinishRoundModal
-        game={game}
-        modalState={finishRoundModal}
-        onGameUpdate={setGame}
-      />
+      {game && (
+        <>
+          <FinishRoundModal
+            game={game}
+            modalState={finishRoundModal}
+            onGameUpdate={setGame}
+          />
+          <TransferOwnershipModal
+            game={game}
+            modalState={transferOwnershipModal}
+            onGameUpdate={setGame}
+          />
+        </>
+      )}
       <VStack align="flex-start" alignItems="start" width="100%">
         {loading && <Spinner size="xl" alignSelf="center" />}
 
@@ -743,13 +834,22 @@ export function GameScreen() {
                           </MenuButton>
                           <MenuList>
                             {currentPlayer?.isHost && (
-                              <MenuItem
-                                onClick={() =>
-                                  toast({ title: 'Rename game WIP' })
-                                }
-                              >
-                                Rename Game
-                              </MenuItem>
+                              <>
+                                <MenuItem
+                                  onClick={() =>
+                                    toast({ title: 'Rename game WIP' })
+                                  }
+                                >
+                                  Rename Game
+                                </MenuItem>
+                                <MenuItem
+                                  onClick={() =>
+                                    transferOwnershipModal.onOpen()
+                                  }
+                                >
+                                  Transfer Ownership
+                                </MenuItem>
+                              </>
                             )}
 
                             <MenuItem
