@@ -11,12 +11,52 @@
 
 @keyframes spin {
   0% {
-    transform:rotate(-180deg); 
+    transform: rotate(-180deg);
   }
-  25% { 
-      transform:rotate(0deg); 
-  } 
-  100% { 
-      transform:rotate(0deg); 
+  25% {
+    transform: rotate(0deg);
   }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+/* Current Card Display */
+.current-card-container {
+  width: 100%;
+  position: relative;
+  max-width: 310px;
+  margin-bottom: 30px;
+}
+
+.current-card-container::after {
+  content: '';
+  display: block;
+  clear: both;
+}
+
+.current-card {
+  position: absolute;
+  width: 100%;
+  opacity: 0;
+  margin-top: 0;
+  margin-bottom: 5px;
+  display: inline-block;
+  transition: opacity ease-in-out 2s;
+}
+.current-card svg {
+  width: 100%;
+  border-radius: 10%;
+}
+.current-card.light svg {
+  border: 1px solid #ddd;
+}
+.current-card.red svg {
+  background: #cb2d2d;
+}
+.current-card.light.black svg {
+  background: #000;
+}
+.current-card.active {
+  opacity: 1;
 }

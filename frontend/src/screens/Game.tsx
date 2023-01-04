@@ -46,6 +46,8 @@ import {
   NumberInputStepper,
   Checkbox,
   Select,
+  AvatarBadge,
+  useColorMode,
 } from '@chakra-ui/react';
 import { createColumnHelper } from '@tanstack/react-table';
 import { mapValues } from 'lodash';
@@ -95,15 +97,32 @@ import './Game.css';
 
 interface PlayerAvatarProps extends AvatarProps {
   player: PlayerAugmented;
+  showHostBadge?: boolean;
 }
-function PlayerAvatar({ player, ...props }: PlayerAvatarProps) {
+function PlayerAvatar({
+  player,
+  showHostBadge = false,
+  ...props
+}: PlayerAvatarProps) {
   return (
     <Avatar
       name={player.displayName}
       src={`https://www.gravatar.com/avatar/${player.gravatarHash}?d=robohash&size=1`}
       bg="white"
+      boxShadow={useColorModeValue('0 0 5px #ccc', '0 0 5px #222')}
       {...props}
-    />
+    >
+      {player.isHost && showHostBadge && (
+        <AvatarBadge
+          boxSize="1.5em"
+          bg="blue.300"
+          fontSize="0.8em"
+          aria-label="Host"
+        >
+          H
+        </AvatarBadge>
+      )}
+    </Avatar>
   );
 }
 
@@ -112,10 +131,21 @@ function GameRoundCard({
   cardSuit = 'spades',
   ...iconProps
 }: { round?: GameRoundAugmented; cardSuit?: CardSuit } & IconBaseProps) {
+  const color = useColorModeValue('#232121', '#fff');
   if (!round) {
     return null;
   }
-  return <CardIcon rank={round.cardRank} suit={cardSuit} {...iconProps} />;
+  return (
+    <CardIcon
+      rank={round.cardRank}
+      suit={cardSuit}
+      viewBox="91 36 333 440"
+      fillOpacity={1}
+      strokeOpacity={1}
+      color={color}
+      {...iconProps}
+    />
+  );
 }
 
 const roundStatusDisplays = {
@@ -169,8 +199,8 @@ function PlayerResultCell({ result }: { result: PlayerResultAugmented }) {
   );
   return (
     <>
-      <Text color="grey" fontSize="sm" fontFamily="monospace">
-        {result.previousTotal}+{result.cardPoints || 0}
+      <Text color="grey" fontSize="md" fontFamily="monospace">
+        {result.previousTotal}+<b>{result.cardPoints || 0}</b>
         {bonus}=
       </Text>
       <Text fontSize="md">{result.newTotal}</Text>
@@ -230,34 +260,59 @@ function GameQRCode({ id, ...boxProps }) {
 
 function CurrentRoundCard({ game }: { game: GameAugmented }) {
   const [suitIdx, setSuitIdx] = useState(0);
+  const cardDiv = useRef<HTMLDivElement>(null);
   const round = game?.currentRoundObj;
+  const [height, setHeight] = useState(0);
+  const { colorMode } = useColorMode();
+
+  const suitColor: { [key in CardSuit]: string | null } = {
+    hearts: 'red',
+    diamonds: 'red',
+    clubs: 'black',
+    spades: 'black',
+  };
 
   useEffect(() => {
     if (round) {
       const changeSuit = () => {
-        setSuitIdx((cur) => (cur + 1) % ALL_SUITS.length);
+        if (document.hasFocus()) {
+          setSuitIdx((cur) => (cur + 1) % ALL_SUITS.length);
+        }
       };
       const timerId = setInterval(changeSuit, 3000);
       return () => clearTimeout(timerId);
     }
   }, [round]);
 
+  useEffect(() => {
+    if (cardDiv?.current?.offsetHeight) {
+      setHeight(cardDiv?.current?.offsetHeight);
+    }
+  }, [cardDiv?.current?.offsetHeight]);
+
   if (!round) {
     return null;
   }
 
   return (
-    <>
+    <Box className="current-card-container" height={height}>
       {ALL_SUITS.map((suit, idx) => (
         <Box
           key={idx}
-          display={idx === suitIdx ? 'block' : 'none'}
-          style={{ marginTop: 0 }}
+          className={`current-card ${colorMode} ${suit} ${
+            suitColor[suit] || ''
+          } ${idx === suitIdx ? 'active' : 'nonactive'}`}
+          ref={cardDiv}
         >
-          <GameRoundCard round={round} cardSuit={suit} size="100%" />
+          <GameRoundCard
+            round={round}
+            cardSuit={suit}
+            size="100%"
+            color="#fff"
+          />
         </Box>
       ))}
-    </>
+    </Box>
   );
 }
 
@@ -424,7 +479,7 @@ function FinishRoundModal(props: {
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
-          Finish Round
+          Record Points
           <ModalCloseButton />
         </ModalHeader>
 
@@ -435,8 +490,8 @@ function FinishRoundModal(props: {
             <Alert status="info" mt={3} mb={5} size="sm" fontSize="sm">
               <AlertIcon />
               <AlertDescription>
-                If the dealer cut the deck perfectly at the start of
-                the round, check the box to award the bonus.
+                If the dealer cut the deck perfectly at the start of the round,
+                check the box to award the bonus.
               </AlertDescription>
             </Alert>
 
@@ -454,6 +509,7 @@ function FinishRoundModal(props: {
                         }
                         onChange={(value) => onChangePoints(player.id, value)}
                         min={0}
+                        max={150}
                         isRequired={true}
                       >
                         <NumberInputField
@@ -488,7 +544,7 @@ function FinishRoundModal(props: {
                 Apply
               </Button>
               <Button disabled={saving} colorScheme="blue" type="submit">
-                Save & Finish
+                Save & Finish Round
               </Button>
             </ButtonGroup>
           </ModalFooter>
@@ -615,9 +671,8 @@ function ChangeGameNameModal(props: {
       });
       modal.onClose();
     } catch (error) {
-      toast({ description: `${error}`})
-    }
-    finally {
+      toast({ description: `${error}` });
+    } finally {
       setSaving(false);
     }
   };
@@ -656,6 +711,11 @@ function ChangeGameNameModal(props: {
       </ModalContent>
     </Modal>
   );
+}
+
+/** Returns new array of player objects sorted for ranking (smallest to largest) */
+function sortPlayersByPointsAsc(players: PlayerAugmented[]): PlayerAugmented[] {
+  return [...players].sort((p1, p2) => p1.points - p2.points);
 }
 
 export function GameScreen() {
@@ -716,6 +776,11 @@ export function GameScreen() {
   useEffect(() => {
     setShowQrCode(!loading && !Boolean(game?.startedAt));
   }, [loading, game?.startedAt]);
+
+  const playersSorted = useMemo(
+    () => sortPlayersByPointsAsc(game?.players || []),
+    [game?.players]
+  );
 
   const gameRounds = game?.rounds;
   const tableData = useMemo(() => gameRounds || [], [gameRounds]);
@@ -811,7 +876,8 @@ export function GameScreen() {
               justifyContent="space-between"
               width="100%"
             >
-              <VStack
+              <Flex
+                direction="column"
                 className="sidebar"
                 justifyContent="start"
                 alignItems="center"
@@ -897,7 +963,7 @@ export function GameScreen() {
                                 onClick={onClickFinishRound}
                                 leftIcon={<IoCheckmarkCircleSharp />}
                               >
-                                Finish Round
+                                Record Points
                               </Button>
                             )}
                           </>
@@ -926,6 +992,12 @@ export function GameScreen() {
                             )}
 
                             <MenuItem
+                              onClick={() => setShowQrCode(!showQrCode)}
+                            >
+                              Toggle QR Code
+                            </MenuItem>
+
+                            <MenuItem
                               onClick={() => setShowJsonData(!showJsonData)}
                             >
                               Toggle JSON
@@ -949,18 +1021,20 @@ export function GameScreen() {
                   <GameQRCode
                     id={gameId}
                     display={showQrCode ? 'block' : 'none'}
+                    mb={5}
                   />
 
-                  <Button
-                    size="sm"
-                    mt={5}
-                    leftIcon={<IoQrCodeOutline />}
-                    onClick={() => setShowQrCode(!showQrCode)}
-                  >
-                    {showQrCode ? 'Hide QR Code' : 'Show QR Code'}
-                  </Button>
+                  {(!game.hasStarted || currentPlayer?.isHost) && (
+                    <Button
+                      size="sm"
+                      leftIcon={<IoQrCodeOutline />}
+                      onClick={() => setShowQrCode(!showQrCode)}
+                    >
+                      {showQrCode ? 'Hide QR Code' : 'Show QR Code'}
+                    </Button>
+                  )}
                 </Flex>
-              </VStack>
+              </Flex>
 
               <VStack
                 className="content"
@@ -971,31 +1045,38 @@ export function GameScreen() {
                 <Card size="sm" width="100%" mb={10}>
                   <CardBody>
                     <SimpleGrid minChildWidth="100px" spacingY={5}>
-                      {game.players.map((player) => (
-                        <Box
-                          key={player.id}
-                          display="flex"
-                          alignItems="center"
-                          flexDirection="column"
+                      {playersSorted.map((player) => (
+                        <Tooltip
+                          label={[
+                            player.isHost ? '[Host]' : '',
+                            `${player.points} points`,
+                            player.isWinner ? '- First Place!' : '',
+                          ]
+                            .filter(Boolean)
+                            .join(' ')}
+                          shouldWrapChildren={true}
                         >
-                          <PlayerAvatar player={player} mb={1} />
-                          <Text fontSize="md" align="center">
-                            {player.displayName}{' '}
-                            {player.isHost ? (
+                          <Box
+                            key={player.id}
+                            display="flex"
+                            alignItems="center"
+                            flexDirection="column"
+                          >
+                            <PlayerAvatar
+                              player={player}
+                              showHostBadge={true}
+                              mb={1}
+                            />
+                            <Text fontSize="md" align="center">
+                              {player.displayName}{' '}
+                              {/* {player.isHost ? (
                               <Text as="span" color="grey">
                                 (host)
                               </Text>
                             ) : (
                               ''
-                            )}
-                          </Text>
-                          <Tooltip
-                            label={
-                              `${player.points} points` +
-                              (player.isWinner ? ' - First Place!' : '')
-                            }
-                            shouldWrapChildren={true}
-                          >
+                            )} */}
+                            </Text>
                             <HStack
                               spacing={1}
                               alignContent="center"
@@ -1006,8 +1087,8 @@ export function GameScreen() {
                                 <MdStars color="gold" fontSize={21} />
                               )}
                             </HStack>
-                          </Tooltip>
-                        </Box>
+                          </Box>
+                        </Tooltip>
                       ))}
                     </SimpleGrid>
                   </CardBody>

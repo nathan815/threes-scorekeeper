@@ -151,7 +151,8 @@ function augmentAndCacheGame(game: Game): GameAugmented {
   ) {
     return gameCache[game.shortId];
   }
-  console.log('CACHE MISS');
+  console.warn('GET GAME - CACHE MISS')
+  console.debug('cached:\n', JSON.stringify(gameCache[game.shortId]), '\n\n', 'new:\n', JSON.stringify(augmented));
   gameCache[game.shortId] = augmented;
   return augmented;
 }
