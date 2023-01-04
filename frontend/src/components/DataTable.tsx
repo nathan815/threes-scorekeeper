@@ -56,7 +56,7 @@ export function DataTable<Data extends object>({
               {headerGroup.headers.map((header) => {
                 // see https://tanstack.com/table/v8/docs/api/core/column-def#meta to type this correctly
                 const meta: any = header.column.columnDef.meta;
-                console.log('header', header.column.id, header.column.columnDef.id);
+                // console.log('header', header.column.id, header.column.columnDef.id);
                 return (
                   <Th
                     key={header.column.id}

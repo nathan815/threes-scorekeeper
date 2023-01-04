@@ -75,6 +75,18 @@ export class Game {
     return this.players.filter((u) => minPointsUserIds.includes(u.id));
   }
 
+  changeOwner(playerId: string) {
+    if (playerId === this.owner.id) {
+      return false;
+    }
+    const player = this.players.find((u) => u.id === playerId);
+    if (!player) {
+      throw new GameError(`Player ID ${playerId} is not in this game.`);
+    }
+    this.owner = player;
+    return true;
+  }
+
   addPlayer(player: User): boolean {
     if (!(player instanceof User)) {
       throw new GameError(`Invalid player user object: ${player}`);

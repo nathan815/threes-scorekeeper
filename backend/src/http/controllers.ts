@@ -140,6 +140,55 @@ router.post(
   }
 );
 
+interface UpdateGameBody {
+  name: string;
+  ownerId: string;
+}
+router.patch(
+  '/games/:id',
+  requiresAuth,
+  v.body('name').isString().isLength({ min: 5 }).optional(),
+  v.body('ownerId').isString().optional(),
+  checkRequestValidation,
+  async (req, res) => {
+    const updates = req.body as UpdateGameBody;
+    const game = await getGameOrSendFailure(req, res);
+    if (!game) {
+      return;
+    }
+
+    let updated = false;
+
+    try {
+      if (updates.name && updates.name != game.name) {
+        game.name = updates.name;
+        updated = true;
+      }
+
+      if (updates.ownerId && updates.ownerId != game.owner.id) {
+        if (game.changeOwner(updates.ownerId)) {
+          updated = true;
+        }
+      }
+    } catch (err) {
+      if (err instanceof GameError) {
+        return res.status(StatusCodes.CONFLICT).json({
+          errorMessage: `Unable to update game: ${err.message}`,
+          errorType: err.constructor.name,
+        });
+      }
+      throw err;
+    }
+
+    if (updated) {
+      req.di.repositories.game.update(game);
+      res.status(StatusCodes.OK).json(game);
+    } else {
+      res.status(StatusCodes.NOT_MODIFIED).json();
+    }
+  }
+);
+
 router.post(
   '/games/:id/start',
   requiresAuth,
