@@ -37,7 +37,10 @@ export function NewGame() {
 
   const [gameName, setGameName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<{ msg: string | null, retryable: boolean}>({ msg: null, retryable: true });
+  const [error, setError] = useState<{
+    msg: string | null;
+    retryable: boolean;
+  }>({ msg: null, retryable: true });
 
   const createGame = useCallback(
     async (name) => {

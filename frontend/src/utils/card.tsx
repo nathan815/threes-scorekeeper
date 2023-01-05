@@ -17,7 +17,9 @@ const RANK_NAMES = {
   13: { singular: 'King', plural: 'Kings' },
 };
 export type CardRankNumber = keyof typeof RANK_NAMES;
-export const ALL_RANKS = Object.keys(RANK_NAMES).map((n) => parseInt(n)) as CardRankNumber[];
+export const ALL_RANKS = Object.keys(RANK_NAMES).map((n) =>
+  parseInt(n)
+) as CardRankNumber[];
 
 export function cardRankName(
   rank: CardRankNumber,
