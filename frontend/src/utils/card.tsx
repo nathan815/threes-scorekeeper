@@ -1,5 +1,4 @@
 export type CardSuit = 'diamonds' | 'clubs' | 'hearts' | 'spades';
-
 export const ALL_SUITS: CardSuit[] = ['diamonds', 'clubs', 'hearts', 'spades'];
 
 const RANK_NAMES = {
@@ -18,6 +17,7 @@ const RANK_NAMES = {
   13: { singular: 'King', plural: 'Kings' },
 };
 export type CardRankNumber = keyof typeof RANK_NAMES;
+export const ALL_RANKS = Object.keys(RANK_NAMES).map((n) => parseInt(n)) as CardRankNumber[];
 
 export function cardRankName(
   rank: CardRankNumber,
@@ -32,6 +32,7 @@ export function cardRankName(
 export function cardRankShortName(rank: CardRankNumber): string {
   return (
     {
+      1: 'A',
       11: 'J',
       12: 'Q',
       13: 'K',

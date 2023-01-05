@@ -40,33 +40,13 @@
   max-width: 310px;
 }
 
-.current-card-container::after {
-  content: '';
-  display: block;
-  clear: both;
-}
-
 .current-card {
   position: absolute;
   width: 100%;
   opacity: 0;
   margin-top: 0;
   margin-bottom: 5px;
-  display: inline-block;
   transition: opacity ease-in-out 2s;
-}
-.current-card svg {
-  width: 100%;
-  border-radius: 10%;
-}
-.current-card.light svg {
-  border: 1px solid #ddd;
-}
-.current-card.red svg {
-  background: #cb2d2d;
-}
-.current-card.light.black svg {
-  background: #000;
 }
 .current-card.active {
   opacity: 1;

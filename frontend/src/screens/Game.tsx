@@ -52,7 +52,7 @@ import {
   Tag,
 } from '@chakra-ui/react';
 import { CoreRow, createColumnHelper } from '@tanstack/react-table';
-import { mapValues } from 'lodash';
+import { debounce, mapValues } from 'lodash';
 import React, {
   useCallback,
   useEffect,
@@ -80,7 +80,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ApiError, PlayerResultInput } from '../api';
 import { AuthUser, useAuthContext } from '../auth/authContext';
 import { CardIcon } from '../components/CardIcon';
+import { PlayingCard } from '../components/PlayingCard';
 import {
+  ALL_RANKS,
   ALL_SUITS,
   cardRankName,
   CardRankNumber,
@@ -292,14 +294,6 @@ function CurrentRoundCard({
   const cardDiv = useRef<HTMLDivElement>(null);
   const round = game?.currentRoundObj;
   const [height, setHeight] = useState(0);
-  const { colorMode } = useColorMode();
-
-  const suitColor: { [key in CardSuit]: string | null } = {
-    hearts: 'red',
-    diamonds: 'red',
-    clubs: 'black',
-    spades: 'black',
-  };
 
   useEffect(() => {
     if (round) {
@@ -314,10 +308,15 @@ function CurrentRoundCard({
   }, [round]);
 
   useEffect(() => {
-    if (cardDiv?.current?.offsetHeight) {
-      setHeight(cardDiv?.current?.offsetHeight);
-    }
-  }, [cardDiv?.current?.offsetHeight]);
+    const updateHeight = debounce(() => {
+      if (cardDiv?.current?.offsetHeight) {
+        setHeight(cardDiv?.current?.offsetHeight);
+      }
+    }, 100);
+    updateHeight();
+    window.addEventListener('resize', updateHeight);
+    return () => window.removeEventListener('reisze', updateHeight);
+  }, []);
 
   if (!round) {
     return null;
@@ -326,21 +325,14 @@ function CurrentRoundCard({
   return (
     <>
       <Tag mb={3}>{`${roundRankName(round, true)}`} are wild</Tag>
-      <Box className="current-card-container" height={height} {...boxProps}>
+      <Box className="current-card-container" {...boxProps} height={height}>
         {ALL_SUITS.map((suit, idx) => (
           <Box
             key={idx}
-            className={`current-card ${colorMode} ${suit} ${
-              suitColor[suit] || ''
-            } ${idx === suitIdx ? 'active' : 'nonactive'}`}
+            className={`current-card ${idx === suitIdx ? 'active' : ''}`}
             ref={cardDiv}
           >
-            <GameRoundCard
-              round={round}
-              cardSuit={suit}
-              size="100%"
-              color="#fff"
-            />
+            <PlayingCard suit={suit} rank={round.cardRank as CardRankNumber} />
           </Box>
         ))}
       </Box>
@@ -618,21 +610,21 @@ function TransferOwnershipModal(props: {
     setSaving(true);
     try {
       onGameUpdate(await updateGame(game.shortId, { ownerId: selectedOwner }));
+      toast({
+        description: 'Game ownership transferred',
+        status: 'success',
+        position: 'top',
+      });
     } catch (err) {
       toast({
         description: 'Error transferring ownership',
         status: 'error',
         position: 'top',
       });
+      modal.onClose();
     } finally {
       setSaving(false);
     }
-    toast({
-      description: 'Game ownership transferred.',
-      status: 'success',
-      position: 'top',
-    });
-    modal.onClose();
   };
 
   return (
@@ -1161,6 +1153,7 @@ export function GameScreen() {
         )}
         {showJsonData && (
           <Textarea
+            readOnly
             fontFamily="monospace"
             value={JSON.stringify(game, null, 2)}
             rows={50}

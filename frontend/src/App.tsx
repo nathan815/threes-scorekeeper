@@ -31,6 +31,7 @@ import { useAuthContext } from './auth/authContext';
 import Home from './screens/Home';
 import { JoinGame } from './screens/JoinGame';
 import { NewGame } from './screens/NewGame';
+import { DevScreen } from './screens/Dev';
 
 import { GameScreen } from './screens/Game';
 import { PageNotFound } from './screens/PageNotFound';
@@ -67,6 +68,9 @@ function AuthOptionMenu() {
             }
           >
             ID: {authCtx.user.id}
+          </MenuItem>
+          <MenuItem as={RouterLink} to="/dev">
+            Developer
           </MenuItem>
           {!authCtx.user.isGuest && <MenuItem>Logout</MenuItem>}
         </MenuList>
@@ -134,6 +138,7 @@ function App() {
           <Route path="/new" element={<NewGame />} />
           <Route path="/join" element={<JoinGame />} />
           <Route path="/join/:gameId" element={<JoinGame />} />
+          <Route path="/dev" element={<DevScreen />} />
           <Route path="*" element={<PageNotFound />} />
         </Route>
       </Routes>
