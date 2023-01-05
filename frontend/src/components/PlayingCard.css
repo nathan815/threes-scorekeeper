@@ -1,4 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Lobster+Two:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lobster+Two:wght@400;700&family=Old+Standard+TT:wght@400;700&display=swap');
+
+.playing-card-wrapper {
+  background-color: white;
+  border-radius: 15px;
+}
 
 .playing-card {
   user-select: none;
@@ -10,7 +15,7 @@
   align-items: center;
   align-content: center;
   position: relative;
-  border-radius: 5%;
+  border-radius: 15px;
 }
 .chakra-ui-dark .playing-card {
   border: 1px solid #111;
@@ -24,11 +29,12 @@
   color: #000;
 }
 .playing-card.red {
-  color: #cb2d2d;
+  color: #bd2f2f;
 }
 
 .playing-card .card-rank {
-  font-size: 10vw ;
+  /* The font size is also dynamically updated based on width by JS */
+  font-size: 10vw;
   font-weight: bold;
   font-family: 'Lobster Two', serif;
   line-height: 1;
@@ -37,6 +43,7 @@
 }
 .playing-card .card-suit {
   position: absolute;
+  width: 30%;
 }
 .playing-card .card-suit.card-suit-1 {
   left: 15px;

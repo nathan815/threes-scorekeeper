@@ -4,7 +4,6 @@ import {
   CardBody,
   Flex,
   Heading,
-  HStack,
   VStack,
 } from '@chakra-ui/react';
 import React from 'react';

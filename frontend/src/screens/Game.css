@@ -34,12 +34,12 @@
 }
 
 /* Current Card Display */
+
 .current-card-container {
   width: 100%;
   position: relative;
-  max-width: 310px;
+  cursor: pointer;
 }
-
 .current-card {
   position: absolute;
   width: 100%;
@@ -50,4 +50,8 @@
 }
 .current-card.active {
   opacity: 1;
+}
+.current-card-container.no-shadow .playing-card {
+  box-shadow: none;
+  border: none;
 }

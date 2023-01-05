@@ -3,28 +3,44 @@ import {
   AlertDescription,
   AlertIcon,
   Avatar,
+  AvatarBadge,
   AvatarProps,
   Badge,
   Box,
+  BoxProps,
   Button,
   ButtonGroup,
   Card,
   CardBody,
+  Checkbox,
   Container,
   Flex,
+  FormControl,
+  FormLabel,
   Heading,
   HStack,
+  Input,
   Menu,
   MenuButton,
   MenuItem,
   MenuList,
   Modal,
-  ModalContent,
+  ModalBody,
   ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
   ModalOverlay,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  Select,
   SimpleGrid,
   Spinner,
   Stack,
+  Tag,
   Text,
   Textarea,
   Tooltip,
@@ -33,23 +49,6 @@ import {
   UseDisclosureProps,
   useToast,
   VStack,
-  ModalBody,
-  ModalHeader,
-  ModalFooter,
-  FormLabel,
-  FormControl,
-  Input,
-  NumberInput,
-  NumberInputField,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
-  NumberInputStepper,
-  Checkbox,
-  Select,
-  AvatarBadge,
-  useColorMode,
-  BoxProps,
-  Tag,
 } from '@chakra-ui/react';
 import { CoreRow, createColumnHelper } from '@tanstack/react-table';
 import { debounce, mapValues } from 'lodash';
@@ -62,7 +61,6 @@ import React, {
 } from 'react';
 import { IconBaseProps } from 'react-icons';
 import { BsChevronDoubleRight } from 'react-icons/bs';
-import { SlPencil } from 'react-icons/sl';
 import {
   IoCaretDown,
   IoCheckmark,
@@ -75,21 +73,14 @@ import {
   IoSettings,
 } from 'react-icons/io5';
 import { MdStars } from 'react-icons/md';
+import { SlPencil } from 'react-icons/sl';
 import QRCode from 'react-qr-code';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ApiError, PlayerResultInput } from '../api';
 import { AuthUser, useAuthContext } from '../auth/authContext';
 import { CardIcon } from '../components/CardIcon';
-import { PlayingCard } from '../components/PlayingCard';
-import {
-  ALL_RANKS,
-  ALL_SUITS,
-  cardRankName,
-  CardRankNumber,
-  cardRankShortName,
-  CardSuit,
-} from '../utils/card';
 import { DataTable } from '../components/DataTable';
+import { PlayingCard } from '../components/PlayingCard';
 import {
   completeCurrentRound,
   GameAugmented,
@@ -101,7 +92,15 @@ import {
   startGame,
   updateGame,
 } from '../services/game';
+import {
+  ALL_SUITS,
+  cardRankName,
+  CardRankNumber,
+  cardRankShortName,
+  CardSuit,
+} from '../utils/card';
 import { convertDisclosureProps } from '../utils/disclosure';
+import { useWindowResizeCallback } from '../utils/hooks/useWindowResizeCallback';
 
 import './Game.css';
 
@@ -229,6 +228,7 @@ function buildRoundsTableColumns(
   currentUser?: AuthUser | null
 ) {
   const columnHelper = createColumnHelper<GameRoundAugmented>();
+
   const playerCols = game.players.map((player) => {
     return columnHelper.accessor((round) => round.playerResults[player.id], {
       id: player.id,
@@ -256,13 +256,12 @@ function buildRoundsTableColumns(
     });
   });
 
-  return [
-    columnHelper.accessor((row) => row, {
-      header: 'Round',
-      cell: (col) => <RoundDescriptionCell round={col.getValue()} />,
-    }),
-    ...playerCols,
-  ];
+  const roundCol = columnHelper.accessor((round) => round, {
+    header: 'Round',
+    cell: (cell) => <RoundDescriptionCell round={cell.getValue()} />,
+  });
+
+  return [roundCol, ...playerCols];
 }
 
 function GameQRCode({ id, ...boxProps }) {
@@ -286,37 +285,39 @@ function GameQRCode({ id, ...boxProps }) {
   );
 }
 
+type CurrentRoundCardState = { suitIdx: number };
+function useCurrentRoundCardState(): CurrentRoundCardState {
+  const [suitIdx, setSuitIdx] = useState(0);
+  useEffect(() => {
+    const changeSuit = () => {
+      if (document.hasFocus()) {
+        setSuitIdx((cur) => (cur + 1) % ALL_SUITS.length);
+      }
+    };
+    const timerId = setInterval(changeSuit, 3000);
+    return () => clearTimeout(timerId);
+  }, []);
+  return { suitIdx };
+}
+
 function CurrentRoundCard({
   game,
+  state,
+  className,
   ...boxProps
-}: { game: GameAugmented } & BoxProps) {
-  const [suitIdx, setSuitIdx] = useState(0);
+}: { game: GameAugmented; state: CurrentRoundCardState } & BoxProps) {
   const cardDiv = useRef<HTMLDivElement>(null);
   const round = game?.currentRoundObj;
-  const [height, setHeight] = useState(0);
+  const [height, setHeight] = useState(boxProps.height || 0);
 
-  useEffect(() => {
-    if (round) {
-      const changeSuit = () => {
-        if (document.hasFocus()) {
-          setSuitIdx((cur) => (cur + 1) % ALL_SUITS.length);
-        }
-      };
-      const timerId = setInterval(changeSuit, 3000);
-      return () => clearTimeout(timerId);
+  const setDivHeight = useCallback(() => {
+    if (cardDiv?.current?.offsetHeight) {
+      setHeight(cardDiv?.current?.offsetHeight);
     }
-  }, [round]);
-
-  useEffect(() => {
-    const updateHeight = debounce(() => {
-      if (cardDiv?.current?.offsetHeight) {
-        setHeight(cardDiv?.current?.offsetHeight);
-      }
-    }, 100);
-    updateHeight();
-    window.addEventListener('resize', updateHeight);
-    return () => window.removeEventListener('reisze', updateHeight);
   }, []);
+
+  useWindowResizeCallback(setDivHeight);
+  useEffect(setDivHeight, [setDivHeight, cardDiv?.current?.offsetHeight]);
 
   if (!round) {
     return null;
@@ -324,12 +325,20 @@ function CurrentRoundCard({
 
   return (
     <>
-      <Tag mb={3}>{`${roundRankName(round, true)}`} are wild</Tag>
-      <Box className="current-card-container" {...boxProps} height={height}>
+      <Tag size="lg" mb={3}>
+        {`${roundRankName(round, true)}`} are wild
+      </Tag>
+      <Box
+        className={'current-card-container ' + (className || '')}
+        {...boxProps}
+        height={`${height}px`}
+        background="white"
+        borderRadius={15}
+      >
         {ALL_SUITS.map((suit, idx) => (
           <Box
             key={idx}
-            className={`current-card ${idx === suitIdx ? 'active' : ''}`}
+            className={`current-card ${idx === state.suitIdx ? 'active' : ''}`}
             ref={cardDiv}
           >
             <PlayingCard suit={suit} rank={round.cardRank as CardRankNumber} />
@@ -340,21 +349,84 @@ function CurrentRoundCard({
   );
 }
 
-const tableMeta = {
-  rowProps: (row: CoreRow<GameRoundAugmented>) => ({
-    className: `status-${row.original.status}`,
-  }),
-};
+function calculateRoundCardModalWidth() {
+  const EXTRA_VERT_SPACE = 150;
+  const MIN_HEIGHT = 350;
+  const ASPECT_RATIO = 0.7;
+  const height = Math.max(MIN_HEIGHT, window.innerHeight - EXTRA_VERT_SPACE);
+  const width = height * ASPECT_RATIO;
+  return Math.min(window.innerWidth - 50, width);
+}
+
+function CurrentRoundCardModal({
+  game,
+  modalState,
+  cardState,
+}: {
+  game: GameAugmented;
+  modalState: UseDisclosureProps;
+  cardState: CurrentRoundCardState;
+}) {
+  const modal = convertDisclosureProps(modalState);
+  const [width, setWidth] = useState(calculateRoundCardModalWidth());
+
+  useWindowResizeCallback(
+    useCallback(() => {
+      setWidth(calculateRoundCardModalWidth());
+    }, [])
+  );
+
+  return (
+    <Modal
+      {...modal}
+      size="full"
+      closeOnOverlayClick={true}
+      motionPreset="slideInBottom"
+    >
+      <ModalOverlay background="blackAlpha.800" />
+      <ModalContent
+        background=""
+        boxShadow="none"
+        py="10px"
+        onClick={modal.onClose}
+      >
+        <ModalCloseButton />
+        <ModalBody>
+          <Flex
+            direction="column"
+            justifyContent="start"
+            alignItems="center"
+            width="100%"
+            height="100%"
+          >
+            <CurrentRoundCard
+              game={game}
+              state={cardState}
+              width={`${width}px`}
+              height="auto"
+              mb={5}
+              className="no-shadow"
+            />
+            <Tag size="lg" textAlign="center">
+              Dealer perfect cut:{' '}
+              {game.players.length * (game.currentRound || 0)} cards
+            </Tag>
+          </Flex>
+        </ModalBody>
+      </ModalContent>
+    </Modal>
+  );
+}
 
 function gameStatusText(game: GameAugmented) {
   if (game.endedAt) {
     return `Finished ${game.endedAt}`;
   }
   if (game.startedAt) {
-    return 'Currently in progress';
+    return 'In progress';
   }
   if (game.ableToStart) {
-    return 'Waiting for the host to start';
+    return 'Waiting for host to start';
   }
   return 'Waiting for others to join';
 }
@@ -766,6 +838,12 @@ function sortPlayersByPointsAsc(players: PlayerAugmented[]): PlayerAugmented[] {
   return [...players].sort((p1, p2) => p1.points - p2.points);
 }
 
+const tableMeta = {
+  rowProps: (row: CoreRow<GameRoundAugmented>) => ({
+    className: `status-${row.original.status}`,
+  }),
+};
+
 export function GameScreen() {
   const { gameId } = useParams();
   const navigate = useNavigate();
@@ -774,6 +852,7 @@ export function GameScreen() {
   const finishRoundModal = useDisclosure();
   const transferOwnershipModal = useDisclosure();
   const changeNameModal = useDisclosure();
+  const cardModal = useDisclosure();
   const [game, setGame] = useState<GameAugmented>();
   const [showQrCode, setShowQrCode] = useState(false);
   const [showJsonData, setShowJsonData] = useState(false);
@@ -781,6 +860,7 @@ export function GameScreen() {
   const timerId = useRef<number>();
   const [error, setError] = useState('');
   const [gameStarting, setGameStarting] = useState(false);
+  const currentCardState = useCurrentRoundCardState();
 
   const getGame = useCallback(() => {
     if (!gameId) {
@@ -904,6 +984,11 @@ export function GameScreen() {
             modalState={transferOwnershipModal}
             onGameUpdate={setGame}
           />
+          <CurrentRoundCardModal
+            game={game}
+            modalState={cardModal}
+            cardState={currentCardState}
+          />
         </>
       )}
       <VStack align="flex-start" alignItems="start" width="100%">
@@ -945,14 +1030,19 @@ export function GameScreen() {
                         </Heading>
                       </HStack>
 
-                      <Text fontSize="sm" fontWeight="normal">
+                      <Text fontSize="sm">
                         <b>{game.players.length}</b>{' '}
-                        {`player${game.players.length > 1 ? 's' : ''}`} here
-                      </Text>
-
-                      <Text fontSize="sm" fontWeight="normal">
+                        {`player${game.players.length > 1 ? 's' : ''}`} -{' '}
                         {gameStatusText(game)}
                       </Text>
+
+                      {game.currentRound && (
+                        <Text fontSize="sm">
+                          Dealer must cut{' '}
+                          <b>{game.players.length * game.currentRound}</b> cards
+                          from deck for -20pts
+                        </Text>
+                      )}
 
                       <Flex
                         className="game-ctrl-buttons"
@@ -1064,7 +1154,14 @@ export function GameScreen() {
                   </CardBody>
                 </Card>
 
-                <CurrentRoundCard game={game} mb={5} />
+                <CurrentRoundCard
+                  game={game}
+                  state={currentCardState}
+                  visibility={cardModal.isOpen ? 'hidden' : 'visible'}
+                  maxWidth="310px"
+                  mb={5}
+                  onClick={() => cardModal.onOpen()}
+                />
 
                 <Flex
                   direction="column"
@@ -1112,6 +1209,7 @@ export function GameScreen() {
                           ]
                             .filter(Boolean)
                             .join(' ')}
+                          shouldWrapChildren
                         >
                           <Flex direction="column" alignItems="center">
                             <PlayerAvatar

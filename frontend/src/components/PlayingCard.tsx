@@ -1,19 +1,20 @@
 import { Box, BoxProps } from '@chakra-ui/react';
 import { debounce } from 'lodash';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { IconType } from 'react-icons';
 import {
   BsSuitClubFill,
   BsSuitDiamondFill,
   BsSuitHeartFill,
-  BsSuitSpadeFill
+  BsSuitSpadeFill,
 } from 'react-icons/bs';
 import {
   cardRankName,
   CardRankNumber,
   cardRankShortName,
-  CardSuit
+  CardSuit,
 } from '../utils/card';
+import { useWindowResizeCallback } from '../utils/hooks/useWindowResizeCallback';
 import './PlayingCard.css';
 
 const suits: { [key in CardSuit]: [IconType, string] } = {
@@ -36,37 +37,36 @@ export function PlayingCard(props: PlayingCardProps & BoxProps) {
 
   const [SuitIcon, color] = suits[suit];
 
-  const [width, setWidth] = useState(0);
+  const [fontSize, setFontSize] = useState(0);
 
-  useEffect(() => {
-    const updateWidth = debounce(() => {
+  useWindowResizeCallback(
+    useCallback(() => {
       if (cardDiv?.current?.offsetWidth) {
-        setWidth(cardDiv?.current?.offsetWidth);
+        const width = cardDiv?.current?.offsetWidth || 0;
+        const ratio = width < 200 ? 2 : 1.8;
+        setFontSize(width / ratio);
       }
-    }, 100);
-    updateWidth();
-    window.addEventListener('resize', updateWidth);
-    return () => window.removeEventListener('reisze', updateWidth);
-  }, []);
+    }, [])
+  );
 
   return (
-    <Box
-      background="white"
-      width="100%"
-      className={`playing-card ${color}`}
-      title={`Playing Card: ${rankName} of ${suit}`}
-      ref={cardDiv}
-      {...restProps}
-    >
-      <div className="card-suit card-suit-1">
-        <SuitIcon size="5.5em" />
-      </div>
-      <div className="card-rank" style={{ fontSize: width / 1.8 }}>
-        {rankLetter}
-      </div>
-      <div className="card-suit card-suit-2">
-        <SuitIcon size="5.5em" />
-      </div>
+    <Box className="playing-card-wrapper" width="100%" {...restProps}>
+      <Box
+        className={`playing-card ${color}`}
+        title={`Playing Card: ${rankName} of ${suit}`}
+        ref={cardDiv}
+        // {...restProps}
+      >
+        <div className="card-suit card-suit-1">
+          <SuitIcon size="100%" />
+        </div>
+        <div className="card-rank" style={{ fontSize }}>
+          {rankLetter}
+        </div>
+        <div className="card-suit card-suit-2">
+          <SuitIcon size="100%" />
+        </div>
+      </Box>
     </Box>
   );
 }
