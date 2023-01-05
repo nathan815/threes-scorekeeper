@@ -175,13 +175,40 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{URL}}/games/CS2CS6",
+					"raw": "{{URL}}/games/NMILL7",
 					"host": [
 						"{{URL}}"
 					],
 					"path": [
 						"games",
-						"CS2CS6"
+						"NMILL7"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Game",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\n    \"name\": \"New Name\",\n    \"ownerId\": \"newOwnerId\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL}}/games/NMILL7",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"games",
+						"NMILL7"
 					]
 				}
 			},
@@ -276,39 +303,7 @@
 			"response": []
 		},
 		{
-			"name": "Record player result - Elden",
-			"request": {
-				"method": "PUT",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n\t\"points\": 6,\n\t\"perfectDeckCut\": false\n}"
-				},
-				"url": {
-					"raw": "{{URL}}//games/NED04P/rounds/current/playerResult/63ab46e22d8ce736d8d1bfa8",
-					"host": [
-						"{{URL}}"
-					],
-					"path": [
-						"",
-						"games",
-						"NED04P",
-						"rounds",
-						"current",
-						"playerResult",
-						"63ab46e22d8ce736d8d1bfa8"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Record player result - Nathan",
+			"name": "Record single player result",
 			"request": {
 				"method": "PUT",
 				"header": [
@@ -333,6 +328,36 @@
 						"current",
 						"playerResult",
 						"63aaa47372a314b4742ed6f3"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Record player results",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"results\": {\n        \"63ab46e22d8ce736d8d1bfa8\": {\n            \"points\": 4,\n            \"perfectDeckCut\": false\n        },\n        \"63aaa47372a314b4742ed6f3\": {\n            \"points\": 1,\n            \"perfectDeckCut\": false\n        },\n        \"63b3f000dda6817d90be347f\": {\n            \"points\": 0,\n            \"perfectDeckCut\": false\n        }\n    }\n}"
+				},
+				"url": {
+					"raw": "{{URL}}/games/NMILL7/rounds/current/playerResults",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"games",
+						"NMILL7",
+						"rounds",
+						"current",
+						"playerResults"
 					]
 				}
 			},
