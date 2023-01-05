@@ -76,11 +76,11 @@ import { MdStars } from 'react-icons/md';
 import { SlPencil } from 'react-icons/sl';
 import QRCode from 'react-qr-code';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ApiError, PlayerResultInput } from '../api';
-import { AuthUser, useAuthContext } from '../auth/authContext';
-import { CardIcon } from '../components/CardIcon';
-import { DataTable } from '../components/DataTable';
-import { PlayingCard } from '../components/PlayingCard';
+import { ApiError, PlayerResultInput } from '../../api';
+import { AuthUser, useAuthContext } from '../../auth/authContext';
+import { CardIcon } from '../../components/CardIcon';
+import { DataTable } from '../../components/DataTable';
+import { PlayingCard } from '../../components/PlayingCard';
 import {
   completeCurrentRound,
   GameAugmented,
@@ -91,16 +91,16 @@ import {
   recordPlayerResults,
   startGame,
   updateGame,
-} from '../services/game';
+} from '../../services/game';
 import {
   ALL_SUITS,
   cardRankName,
   CardRankNumber,
   cardRankShortName,
   CardSuit,
-} from '../utils/card';
-import { convertDisclosureProps } from '../utils/disclosure';
-import { useWindowResizeCallback } from '../utils/hooks/useWindowResizeCallback';
+} from '../../utils/card';
+import { convertDisclosureProps } from '../../utils/disclosure';
+import { useWindowResizeCallback } from '../../utils/hooks/useWindowResizeCallback';
 
 import './Game.css';
 
@@ -408,8 +408,7 @@ function CurrentRoundCardModal({
               className="no-shadow"
             />
             <Tag size="lg" textAlign="center">
-              Dealer perfect cut:{' '}
-              {game.players.length * (game.currentRound || 0)} cards
+              Dealer perfect cut: {game.dealerPerfectCutCards} cards
             </Tag>
           </Flex>
         </ModalBody>
@@ -1038,9 +1037,8 @@ export function GameScreen() {
 
                       {game.currentRound && (
                         <Text fontSize="sm">
-                          Dealer must cut{' '}
-                          <b>{game.players.length * game.currentRound}</b> cards
-                          from deck for -20pts
+                          Dealer must cut <b>{game.dealerPerfectCutCards}</b>{' '}
+                          cards from deck for -20pts
                         </Text>
                       )}
 

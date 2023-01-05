@@ -37,6 +37,7 @@ export interface GameAugmented extends Game {
   players: PlayerAugmented[];
   hasStarted: boolean;
   ableToStart: boolean;
+  dealerPerfectCutCards: number;
 }
 
 /**
@@ -138,6 +139,7 @@ function augmentGame(game: Game): GameAugmented {
     players: augmentedPlayers,
     hasStarted: Boolean(game.startedAt),
     ableToStart: augmentedPlayers.length > 1,
+    dealerPerfectCutCards: game.players.length * (game.currentRound || 0) + 1,
   };
 }
 

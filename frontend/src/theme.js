@@ -12,7 +12,7 @@ const colors = {
 const theme = extendTheme({
   config: {
     initialColorMode: 'dark',
-    useSystemColorMode: true,
+    useSystemColorMode: false,
   },
   colors: {
     primary: colors.blue,

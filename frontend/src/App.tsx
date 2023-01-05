@@ -33,7 +33,7 @@ import { JoinGame } from './screens/JoinGame';
 import { NewGame } from './screens/NewGame';
 import { DevScreen } from './screens/Dev';
 
-import { GameScreen } from './screens/Game';
+import { GameScreen } from './screens/game/Game';
 import { PageNotFound } from './screens/PageNotFound';
 import './style/global.css';
 import { Logo } from './components/Logo';
