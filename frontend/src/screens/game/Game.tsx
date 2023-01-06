@@ -30,7 +30,6 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { CoreRow, createColumnHelper } from '@tanstack/react-table';
-import { debounce } from 'lodash';
 import React, {
   useCallback,
   useEffect,
@@ -54,7 +53,7 @@ import {
 import { MdStars } from 'react-icons/md';
 import { SlPencil } from 'react-icons/sl';
 import QRCode from 'react-qr-code';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ApiError } from '../../api';
 import { AuthUser, useAuthContext } from '../../auth/authContext';
 import { CardIcon } from '../../components/CardIcon';
@@ -63,6 +62,7 @@ import {
   GameAugmented,
   GameRoundAugmented,
   getGameCached,
+  joinGame,
   PlayerAugmented,
   PlayerResultAugmented,
   startGame,
@@ -80,6 +80,7 @@ import { useCurrentRoundCardState, CurrentRoundCard } from './CurrentRoundCard';
 import { RecordPointsModal } from './modals/RecordPointsModal';
 import { TransferOwnershipModal } from './modals/TransferOwnershipModal';
 import { ChangeGameNameModal } from './modals/ChangeGameNameModal';
+import { JoinGameModal } from './modals/JoinGameModal';
 
 interface PlayerAvatarProps extends AvatarProps {
   player: PlayerAugmented;
@@ -288,23 +289,55 @@ const tableMeta = {
 
 export function GameScreen() {
   const { gameId } = useParams();
-  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const authCtx = useAuthContext();
   const toast = useToast();
+
+  // Modal states
+  const joinGameModal = useDisclosure({
+    onClose: () => setSearchParams({}, { replace: true }),
+  });
   const finishRoundModal = useDisclosure();
   const transferOwnershipModal = useDisclosure();
   const changeNameModal = useDisclosure();
   const cardModal = useDisclosure();
+
   const [game, setGame] = useState<GameAugmented>();
   const [showQrCode, setShowQrCode] = useState(false);
   const [showJsonData, setShowJsonData] = useState(false);
   const [loading, setLoading] = useState(true);
-  const timerId = useRef<number>();
   const [error, setError] = useState('');
   const [gameStarting, setGameStarting] = useState(false);
+  const timerId = useRef<number>();
   const currentCardState = useCurrentRoundCardState();
 
-  // Poll game data from server regularly
+  const [joinParams, setJoinParams] = useState({
+    join: searchParams.get('join') === 'true',
+    confirm: searchParams.get('confirm') === 'true',
+    actedOn: false,
+  });
+
+  const currentUser = authCtx?.user;
+
+  // Data rendered in the table
+  const gameRounds = game?.rounds;
+  const tableData = useMemo(() => gameRounds || [], [gameRounds]);
+  const tableColumns = useMemo(
+    () => (game ? buildRoundsTableColumns(game, currentUser) : []),
+    [game, currentUser]
+  );
+
+  const playersSorted = useMemo(
+    () => sortPlayersByPointsAsc(game?.players || []),
+    [game?.players]
+  );
+  const currentPlayer = useMemo(
+    () =>
+      game && currentUser && game.players.find((p) => p.id === currentUser?.id),
+    [currentUser, game]
+  );
+
+  // Poll game data from server periodically
   const pollGame = useCallback(() => {
     if (!gameId) {
       return;
@@ -339,6 +372,31 @@ export function GameScreen() {
       });
   }, [toast, gameId]);
 
+  const onJoinGame = useCallback(async () => {
+    if (!game) {
+      return;
+    }
+    try {
+      const updatedGame = await joinGame(game.shortId);
+      setGame(updatedGame);
+      if (!toast.isActive('joined')) {
+        toast({
+          id: 'joined',
+          description: 'You have joined this game',
+          status: 'success',
+          position: 'top',
+        });
+      }
+      return updatedGame;
+    } catch (err) {
+      toast({
+        description: `${err}`,
+        position: 'top',
+        status: 'error',
+      });
+    }
+  }, [game, toast]);
+
   // Start polling of game data
   useEffect(() => {
     pollGame();
@@ -350,25 +408,33 @@ export function GameScreen() {
     setShowQrCode(!loading && !Boolean(game?.startedAt));
   }, [loading, game?.startedAt]);
 
-  const playersSorted = useMemo(
-    () => sortPlayersByPointsAsc(game?.players || []),
-    [game?.players]
-  );
+  // Open the join modal if URL query params are present
+  useEffect(() => {
+    if (loading || joinParams.actedOn || currentPlayer) {
+      return;
+    }
 
-  const currentUser = authCtx?.user;
+    // If ?join=true
+    if (joinParams.join) {
+      // If ?confirm=true, OR needs auth, OR game has already started
+      if (joinParams.confirm || !currentUser || game?.hasStarted) {
+        joinGameModal.onOpen();
+      } else {
+        // TODO loading state here to disable Join button
+        onJoinGame();
+      }
+    }
 
-  const gameRounds = game?.rounds;
-  const tableData = useMemo(() => gameRounds || [], [gameRounds]);
-  const tableColumns = useMemo(
-    () => (game ? buildRoundsTableColumns(game, currentUser) : []),
-    [game, currentUser]
-  );
-
-  const currentPlayer: PlayerAugmented | null | undefined = useMemo(
-    () =>
-      game && currentUser && game.players.find((p) => p.id === currentUser?.id),
-    [currentUser, game]
-  );
+    setJoinParams((prev) => ({ ...prev, actedOn: true }));
+  }, [
+    loading,
+    joinParams,
+    joinGameModal,
+    currentUser,
+    currentPlayer,
+    game?.hasStarted,
+    onJoinGame,
+  ]);
 
   const onClickGameStart = async () => {
     if (!game) {
@@ -399,11 +465,18 @@ export function GameScreen() {
       paddingBottom={20}
     >
       {game && (
-        <CurrentRoundCardModal
-          game={game}
-          modalState={cardModal}
-          cardState={currentCardState}
-        />
+        <>
+          <JoinGameModal
+            game={game}
+            modalState={joinGameModal}
+            onJoinGame={onJoinGame}
+          />
+          <CurrentRoundCardModal
+            game={game}
+            modalState={cardModal}
+            cardState={currentCardState}
+          />
+        </>
       )}
       {game && currentPlayer?.isHost && (
         <>
@@ -476,6 +549,10 @@ export function GameScreen() {
                         </Text>
                       )}
 
+                      {currentPlayer?.isHost && (
+                        <Text fontSize="sm">You are the game host</Text>
+                      )}
+
                       <Flex
                         className="game-ctrl-buttons"
                         justifyContent="start"
@@ -492,7 +569,7 @@ export function GameScreen() {
                             }
                           >
                             <Button
-                              onClick={() => navigate(`/join/${game?.shortId}`)}
+                              onClick={() => joinGameModal.onOpen()}
                               colorScheme="blue"
                               leftIcon={<IoEnter />}
                               disabled={game.hasStarted}
@@ -673,9 +750,11 @@ export function GameScreen() {
                 <DataTable
                   columns={tableColumns}
                   data={tableData}
-                  className="game-table"
-                  size="sm"
                   options={{ meta: tableMeta }}
+                  tableProps={{
+                    className: 'game-table',
+                    size: 'sm',
+                  }}
                 />
               </VStack>
             </Stack>

@@ -10,6 +10,7 @@ import {
   Box,
   TableProps,
   TableContainer,
+  TableContainerProps,
 } from '@chakra-ui/react';
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
 import {
@@ -26,14 +27,17 @@ export type DataTableProps<Data extends object> = {
   data: Data[];
   columns: ColumnDef<Data, any>[];
   options?: Partial<TableOptions<Data>>;
+  containerProps?: TableContainerProps;
+  tableProps?: TableProps;
 };
 
 export function DataTable<Data extends object>({
   data,
   columns,
   options = {},
-  ...tableProps
-}: DataTableProps<Data> & TableProps) {
+  containerProps,
+  tableProps,
+}: DataTableProps<Data>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const table = useReactTable({
     columns,
@@ -48,7 +52,7 @@ export function DataTable<Data extends object>({
   });
 
   return (
-    <TableContainer width="full">
+    <TableContainer width="full" {...containerProps}>
       <Table {...tableProps}>
         <Thead>
           {table.getHeaderGroups().map((headerGroup) => (

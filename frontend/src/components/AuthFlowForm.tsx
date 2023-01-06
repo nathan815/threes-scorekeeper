@@ -13,7 +13,10 @@ import React, { useState } from 'react';
 import { IoLogoApple, IoLogoGoogle, IoPerson } from 'react-icons/io5';
 import { useAuthContext } from '../auth/authContext';
 
-export function AuthFlowForm(props: { onComplete?: () => void }) {
+export function AuthFlowForm(props: {
+  introText: string;
+  onComplete?: () => void;
+}) {
   const auth = useAuthContext();
   const authFlow = auth?.authFlow;
   const [displayNameInput, setDisplayNameInput] = useState('');
@@ -109,7 +112,7 @@ export function AuthFlowForm(props: { onComplete?: () => void }) {
   if (option == null && !auth.user) {
     return (
       <Stack spacing={5}>
-        <Text>Sign in to save your game history.</Text>
+        <Text>{props.introText}</Text>
         {signInButtons}
         <Button
           mt={4}

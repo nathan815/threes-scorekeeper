@@ -100,7 +100,9 @@ export function NewGame() {
         <Heading size="lg">New Game</Heading>
         <br />
 
-        {!authCtx?.loggedIn && <AuthFlowForm />}
+        {!authCtx?.loggedIn && (
+          <AuthFlowForm introText="Please select an option. Your game history will be saved if you sign in." />
+        )}
 
         {authCtx?.loggedIn && (
           <form onSubmit={handleSubmit}>
