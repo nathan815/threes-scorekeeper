@@ -6,6 +6,10 @@ _Built with TypeScript, React, Chakra UI, Node, MongoDB._
 
 This application fully facilitates the scorekeeping process and displays the current wild card to players + a live view of the scoreboard to all players. It also enables players to maintain a digital record of their play history. It _doesn't_ have online game play functionality (yet?).
 
+<img width="1680" alt="image" src="https://user-images.githubusercontent.com/1972782/210936423-38b546ca-6367-43ba-8bed-500c28818092.png">
+
+
+
 ## Local Setup
 Nodejs v18+ required.
 
