@@ -37,7 +37,7 @@ import {
 } from '../../../services/game';
 import { convertDisclosureProps } from '../../../utils/disclosure';
 
-export function FinishRoundModal(props: {
+export function RecordPointsModal(props: {
   game: GameAugmented;
   modalState: UseDisclosureProps;
   onGameUpdate: (game: GameAugmented) => void;

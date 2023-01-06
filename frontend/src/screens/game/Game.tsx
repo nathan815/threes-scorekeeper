@@ -77,7 +77,7 @@ import { CurrentRoundCardModal } from './modals/CurrentRoundCardModal';
 
 import './Game.css';
 import { useCurrentRoundCardState, CurrentRoundCard } from './CurrentRoundCard';
-import { FinishRoundModal } from './modals/FinishRoundModal';
+import { RecordPointsModal } from './modals/RecordPointsModal';
 import { TransferOwnershipModal } from './modals/TransferOwnershipModal';
 import { ChangeGameNameModal } from './modals/ChangeGameNameModal';
 
@@ -418,7 +418,7 @@ export function GameScreen() {
       )}
       {game && currentPlayer?.isHost && (
         <>
-          <FinishRoundModal
+          <RecordPointsModal
             game={game}
             modalState={finishRoundModal}
             onGameUpdate={setGame}
