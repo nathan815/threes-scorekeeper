@@ -6,9 +6,30 @@ _Built with TypeScript, React, Chakra UI, Node, MongoDB._
 
 This application fully facilitates the scorekeeping process and displays the current wild card to players + a live view of the scoreboard to all players. It also enables players to maintain a digital record of their play history. It _doesn't_ have online game play functionality (yet?).
 
-## Explanation of _Threes_
+## Local Setup
+Nodejs v18+ required.
 
-_For a more thorough explanation, see https://en.wikipedia.org/wiki/Three_thirteen_
+### Backend
+
+`cd backend`
+
+`npm install`
+
+`npm start`
+
+### Frontend
+
+`cd frontend`
+
+`npm install`
+
+`npm start`
+
+----
+
+# Explanation of _Threes_
+
+_See also https://en.wikipedia.org/wiki/Three_thirteen_
 
 This card game is a variation of _Rummy_. It is played with two standard 52-card decks combined (jokers removed) for a total of 104 cards. There are 11 total rounds and can be played with 2-8 players.
 
@@ -57,13 +78,14 @@ Example partial sets:
 ### Rounds 5...King
 ...
 
-## Winner
+### Winner
 The winner is the player with the least total points summed across all the rounds.
 
 
-## Dealer Bonus [-20 points]
-If the dealer "cuts" the deck perfectly such that they drew exactly the amount of cards needed for the round, they get a point reduction of -20 points.
+### Dealer Bonus [-20 points]
+If the dealer cuts the deck at the exact amount of cards needed for the round, they get a point reduction of -20 points.
 
-For example, on Round 1 with 5 players, the dealer would need to draw exactly 15 cards (3 cards * 5 players) in one go.
+Examples:
 
-On the last round (Kings) with 5 players, the dealer would need to draw exactly 65 cards (13 cards * 5 players) in one go.
+* On Round 1 with 5 players, the dealer would need to pick up exactly 16 cards (3 cards * 5 players + 1 to put face up on deck).
+* On the last round (Kings) with 5 players, the dealer would need to pick up exactly 66 cards (13 cards * 5 players + 1).
