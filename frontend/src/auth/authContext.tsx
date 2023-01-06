@@ -181,12 +181,9 @@ function readPersistedAuth(): AuthState {
       const auth = JSON.parse(authJson);
       if (auth) {
         return {
+          ...DEFAULT_AUTH_STATE,
           loggedIn: auth.loggedIn || false,
           user: auth.user || null,
-          authFlow: {
-            ...DEFAULT_AUTH_STATE.authFlow,
-            ...auth.authFlow,
-          },
           token: auth.token || null,
           initialized: true,
         };
@@ -207,10 +204,6 @@ function persistAuth(auth: AuthState) {
     JSON.stringify({
       loggedIn: auth.loggedIn,
       user: auth.user,
-      authFlow: {
-        option: auth.authFlow.option,
-        optionInProgress: auth.authFlow.optionInProgress,
-      },
       token: auth.token,
     })
   );
