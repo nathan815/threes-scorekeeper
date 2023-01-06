@@ -304,7 +304,8 @@ export function GameScreen() {
   const [gameStarting, setGameStarting] = useState(false);
   const currentCardState = useCurrentRoundCardState();
 
-  const getGame = useCallback(() => {
+  // Poll game data from server regularly
+  const pollGame = useCallback(() => {
     if (!gameId) {
       return;
     }
@@ -313,13 +314,13 @@ export function GameScreen() {
         setError('');
         setGame(updatedGame);
         clearTimeout(timerId.current!);
-        timerId.current = window.setTimeout(getGame, 2_000);
+        timerId.current = window.setTimeout(pollGame, 2_000);
       })
       .catch((err) => {
         const retryable = err instanceof ApiError && err.retryable;
         clearTimeout(timerId.current!);
         if (retryable) {
-          timerId.current = window.setTimeout(getGame, 10_000);
+          timerId.current = window.setTimeout(pollGame, 10_000);
         }
         setError(`${err}`);
         if (!toast.isActive('game-load-error')) {
@@ -338,11 +339,13 @@ export function GameScreen() {
       });
   }, [toast, gameId]);
 
+  // Start polling of game data
   useEffect(() => {
-    getGame();
+    pollGame();
     return () => clearTimeout(timerId.current!);
-  }, [getGame]);
+  }, [pollGame]);
 
+  // Show the QR code once game data loads if game has not started.
   useEffect(() => {
     setShowQrCode(!loading && !Boolean(game?.startedAt));
   }, [loading, game?.startedAt]);
@@ -367,13 +370,6 @@ export function GameScreen() {
     [currentUser, game]
   );
 
-  const showJoinGameBtn = useMemo(
-    () =>
-      game &&
-      !game.players.map((player) => player.id).includes(currentUser?.id || ''),
-    [game, currentUser]
-  );
-
   const onClickGameStart = async () => {
     if (!game) {
       return;
@@ -390,13 +386,6 @@ export function GameScreen() {
       });
     }
     setGameStarting(false);
-  };
-
-  const onClickFinishRound = async () => {
-    if (!game) {
-      return;
-    }
-    finishRoundModal.onOpen();
   };
 
   return (
@@ -494,7 +483,7 @@ export function GameScreen() {
                         gap={2}
                         mt={3}
                       >
-                        {showJoinGameBtn && (
+                        {!currentPlayer && (
                           <Tooltip
                             label={
                               game.hasStarted
@@ -548,7 +537,7 @@ export function GameScreen() {
                             {game.hasStarted && (
                               <Button
                                 colorScheme="blue"
-                                onClick={onClickFinishRound}
+                                onClick={() => finishRoundModal.onOpen()}
                                 leftIcon={<SlPencil />}
                               >
                                 Record Points
