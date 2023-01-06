@@ -1,10 +1,10 @@
 import { Box, BoxProps, Tag } from '@chakra-ui/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { PlayingCard } from '../../../components/PlayingCard';
-import { GameAugmented } from '../../../services/game';
-import { ALL_SUITS, CardRankNumber } from '../../../utils/card';
-import { useWindowResizeCallback } from '../../../utils/hooks/useWindowResizeCallback';
-import { roundRankName } from '../Game';
+import { PlayingCard } from '../../components/PlayingCard';
+import { GameAugmented } from '../../services/game';
+import { ALL_SUITS, CardRankNumber } from '../../utils/card';
+import { useWindowResizeCallback } from '../../utils/hooks/useWindowResizeCallback';
+import { roundRankName } from './Game';
 
 export type CurrentRoundCardState = { suitIdx: number };
 export function useCurrentRoundCardState(): CurrentRoundCardState {

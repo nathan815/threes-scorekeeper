@@ -12,16 +12,22 @@ import React, { useCallback, useState } from 'react';
 import { GameAugmented } from '../../../services/game';
 import { convertDisclosureProps } from '../../../utils/disclosure';
 import { useWindowResizeCallback } from '../../../utils/hooks/useWindowResizeCallback';
-import { CurrentRoundCardState, CurrentRoundCard } from './CurrentRoundCard';
+import { CurrentRoundCardState, CurrentRoundCard } from '../CurrentRoundCard';
+
+const CARD_EXTRA_VERT_SPACE = 150;
+const CARD_HORZ_BUFFER = 50;
+const CARD_MIN_HEIGHT = 350;
+const CARD_ASPECT_RATIO = 0.7;
 
 function calculateRoundCardModalWidth() {
-  const EXTRA_VERT_SPACE = 150;
-  const MIN_HEIGHT = 350;
-  const ASPECT_RATIO = 0.7;
-  const height = Math.max(MIN_HEIGHT, window.innerHeight - EXTRA_VERT_SPACE);
-  const width = height * ASPECT_RATIO;
-  return Math.min(window.innerWidth - 50, width);
+  const height = Math.max(
+    CARD_MIN_HEIGHT,
+    window.innerHeight - CARD_EXTRA_VERT_SPACE
+  );
+  const width = height * CARD_ASPECT_RATIO;
+  return Math.min(window.innerWidth - CARD_HORZ_BUFFER, width);
 }
+
 export function CurrentRoundCardModal({
   game,
   modalState,
