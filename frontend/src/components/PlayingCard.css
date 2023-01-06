@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Lobster+Two:wght@400;700&family=Old+Standard+TT:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Arbutus+Slab&display=swap');
 
 .playing-card-wrapper {
   background-color: white;
@@ -36,7 +36,7 @@
   /* The font size is also dynamically updated based on width by JS */
   font-size: 10vw;
   font-weight: bold;
-  font-family: 'Lobster Two', serif;
+  font-family: 'Arbutus Slab', serif;
   line-height: 1;
   margin-bottom: 20px;
   pointer-events: none;
