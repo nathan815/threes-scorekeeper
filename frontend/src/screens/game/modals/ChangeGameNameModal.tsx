@@ -2,7 +2,9 @@ import {
   Button,
   ButtonGroup,
   FormControl,
+  FormHelperText,
   Input,
+  Link,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -14,6 +16,7 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
+import { generateGameName } from 'src/utils/general';
 import { GameAugmented, updateGame } from '../../../services/game';
 import { convertDisclosureProps } from '../../../utils/disclosure';
 
@@ -56,6 +59,11 @@ export function ChangeGameNameModal(props: {
     }
   };
 
+  const handleClickGenerateName = (e) => {
+    e.preventDefault();
+    setName(generateGameName);
+  };
+
   return (
     <Modal {...modal}>
       <ModalOverlay />
@@ -68,12 +76,19 @@ export function ChangeGameNameModal(props: {
           <ModalBody>
             <FormControl>
               <Input
-                placeholder="Select new host..."
+                placeholder="Game Name"
+                required
+                size="lg"
                 aria-label="Select new host to transfer ownership to"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 autoFocus={true}
               />
+              <FormHelperText>
+                <Link href="#" onClick={handleClickGenerateName}>
+                  Generate a random name
+                </Link>
+              </FormHelperText>
             </FormControl>
           </ModalBody>
           <ModalFooter>

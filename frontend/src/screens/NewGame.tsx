@@ -15,19 +15,12 @@ import {
 import React, { useCallback, useState } from 'react';
 import { IoArrowForward } from 'react-icons/io5';
 import { useNavigate } from 'react-router-dom';
-import generateName from 'project-name-generator';
 
 import { useAuthContext } from '../auth/authContext';
 import { AuthFlowForm } from '../components/AuthFlowForm';
 import { LogoHeader } from '../components/Logo';
 import { api, ApiError, ValidationError } from '../api';
-
-function generateGameName() {
-  return generateName({ words: 2 })
-    .raw.map((w) => w.toString())
-    .map((w) => w.charAt(0).toUpperCase() + w.substring(1))
-    .join(' ');
-}
+import { generateGameName } from 'src/utils/general';
 
 export function NewGame() {
   const bg = useColorModeValue('whiteAlpha.900', 'blackAlpha.100');
