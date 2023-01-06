@@ -55,7 +55,7 @@ import { MdStars } from 'react-icons/md';
 import { SlPencil } from 'react-icons/sl';
 import QRCode from 'react-qr-code';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ApiError, PlayerResultInput } from '../../api';
+import { ApiError } from '../../api';
 import { AuthUser, useAuthContext } from '../../auth/authContext';
 import { CardIcon } from '../../components/CardIcon';
 import { DataTable } from '../../components/DataTable';
@@ -65,7 +65,6 @@ import {
   getGameCached,
   PlayerAugmented,
   PlayerResultAugmented,
-  recordPlayerResults,
   startGame,
 } from '../../services/game';
 import {
@@ -77,10 +76,7 @@ import {
 import { CurrentRoundCardModal } from './modals/CurrentRoundCardModal';
 
 import './Game.css';
-import {
-  useCurrentRoundCardState,
-  CurrentRoundCard,
-} from './modals/CurrentRoundCard';
+import { useCurrentRoundCardState, CurrentRoundCard } from './CurrentRoundCard';
 import { FinishRoundModal } from './modals/FinishRoundModal';
 import { TransferOwnershipModal } from './modals/TransferOwnershipModal';
 import { ChangeGameNameModal } from './modals/ChangeGameNameModal';
@@ -172,7 +168,7 @@ function RoundDescriptionCell({ round }: { round: GameRoundAugmented }) {
   const statusDisplay = roundStatusDisplays[round.status];
   return (
     <Tooltip
-      label={`${roundRankName(round)} - ${statusDisplay.label}`}
+      label={`${roundRankName(round, true)} - ${statusDisplay.label}`}
       placement="right"
       shouldWrapChildren={true}
     >
@@ -413,6 +409,13 @@ export function GameScreen() {
       paddingTop={100}
       paddingBottom={20}
     >
+      {game && (
+        <CurrentRoundCardModal
+          game={game}
+          modalState={cardModal}
+          cardState={currentCardState}
+        />
+      )}
       {game && currentPlayer?.isHost && (
         <>
           <FinishRoundModal
@@ -429,11 +432,6 @@ export function GameScreen() {
             game={game}
             modalState={transferOwnershipModal}
             onGameUpdate={setGame}
-          />
-          <CurrentRoundCardModal
-            game={game}
-            modalState={cardModal}
-            cardState={currentCardState}
           />
         </>
       )}
@@ -484,8 +482,8 @@ export function GameScreen() {
 
                       {game.currentRound && (
                         <Text fontSize="sm">
-                          Dealer must cut <b>{game.dealerPerfectCutCards}</b>{' '}
-                          cards from deck for -20pts
+                          Dealer perfect cut:{' '}
+                          <b>{game.dealerPerfectCutCards}</b> cards
                         </Text>
                       )}
 

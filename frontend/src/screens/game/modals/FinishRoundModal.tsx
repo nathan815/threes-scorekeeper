@@ -28,43 +28,14 @@ import {
 } from '@chakra-ui/react';
 import { mapValues } from 'lodash';
 import React, { useEffect, useState } from 'react';
-import { PlayerResultInput } from '../../../api';
 import {
   completeCurrentRound,
   GameAugmented,
-  recordPlayerResults,
+  PlayerPerfectCutMap,
+  PlayerPointsMap,
+  savePlayerResults,
 } from '../../../services/game';
 import { convertDisclosureProps } from '../../../utils/disclosure';
-
-export type PlayerPointsState = { [userId: string]: string | number };
-export type PlayerPerfectCutState = { [userId: string]: boolean };
-
-function buildPlayerResult(
-  playerPoints: PlayerPointsState,
-  playerPerfectCut: PlayerPerfectCutState
-): PlayerResultInput {
-  const playerResults: PlayerResultInput = {};
-
-  for (const [id, points] of Object.entries(playerPoints)) {
-    playerResults[id] = playerResults[id] || {};
-    const p = parseInt(`${points}`);
-    if (p || p === 0) {
-      playerResults[id].points = p;
-    }
-  }
-
-  for (const [id, perfectCut] of Object.entries(playerPerfectCut)) {
-    playerResults[id] = {
-      ...playerResults[id],
-      perfectDeckCut: Boolean(perfectCut),
-      points: playerResults[id]?.points || 0,
-    };
-  }
-
-  // console.log(playerResults);
-
-  return playerResults;
-}
 
 export function FinishRoundModal(props: {
   game: GameAugmented;
@@ -77,16 +48,17 @@ export function FinishRoundModal(props: {
   const { isOpen, onClose } = modal;
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
-  const [playerPoints, setPlayerPoints] = useState<PlayerPointsState>({});
+  const [playerPoints, setPlayerPoints] = useState<PlayerPointsMap>({});
+  // TODO simplify perfect cut - dont need an obj.
   const [playerPerfectCut, setPlayerPerfectCut] =
-    useState<PlayerPerfectCutState>({});
+    useState<PlayerPerfectCutMap>({});
 
   const anyPerfectCut = Object.values(playerPerfectCut).some((v) => v === true);
 
-  const save = async (complete = false) => {
+  const save = async (completeRound = false) => {
     setSaving(true);
     try {
-      const updatedGame = await submitPlayerResults(
+      const updatedGame = await savePlayerResults(
         game.shortId,
         playerPoints,
         playerPerfectCut
@@ -96,7 +68,7 @@ export function FinishRoundModal(props: {
         onGameUpdate(updatedGame);
         setDirty(false);
 
-        if (complete) {
+        if (completeRound) {
           onGameUpdate(await completeCurrentRound(game.shortId));
           toast({
             description: 'Round finished',
@@ -234,7 +206,7 @@ export function FinishRoundModal(props: {
           <ModalFooter>
             <ButtonGroup>
               <Button disabled={!dirty || saving} onClick={() => save()}>
-                Apply
+                Save
               </Button>
               <Button disabled={saving} colorScheme="blue" type="submit">
                 Save & Finish Round
@@ -245,19 +217,4 @@ export function FinishRoundModal(props: {
       </ModalContent>
     </Modal>
   );
-}
-
-/**
- * Submit provided player results to the server.
- */
-async function submitPlayerResults(
-  gameId: string,
-  playerPoints: PlayerPointsState,
-  playerPerfectCut: PlayerPerfectCutState
-): Promise<GameAugmented | undefined> {
-  const results = buildPlayerResult(playerPoints, playerPerfectCut);
-  // console.log('submitPlayerResults', gameId, results);
-  if (Object.keys(results).length > 0) {
-    return recordPlayerResults(gameId, results);
-  }
 }

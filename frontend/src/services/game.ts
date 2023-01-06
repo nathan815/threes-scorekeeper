@@ -67,11 +67,43 @@ export async function completeCurrentRound(id: string): Promise<GameAugmented> {
   return augmentAndCacheGame(await api.completeCurrentRound(id));
 }
 
-export async function recordPlayerResults(
+export type PlayerPointsMap = { [userId: string]: string | number };
+export type PlayerPerfectCutMap = { [userId: string]: boolean };
+function buildPlayerResult(
+  playerPoints: PlayerPointsMap,
+  playerPerfectCut: PlayerPerfectCutMap
+): PlayerResultInput {
+  const playerResults: PlayerResultInput = {};
+
+  for (const [id, points] of Object.entries(playerPoints)) {
+    playerResults[id] = playerResults[id] || {};
+    const p = parseInt(`${points}`);
+    if (p || p === 0) {
+      playerResults[id].points = p;
+    }
+  }
+
+  for (const [id, perfectCut] of Object.entries(playerPerfectCut)) {
+    playerResults[id] = {
+      ...playerResults[id],
+      perfectDeckCut: Boolean(perfectCut),
+      points: playerResults[id]?.points || 0,
+    };
+  }
+
+  // console.log(playerResults);
+
+  return playerResults;
+}
+export async function savePlayerResults(
   id: string,
-  results: PlayerResultInput
-): Promise<GameAugmented> {
-  return augmentAndCacheGame(await api.recordPlayerResults(id, results));
+  playerPoints: PlayerPointsMap,
+  playerPerfectCut: PlayerPerfectCutMap
+): Promise<GameAugmented | undefined> {
+  const results = buildPlayerResult(playerPoints, playerPerfectCut);
+  if (Object.keys(results).length > 0) {
+    return augmentAndCacheGame(await api.recordPlayerResults(id, results));
+  }
 }
 
 /**
