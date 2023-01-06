@@ -13,7 +13,7 @@ import React, { useState } from 'react';
 import { IoLogoApple, IoLogoGoogle, IoPerson } from 'react-icons/io5';
 import { useAuthContext } from '../auth/authContext';
 
-export function AuthFlowForm() {
+export function AuthFlowForm(props: { onComplete?: () => void }) {
   const auth = useAuthContext();
   const authFlow = auth?.authFlow;
   const [displayNameInput, setDisplayNameInput] = useState('');
@@ -50,16 +50,21 @@ export function AuthFlowForm() {
     if (!displayName) {
       return;
     }
-    auth?.finishLogIn(displayName).catch((err) => {
-      toast({
-        title: 'An error occurred',
-        description: `Failed to save display name. Please try again. (${err})`,
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-        position: 'top-right',
+    auth
+      ?.finishLogIn(displayName)
+      .then((user) => {
+        props.onComplete?.();
+      })
+      .catch((err) => {
+        toast({
+          title: 'An error occurred',
+          description: `Failed to save display name. Please try again. (${err})`,
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+          position: 'top-right',
+        });
       });
-    });
   }
 
   const signInButtons = (
@@ -92,7 +97,7 @@ export function AuthFlowForm() {
   );
 
   const selectedAuthService = { apple: 'Apple', google: 'Google' }[
-    authFlow?.option || authFlow?.optionInProgress
+    authFlow?.option || authFlow?.optionInProgress || ''
   ];
 
   if (!auth || !auth.initialized) {
