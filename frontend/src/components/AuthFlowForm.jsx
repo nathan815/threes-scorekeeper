@@ -66,18 +66,6 @@ export function AuthFlowForm() {
     <>
       <Button
         mt={4}
-        onClick={() => onLogin('apple')}
-        isLoading={authFlow?.optionInProgress === 'apple'}
-        loadingText="Signing in with Apple..."
-        type="submit"
-        size="lg"
-        disabled={buttonsDisabled}
-        leftIcon={<IoLogoApple />}
-      >
-        Sign in with Apple
-      </Button>
-      <Button
-        mt={4}
         onClick={() => onLogin('google')}
         isLoading={authFlow?.optionInProgress === 'google'}
         loadingText="Signing in with Google..."
@@ -87,6 +75,18 @@ export function AuthFlowForm() {
         leftIcon={<IoLogoGoogle />}
       >
         Sign in with Google
+      </Button>
+      <Button
+        mt={4}
+        onClick={() => onLogin('apple')}
+        isLoading={authFlow?.optionInProgress === 'apple'}
+        loadingText="Signing in with Apple..."
+        type="submit"
+        size="lg"
+        disabled={buttonsDisabled}
+        leftIcon={<IoLogoApple />}
+      >
+        Sign in with Apple
       </Button>
     </>
   );
@@ -105,6 +105,7 @@ export function AuthFlowForm() {
     return (
       <Stack spacing={5}>
         <Text>Sign in to save your game history.</Text>
+        {signInButtons}
         <Button
           mt={4}
           isLoading={false}
@@ -116,7 +117,6 @@ export function AuthFlowForm() {
         >
           Use as Guest
         </Button>
-        {signInButtons}
       </Stack>
     );
   } else if (!auth.user || !auth.user.displayName) {
