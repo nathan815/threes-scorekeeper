@@ -41,12 +41,11 @@ export function PlayingCard(props: PlayingCardProps & BoxProps) {
 
   useWindowResizeCallback(
     useCallback(() => {
-      if (cardDiv?.current?.offsetWidth) {
-        const width = cardDiv?.current?.offsetWidth || 0;
-        const ratio = width < 200 ? 2 : 1.8;
-        setFontSize(width / ratio);
+      const width = cardDiv?.current?.offsetWidth || 0;
+      if (width) {
+        setFontSize(width / 2);
       }
-    }, [])
+    }, [cardDiv])
   );
 
   return (
@@ -55,7 +54,6 @@ export function PlayingCard(props: PlayingCardProps & BoxProps) {
         className={`playing-card ${color}`}
         aria-label={`Playing Card: ${rankName} of ${suit}`}
         ref={cardDiv}
-        // {...restProps}
       >
         <div className="card-suit card-suit-1">
           <SuitIcon size="100%" />
