@@ -53,7 +53,7 @@ export function PlayingCard(props: PlayingCardProps & BoxProps) {
     <Box className="playing-card-wrapper" width="100%" {...restProps}>
       <Box
         className={`playing-card ${color}`}
-        title={`Playing Card: ${rankName} of ${suit}`}
+        aria-label={`Playing Card: ${rankName} of ${suit}`}
         ref={cardDiv}
         // {...restProps}
       >

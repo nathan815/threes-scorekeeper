@@ -93,7 +93,7 @@ export function TransferOwnershipModal(props: {
               >
                 <Text>
                   I understand I will lose all host capabilities after clicking
-                  on "Transfer" below.
+                  on <b>Transfer</b>.
                 </Text>
               </Checkbox>
             </FormControl>
