@@ -54,7 +54,7 @@ export class GameSchema extends TimeStamps {
   @prop({ ref: () => UserSchema, autopopulate: true })
   owner: Ref<UserSchema>;
 
-  @prop({ ref: () => UserSchema, autopopulate: true })
+  @prop({ ref: () => UserSchema, autopopulate: true, index: true })
   players: Ref<UserSchema>[] = [];
 
   @prop()
