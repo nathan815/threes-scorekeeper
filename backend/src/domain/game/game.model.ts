@@ -3,8 +3,8 @@ import { User } from '../user/user.model';
 import { generateShortId } from '../../utils/generateShortId';
 
 const MAX_PLAYERS = 8;
-const START_ROUND = 3;
-const END_ROUND = 11;
+const START_ROUND_CARD = 3;
+const END_ROUND_CARD = 13;
 const PERFECT_DECK_CUT_BONUS = -20;
 
 export enum GameStage {
@@ -160,11 +160,11 @@ export class Game {
       }
       round = this.currentRound;
     } else {
-      if (roundNumber < START_ROUND || roundNumber > END_ROUND) {
+      if (roundNumber < START_ROUND_CARD || roundNumber > END_ROUND_CARD) {
         throw new GameError('Invalid round number provided', {
           roundNumber,
-          startRound: START_ROUND,
-          endRound: END_ROUND,
+          startRound: START_ROUND_CARD,
+          endRound: END_ROUND_CARD,
         });
       }
       const foundRound = this.rounds.find(
@@ -197,13 +197,13 @@ export class Game {
 
     this.finishCurrentRound();
 
-    if (this.rounds.length == END_ROUND) {
+    if (this.currentRound?.cardRank.number === END_ROUND_CARD) {
       this.finish();
       return;
     }
 
     const curRank = this.currentRound?.cardRank.number;
-    const nextRank = CardRank.of(curRank ? curRank + 1 : START_ROUND);
+    const nextRank = CardRank.of(curRank ? curRank + 1 : START_ROUND_CARD);
     const round = new GameRound(nextRank);
     this.rounds.push(round);
     console.log('new round', round, 'ROUNDS', this.rounds);

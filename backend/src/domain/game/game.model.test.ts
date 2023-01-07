@@ -45,8 +45,10 @@ describe(Game, () => {
     const g = new Game('e2e game test', userA);
     g.addPlayer(userB);
     expect(g.currentWinners).toEqual([]);
+    expect(g.stage).toBe(GameStage.Pre);
 
     g.start(userA);
+    expect(g.stage).toBe(GameStage.InProgress);
 
     // 3
     expect(g.currentRound?.cardRank).toEqual(CardRank.of(3));
@@ -56,10 +58,12 @@ describe(Game, () => {
     expect(g.currentRound?.cardRank).toEqual(CardRank.of(3));
     expect(g.getPlayerPoints(userA)).toBe(0);
     expect(g.getPlayerPoints(userB)).toBe(10);
-    expect(g.currentWinners).toEqual([userA]);
+    expect(g.currentWinners).toEqual([]); // no winner until past first round
 
     // 4
     g.nextRound();
+    expect(g.currentWinners).toEqual([userA]); // current winner provided after past the first round
+
     expect(g.currentRound?.cardRank).toEqual(CardRank.of(4));
     g.recordPlayerRoundResult(userA, 25);
     g.recordPlayerRoundResult(userB, 5);
@@ -97,11 +101,12 @@ describe(Game, () => {
     expect(g.getPlayerPoints(userA)).toBe(35);
     expect(g.getPlayerPoints(userB)).toBe(40);
     expect(g.currentWinners).toEqual([userA]);
+    expect(g.stage).toBe(GameStage.InProgress);
 
     // 8
     g.nextRound();
     expect(g.currentRound?.cardRank).toEqual(CardRank.of(8));
-    g.recordPlayerRoundResult(userA, 5, true); // userA gets -20 bonus for cutting deck perfectly this round
+    g.recordPlayerRoundResult(userA, 5, true); // <- perfect cut bonus (-20)
     g.recordPlayerRoundResult(userB, 8);
     g.finishCurrentRound();
     expect(g.getPlayerPoints(userA)).toBe(20);
@@ -111,6 +116,82 @@ describe(Game, () => {
       [userB.id]: 48,
     });
     expect(g.currentWinners).toEqual([userA]);
+
+    // 9
+    g.nextRound();
+    expect(g.currentRound?.cardRank).toEqual(CardRank.of(9));
+    g.recordPlayerRoundResult(userA, 0);
+    g.recordPlayerRoundResult(userB, 0);
+    g.finishCurrentRound();
+    expect(g.getPlayerPoints(userA)).toBe(20);
+    expect(g.getPlayerPoints(userB)).toBe(48);
+    expect(g.totalPointsByPlayer()).toEqual({
+      [userA.id]: 20,
+      [userB.id]: 48,
+    });
+    expect(g.currentWinners).toEqual([userA]);
+
+    // 10
+    g.nextRound();
+    expect(g.currentRound?.cardRank).toEqual(CardRank.of(10));
+    g.recordPlayerRoundResult(userA, 5);
+    g.recordPlayerRoundResult(userB, 0);
+    g.finishCurrentRound();
+    expect(g.getPlayerPoints(userA)).toBe(25);
+    expect(g.getPlayerPoints(userB)).toBe(48);
+    expect(g.totalPointsByPlayer()).toEqual({
+      [userA.id]: 25,
+      [userB.id]: 48,
+    });
+    expect(g.currentWinners).toEqual([userA]);
+    expect(g.stage).toBe(GameStage.InProgress);
+
+    // Jack
+    g.nextRound();
+    expect(g.currentRound?.cardRank).toEqual(CardRank.of(CardRankName.Jack));
+    g.recordPlayerRoundResult(userA, 3);
+    g.recordPlayerRoundResult(userB, 2);
+    g.finishCurrentRound();
+    expect(g.getPlayerPoints(userA)).toBe(28);
+    expect(g.getPlayerPoints(userB)).toBe(50);
+    expect(g.totalPointsByPlayer()).toEqual({
+      [userA.id]: 28,
+      [userB.id]: 50,
+    });
+    expect(g.currentWinners).toEqual([userA]);
+
+    // Queen
+    g.nextRound();
+    expect(g.currentRound?.cardRank).toEqual(CardRank.of(CardRankName.Queen));
+    g.recordPlayerRoundResult(userA, 10);
+    g.recordPlayerRoundResult(userB, 1, true); // <- perfect cut bonus (-20)
+    g.finishCurrentRound();
+    expect(g.getPlayerPoints(userA)).toBe(38);
+    expect(g.getPlayerPoints(userB)).toBe(31);
+    expect(g.totalPointsByPlayer()).toEqual({
+      [userA.id]: 38,
+      [userB.id]: 31,
+    });
+    expect(g.currentWinners).toEqual([userB]);
+
+    // King
+    g.nextRound();
+    expect(g.currentRound?.cardRank).toEqual(CardRank.of(CardRankName.King));
+    g.recordPlayerRoundResult(userA, 0);
+    g.recordPlayerRoundResult(userB, 2);
+    g.finishCurrentRound();
+    expect(g.getPlayerPoints(userA)).toBe(38);
+    expect(g.getPlayerPoints(userB)).toBe(33);
+    expect(g.totalPointsByPlayer()).toEqual({
+      [userA.id]: 38,
+      [userB.id]: 33,
+    });
+    expect(g.currentWinners).toEqual([userB]);
+
+    expect(g.stage).toBe(GameStage.InProgress);
+    g.nextRound(); // <- no more rounds, finishes game
+
+    expect(g.stage).toBe(GameStage.Done);
   });
 
   describe(Game.prototype.addPlayer, () => {
