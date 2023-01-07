@@ -1,7 +1,34 @@
-.game-table th,
-.game-table td {
-  padding-left: 4px;
-  padding-right: 4px;
+.chakra-ui-light {
+  --game-table-gradient-end: #fff;
+}
+.chakra-ui-dark {
+  --game-table-gradient-end: var(--chakra-colors-darkGray);
+}
+
+.game-table-wrapper {
+  width: 100%;
+  display: block;
+  position: relative;
+}
+.game-table-wrapper:after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background-image: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0),
+    var(--game-table-gradient-end)
+  );
+  width: 10%;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.game-table-wrapper.shadow:after {
+  opacity: 1;
 }
 
 .game-table tr.status-notStarted {

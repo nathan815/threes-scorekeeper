@@ -21,6 +21,7 @@ import {
   SimpleGrid,
   Spinner,
   Stack,
+  TableContainer,
   Text,
   Textarea,
   Tooltip,
@@ -53,7 +54,7 @@ import {
 import { MdStars } from 'react-icons/md';
 import { SlPencil } from 'react-icons/sl';
 import QRCode from 'react-qr-code';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { ApiError } from '../../api';
 import { AuthUser, useAuthContext } from '../../auth/authContext';
 import { CardIcon } from '../../components/CardIcon';
@@ -287,6 +288,59 @@ const tableMeta = {
   }),
 };
 
+function shouldShowTableShadow(element: HTMLDivElement): boolean {
+  const maxScrollLeft = element.scrollWidth - element.clientWidth;
+  const hideShadowPos = maxScrollLeft - 10;
+  // console.log(maxScrollLeft, hideShadowPos);
+  return hideShadowPos > 0 && element.scrollLeft <= hideShadowPos;
+}
+
+function PlayerScoresTable({
+  game,
+  currentUser,
+}: {
+  game: GameAugmented;
+  currentUser?: AuthUser | null;
+}) {
+  const gameRounds = game?.rounds;
+  const tableData = useMemo(() => gameRounds || [], [gameRounds]);
+  const tableColumns = useMemo(
+    () => (game ? buildRoundsTableColumns(game, currentUser) : []),
+    [game, currentUser]
+  );
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [showShadow, setShowShadow] = useState(false);
+
+  useEffect(() => {
+    // Hide shadow once we reach scroll end
+    const onContainerScroll = (event) => {
+      setShowShadow(shouldShowTableShadow(event.target));
+    };
+    const ele = containerRef?.current;
+    if (ele) {
+      setShowShadow(shouldShowTableShadow(ele));
+      ele.addEventListener('scroll', onContainerScroll);
+      return () => ele.removeEventListener('scroll', onContainerScroll);
+    }
+  }, []);
+
+  return (
+    <div className={`game-table-wrapper ${showShadow ? 'shadow' : ''}`}>
+      <TableContainer width="full" ref={containerRef}>
+        <DataTable
+          columns={tableColumns}
+          data={tableData}
+          options={{ meta: tableMeta }}
+          tableProps={{
+            className: 'game-table',
+            size: 'sm',
+          }}
+        />
+      </TableContainer>
+    </div>
+  );
+}
+
 export function GameScreen() {
   const { gameId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -318,14 +372,6 @@ export function GameScreen() {
   });
 
   const currentUser = authCtx?.user;
-
-  // Data rendered in the table
-  const gameRounds = game?.rounds;
-  const tableData = useMemo(() => gameRounds || [], [gameRounds]);
-  const tableColumns = useMemo(
-    () => (game ? buildRoundsTableColumns(game, currentUser) : []),
-    [game, currentUser]
-  );
 
   const playersSorted = useMemo(
     () => sortPlayersByPointsAsc(game?.players || []),
@@ -747,15 +793,7 @@ export function GameScreen() {
                   </CardBody>
                 </Card>
 
-                <DataTable
-                  columns={tableColumns}
-                  data={tableData}
-                  options={{ meta: tableMeta }}
-                  tableProps={{
-                    className: 'game-table',
-                    size: 'sm',
-                  }}
-                />
+                <PlayerScoresTable game={game} currentUser={currentUser} />
               </VStack>
             </Stack>
           </>

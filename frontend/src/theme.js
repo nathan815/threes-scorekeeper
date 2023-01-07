@@ -20,11 +20,12 @@ const theme = extendTheme({
       500: colors.white,
     },
     darkGray: colors.darkGray,
+    offWhite: colors.offWhite,
   },
   styles: {
     global: (props) => ({
       body: {
-        bg: mode(colors.offWhite, colors.darkGray)(props),
+        bg: mode('offWhite', 'darkGray')(props),
       },
     }),
   },
