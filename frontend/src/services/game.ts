@@ -31,10 +31,19 @@ export interface GameRoundAugmented extends GameRound {
   playerResults: { [id: string]: PlayerResultAugmented };
 }
 
-export interface GameAugmented extends Game {
-  rounds: GameRoundAugmented[];
-  currentRoundObj?: GameRoundAugmented | null;
+export interface GameAugmented {
+  id: string;
+  shortId: string;
+  name: string;
+  owner: Player;
   players: PlayerAugmented[];
+  currentRound: number | null;
+  rounds: GameRoundAugmented[];
+  totalPointsByPlayer: { [id: string]: number };
+  currentWinnerIds: string[];
+  startedAt?: Date;
+  endedAt?: Date;
+  currentRoundObj?: GameRoundAugmented | null;
   hasStarted: boolean;
   ableToStart: boolean;
   dealerPerfectCutCards: number;
@@ -166,12 +175,16 @@ function augmentGame(game: Game): GameAugmented {
 
   return {
     ...game,
+    startedAt: game.startedAt ? new Date(game.startedAt) : undefined,
+    endedAt: game.endedAt ? new Date(game.endedAt) : undefined,
     currentRoundObj: currentRound,
     rounds: augmentedRounds,
     players: augmentedPlayers,
     hasStarted: Boolean(game.startedAt),
     ableToStart: augmentedPlayers.length > 1,
-    dealerPerfectCutCards: game.players.length * (game.currentRound || 0) + 1,
+    dealerPerfectCutCards: game.currentRound
+      ? game.players.length * game.currentRound + 1
+      : 0,
   };
 }
 

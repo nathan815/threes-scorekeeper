@@ -1,5 +1,6 @@
-import { Box, BoxProps, Tag } from '@chakra-ui/react';
+import { Box, BoxProps, Text, Tag } from '@chakra-ui/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { IoCheckmarkCircle } from 'react-icons/io5';
 import { PlayingCard } from '../../components/PlayingCard';
 import { GameAugmented } from '../../services/game';
 import { ALL_SUITS, CardRankNumber } from '../../utils/card';
@@ -46,8 +47,14 @@ export function CurrentRoundCard({
 
   return (
     <>
-      <Tag size="lg" mb={3}>
-        {`${roundRankName(round, true)}`} are wild
+      <Tag size="lg" mb={3} display="flex" flexDirection="row">
+        {game.endedAt ? (
+          <>
+            <IoCheckmarkCircle /> <Text ml={1}>Game Finished</Text>
+          </>
+        ) : (
+          `${roundRankName(round, true)} are wild`
+        )}
       </Tag>
       <Box
         className={'current-card-container ' + (className || '')}

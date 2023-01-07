@@ -17,8 +17,8 @@ export interface Game {
   rounds: GameRound[];
   totalPointsByPlayer: { [id: string]: number };
   currentWinnerIds: string[];
-  startedAt?: Date;
-  endedAt?: Date;
+  startedAt?: string;
+  endedAt?: string;
 }
 
 export interface GameRound {

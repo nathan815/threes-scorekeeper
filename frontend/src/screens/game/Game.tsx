@@ -82,6 +82,7 @@ import { RecordPointsModal } from './modals/RecordPointsModal';
 import { TransferOwnershipModal } from './modals/TransferOwnershipModal';
 import { ChangeGameNameModal } from './modals/ChangeGameNameModal';
 import { JoinGameModal } from './modals/JoinGameModal';
+import { getRelativeTime } from 'src/utils/relativeTime';
 
 interface PlayerAvatarProps extends AvatarProps {
   player: PlayerAugmented;
@@ -266,7 +267,7 @@ function GameQRCode({ id, ...boxProps }) {
 
 function gameStatusText(game: GameAugmented) {
   if (game.endedAt) {
-    return `Finished ${game.endedAt}`;
+    return `Finished ${getRelativeTime(game.endedAt)}`;
   }
   if (game.startedAt) {
     return 'In progress';
@@ -342,6 +343,7 @@ function PlayerScoresTable({
 }
 
 export function GameScreen() {
+  console.log('RENDER');
   const { gameId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const authCtx = useAuthContext();
@@ -456,6 +458,7 @@ export function GameScreen() {
 
   // Open the join modal if URL query params are present
   useEffect(() => {
+    console.log('join modal effect');
     if (loading || joinParams.actedOn || currentPlayer) {
       return;
     }
@@ -657,7 +660,7 @@ export function GameScreen() {
                               </Button>
                             )}
 
-                            {game.hasStarted && (
+                            {game.hasStarted && !game.endedAt && (
                               <Button
                                 colorScheme="blue"
                                 onClick={() => finishRoundModal.onOpen()}
@@ -665,6 +668,10 @@ export function GameScreen() {
                               >
                                 Record Points
                               </Button>
+                            )}
+
+                            {game.endedAt && (
+                              <Button colorScheme="blue">Start New Game</Button>
                             )}
                           </>
                         )}

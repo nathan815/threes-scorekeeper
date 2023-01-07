@@ -77,9 +77,11 @@ export function CurrentRoundCardModal({
               mb={5}
               className="no-shadow"
             />
-            <Tag size="lg" textAlign="center">
-              Dealer perfect cut: {game.dealerPerfectCutCards} cards
-            </Tag>
+            {game.dealerPerfectCutCards > 0 && (
+              <Tag size="lg" textAlign="center">
+                Dealer perfect cut: {game.dealerPerfectCutCards} cards
+              </Tag>
+            )}
           </Flex>
         </ModalBody>
       </ModalContent>
