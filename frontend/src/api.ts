@@ -25,6 +25,8 @@ export interface GameRound {
   cardRank: number;
   isFinished: boolean;
   playerResults: { [id: string]: PlayerResult };
+  startedAt: string;
+  endedAt?: string;
 }
 
 export interface PlayerResult {

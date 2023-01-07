@@ -41,6 +41,7 @@ import React, {
 import { IconBaseProps } from 'react-icons';
 import { BsChevronDoubleRight } from 'react-icons/bs';
 import {
+  IoArrowForwardSharp,
   IoCaretDown,
   IoCheckmark,
   IoEllipsisHorizontalOutline,
@@ -54,7 +55,7 @@ import {
 import { MdStars } from 'react-icons/md';
 import { SlPencil } from 'react-icons/sl';
 import QRCode from 'react-qr-code';
-import TimeAgo, { Unit} from 'react-timeago';
+import TimeAgo, { Unit } from 'react-timeago';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { ApiError } from '../../api';
 import { AuthUser, useAuthContext } from '../../auth/authContext';
@@ -83,7 +84,7 @@ import { RecordPointsModal } from './modals/RecordPointsModal';
 import { TransferOwnershipModal } from './modals/TransferOwnershipModal';
 import { ChangeGameNameModal } from './modals/ChangeGameNameModal';
 import { JoinGameModal } from './modals/JoinGameModal';
-import { getDurationText, getRelativeTime, timeDurationFormatter } from 'src/utils/time';
+import { getDurationText, timeDurationFormatter } from 'src/utils/time';
 
 interface PlayerAvatarProps extends AvatarProps {
   player: PlayerAugmented;
@@ -271,8 +272,7 @@ function GameStatusDisplay({ game }: { game: GameAugmented }) {
   if (game.endedAt) {
     status = (
       <>
-        <Text>Finished</Text>
-        <TimeAgo date={game.endedAt}></TimeAgo>
+        {'Finished '} <TimeAgo date={game.endedAt}></TimeAgo>
       </>
     );
   } else if (game.startedAt) {
@@ -284,8 +284,13 @@ function GameStatusDisplay({ game }: { game: GameAugmented }) {
     status = `In progress ${dur ? `(${dur})` : ''}`;
     status = (
       <>
-        {'In progress '}
-        (<TimeAgo date={game.startedAt} formatter={timeDurationFormatter}></TimeAgo>)
+        {'In progress '}(
+        <TimeAgo
+          date={game.startedAt}
+          formatter={timeDurationFormatter}
+          live={true}
+        ></TimeAgo>
+        )
       </>
     );
   } else if (game.ableToStart) {
@@ -361,7 +366,7 @@ function PlayerScoresTable({
 }
 
 export function GameScreen() {
-  console.log('RENDER');
+  // console.log('RENDER');
   const { gameId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const authCtx = useAuthContext();
@@ -369,7 +374,10 @@ export function GameScreen() {
 
   // Modal states
   const joinGameModal = useDisclosure({
-    onClose: () => setSearchParams({}, { replace: true }),
+    onClose: useCallback(
+      () => setSearchParams({}, { replace: true }),
+      [setSearchParams]
+    ),
   });
   const finishRoundModal = useDisclosure();
   const transferOwnershipModal = useDisclosure();
@@ -382,6 +390,7 @@ export function GameScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [gameStarting, setGameStarting] = useState(false);
+  const [gameJoining, setGameJoining] = useState(false);
   const timerId = useRef<number>();
   const currentCardState = useCurrentRoundCardState();
 
@@ -442,6 +451,7 @@ export function GameScreen() {
     if (!game) {
       return;
     }
+    setGameJoining(true);
     try {
       const updatedGame = await joinGame(game.shortId);
       setGame(updatedGame);
@@ -460,22 +470,25 @@ export function GameScreen() {
         position: 'top',
         status: 'error',
       });
+    } finally {
+      setGameJoining(false);
     }
   }, [game, toast]);
 
-  // Start polling of game data
   useEffect(() => {
+    // Start polling of game data
     pollGame();
     return () => clearTimeout(timerId.current!);
   }, [pollGame]);
 
-  // Show the QR code once game data loads if game has not started.
   useEffect(() => {
+    // Show the QR code once game data loads if game has not started.
     setShowQrCode(!loading && !Boolean(game?.startedAt));
   }, [loading, game?.startedAt]);
 
-  // Open the join modal if URL query params are present
+  const openJoinModal = joinGameModal.onOpen;
   useEffect(() => {
+    // Open the join modal if URL query params are present
     console.log('join modal effect');
     if (loading || joinParams.actedOn || currentPlayer) {
       return;
@@ -485,7 +498,7 @@ export function GameScreen() {
     if (joinParams.join) {
       // If ?confirm=true, OR needs auth, OR game has already started
       if (joinParams.confirm || !currentUser || game?.hasStarted) {
-        joinGameModal.onOpen();
+        openJoinModal();
       } else {
         // TODO loading state here to disable Join button
         onJoinGame();
@@ -496,11 +509,11 @@ export function GameScreen() {
   }, [
     loading,
     joinParams,
-    joinGameModal,
     currentUser,
     currentPlayer,
     game?.hasStarted,
     onJoinGame,
+    openJoinModal,
   ]);
 
   const onClickGameStart = async () => {
@@ -596,10 +609,10 @@ export function GameScreen() {
                   <CardBody>
                     <Flex direction="column" alignItems="start" width="full">
                       <HStack spacing={1}>
-                        <Heading size="md">Game</Heading>
-                        <BsChevronDoubleRight />
+                        {/* <Heading size="md">Game:</Heading> */}
+                        {/* <BsChevronDoubleRight /> */}
                         <Heading size="md" fontWeight="normal">
-                          {game.name}
+                          <b>Game:</b> {game.name}
                         </Heading>
                       </HStack>
 
@@ -639,7 +652,8 @@ export function GameScreen() {
                               onClick={() => joinGameModal.onOpen()}
                               colorScheme="blue"
                               leftIcon={<IoEnter />}
-                              disabled={game.hasStarted}
+                              disabled={game.hasStarted || gameJoining}
+                              isLoading={gameJoining}
                             >
                               Join
                             </Button>
@@ -682,7 +696,7 @@ export function GameScreen() {
                               <Button
                                 colorScheme="blue"
                                 onClick={() => finishRoundModal.onOpen()}
-                                leftIcon={<SlPencil />}
+                                leftIcon={<IoArrowForwardSharp />}
                               >
                                 Record Points
                               </Button>

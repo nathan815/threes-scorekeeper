@@ -1,6 +1,7 @@
-import { Box, BoxProps, Text, Tag } from '@chakra-ui/react';
+import { Box, BoxProps, Text, Tag, HStack } from '@chakra-ui/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { IoCheckmarkCircle } from 'react-icons/io5';
+import { IoCheckmarkCircle, IoTime } from 'react-icons/io5';
+import { LiveTimeSince } from 'src/components/LiveTimeSince';
 import { PlayingCard } from '../../components/PlayingCard';
 import { GameAugmented } from '../../services/game';
 import { ALL_SUITS, CardRankNumber } from '../../utils/card';
@@ -41,21 +42,39 @@ export function CurrentRoundCard({
   useWindowResizeCallback(setDivHeight);
   useEffect(setDivHeight, [setDivHeight, cardDiv?.current?.offsetHeight]);
 
+  const roundStartTime = game?.currentRoundObj?.startedAt;
+
   if (!round) {
     return null;
   }
 
   return (
     <>
-      <Tag size="lg" mb={3} display="flex" flexDirection="row">
-        {game.endedAt ? (
-          <>
-            <IoCheckmarkCircle /> <Text ml={1}>Game Finished</Text>
-          </>
-        ) : (
-          `${roundRankName(round, true)} are wild`
+      <HStack mb={3}>
+        <Tag size="lg" display="flex" flexDirection="row">
+          {game.endedAt ? (
+            <>
+              <IoCheckmarkCircle /> <Text ml={1}>Game Finished</Text>
+            </>
+          ) : (
+            `${roundRankName(round, true)} are wild`
+          )}
+        </Tag>
+
+        {!game.endedAt && roundStartTime && (
+          <Tag
+            size="lg"
+            display="flex"
+            flexDirection="row"
+            fontFamily="Monaco, Consolas, monospace"
+          >
+            <IoTime />{' '}
+            <Text ml={1}>
+              <LiveTimeSince date={roundStartTime} />
+            </Text>
+          </Tag>
         )}
-      </Tag>
+      </HStack>
       <Box
         className={'current-card-container ' + (className || '')}
         {...boxProps}

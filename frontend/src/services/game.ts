@@ -26,9 +26,13 @@ export interface PlayerResultAugmented extends PlayerResult {
   bonusPoints: number;
 }
 
-export interface GameRoundAugmented extends GameRound {
-  status: 'finished' | 'inProgress' | 'notStarted';
+export interface GameRoundAugmented {
+  cardRank: number;
+  isFinished: boolean;
   playerResults: { [id: string]: PlayerResultAugmented };
+  startedAt?: Date;
+  endedAt?: Date;
+  status: 'finished' | 'inProgress' | 'notStarted';
 }
 
 export interface GameAugmented {
@@ -142,6 +146,8 @@ function augmentGame(game: Game): GameAugmented {
       ...round,
       status: round.isFinished ? 'finished' : 'inProgress',
       playerResults: playerResults,
+      startedAt: new Date(round.startedAt),
+      endedAt: round.endedAt ? new Date(round.endedAt) : undefined,
     };
   });
 

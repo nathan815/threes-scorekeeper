@@ -1,23 +1,23 @@
-import buildFormatter from 'react-timeago/lib/formatters/buildFormatter'
+import buildFormatter from 'react-timeago/lib/formatters/buildFormatter';
 
 export const timeDurationFormatter = buildFormatter({
-    prefixAgo: null,
-    prefixFromNow: null,
-    suffixAgo: '',
-    suffixFromNow: 'from now',
-    seconds: 'just now',
-    minute: '1 minute',
-    minutes: '%d minutes',
-    hour: '1 hour',
-    hours: '%d hours',
-    day: '1 day',
-    days: '%d days',
-    month: '1 month',
-    months: '%d months',
-    year: '1 year',
-    years: '%d years',
-    wordSeparator: ' ',
-    numbers: []
+  prefixAgo: null,
+  prefixFromNow: null,
+  suffixAgo: '',
+  suffixFromNow: 'from now',
+  seconds: 'just now',
+  minute: '1 minute',
+  minutes: '%d minutes',
+  hour: '1 hour',
+  hours: '%d hours',
+  day: '1 day',
+  days: '%d days',
+  month: '1 month',
+  months: '%d months',
+  year: '1 year',
+  years: '%d years',
+  wordSeparator: ' ',
+  numbers: [],
 });
 
 // in miliseconds
@@ -30,6 +30,7 @@ const units = {
   second: 1000,
 };
 type TimeUnit = keyof typeof units;
+const unitNames = Object.keys(units) as TimeUnit[];
 
 const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'always' });
 
@@ -65,11 +66,11 @@ export function getDurationText({
   const elapsed = Math.abs(d1.valueOf() - d2.valueOf());
 
   if (Number.isNaN(elapsed)) {
-    return;
+    return '';
   }
 
   // "Math.abs" accounts for both "past" & "future" scenarios
-  for (const u of Object.keys(units)) {
+  for (const u of unitNames) {
     const meetsMin = units[u] >= (units[minimumUnit] || -1);
     if ((elapsed > units[u] || u === 'second') && meetsMin) {
       const nf = Intl.NumberFormat(navigator.languages as string[], {
@@ -80,4 +81,55 @@ export function getDurationText({
       return nf.format(Math.round(elapsed / units[u]));
     }
   }
+
+  return '';
+}
+
+/**
+ * Returns duration since provided date formatted as HH:MM:SS
+ */
+export function milliToHms(d: number): string {
+  d = Number(d) / 1000;
+  const h = Math.floor(d / 3600);
+  const m = Math.floor((d % 3600) / 60);
+  const s = Math.floor((d % 3600) % 60);
+
+  const hDisplay = h > 0 ? h + '' : '';
+  const mDisplay = m > 0 ? m + '' : '';
+  const sDisplay = s + '';
+
+  if (h === 0 && m === 0) {
+    return `${s}s`;
+  }
+
+  return (
+    [hDisplay, mDisplay, sDisplay]
+      // .filter((v) => v)
+      .map((v) => v.padStart(2, '0'))
+      .join(':')
+  );
+}
+
+/**
+ * Builds a string showing time since current time as HH:MM:SS
+ * When < 1 min ago, returns just seconds as '2s'
+ */
+export function hoursMinutesSecondsSince(d: Date): string {
+  const elapsed = Math.abs(new Date().valueOf() - d.valueOf());
+  if (elapsed > units.day) {
+    return getDurationText({ d1: d, unitDisplay: 'narrow' });
+  }
+  return milliToHms(elapsed);
+}
+
+/**
+ * Finds the closest TimeUnit based on given milliseconds
+ */
+export function findClosestUnit(ms: number): [TimeUnit, number] {
+  for (const [key, val] of Object.entries(units)) {
+    if (ms > val) {
+      return [key as TimeUnit, val];
+    }
+  }
+  return ['second', units['second']];
 }
