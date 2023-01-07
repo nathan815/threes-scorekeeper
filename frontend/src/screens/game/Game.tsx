@@ -54,6 +54,7 @@ import {
 import { MdStars } from 'react-icons/md';
 import { SlPencil } from 'react-icons/sl';
 import QRCode from 'react-qr-code';
+import TimeAgo, { Unit} from 'react-timeago';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { ApiError } from '../../api';
 import { AuthUser, useAuthContext } from '../../auth/authContext';
@@ -82,7 +83,7 @@ import { RecordPointsModal } from './modals/RecordPointsModal';
 import { TransferOwnershipModal } from './modals/TransferOwnershipModal';
 import { ChangeGameNameModal } from './modals/ChangeGameNameModal';
 import { JoinGameModal } from './modals/JoinGameModal';
-import { getRelativeTime } from 'src/utils/relativeTime';
+import { getDurationText, getRelativeTime, timeDurationFormatter } from 'src/utils/time';
 
 interface PlayerAvatarProps extends AvatarProps {
   player: PlayerAugmented;
@@ -265,17 +266,34 @@ function GameQRCode({ id, ...boxProps }) {
   );
 }
 
-function gameStatusText(game: GameAugmented) {
+function GameStatusDisplay({ game }: { game: GameAugmented }) {
+  let status;
   if (game.endedAt) {
-    return `Finished ${getRelativeTime(game.endedAt)}`;
+    status = (
+      <>
+        <Text>Finished</Text>
+        <TimeAgo date={game.endedAt}></TimeAgo>
+      </>
+    );
+  } else if (game.startedAt) {
+    const dur = getDurationText({
+      d1: game.startedAt,
+      unitDisplay: 'short',
+      minimumUnit: 'minute',
+    });
+    status = `In progress ${dur ? `(${dur})` : ''}`;
+    status = (
+      <>
+        {'In progress '}
+        (<TimeAgo date={game.startedAt} formatter={timeDurationFormatter}></TimeAgo>)
+      </>
+    );
+  } else if (game.ableToStart) {
+    status = 'Waiting for host to start';
+  } else {
+    status = 'Waiting for others to join';
   }
-  if (game.startedAt) {
-    return 'In progress';
-  }
-  if (game.ableToStart) {
-    return 'Waiting for host to start';
-  }
-  return 'Waiting for others to join';
+  return <>{status}</>;
 }
 
 /** Returns new array of player objects sorted for ranking (smallest to largest) */
@@ -588,7 +606,7 @@ export function GameScreen() {
                       <Text fontSize="sm">
                         <b>{game.players.length}</b>{' '}
                         {`player${game.players.length > 1 ? 's' : ''}`} -{' '}
-                        {gameStatusText(game)}
+                        <GameStatusDisplay game={game} />
                       </Text>
 
                       {game.currentRound && (
