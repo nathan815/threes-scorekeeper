@@ -11,9 +11,10 @@ import {
   HStack,
   IconButton,
   Box,
+  BoxProps,
 } from '@chakra-ui/react';
 import React from 'react';
-import { IoCaretDown, IoMenu } from 'react-icons/io5';
+import { IoCaretDown, IoMenuSharp } from 'react-icons/io5';
 import { MdLightMode, MdDarkMode } from 'react-icons/md';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuthContext } from 'src/auth/authContext';
@@ -58,6 +59,16 @@ function AuthOptionMenu() {
   ) : null;
 }
 
+function NavBarLogo(props: BoxProps) {
+  return (
+    <Box {...props}>
+      <RouterLink to="/" className="navbar-logo">
+        <Logo width="auto" height="55px" forceColorMode="dark" />
+      </RouterLink>
+    </Box>
+  );
+}
+
 export function NavBar({ showLogo = true }: { showLogo?: boolean }) {
   const { colorMode, toggleColorMode } = useColorMode();
   return (
@@ -85,9 +96,21 @@ export function NavBar({ showLogo = true }: { showLogo?: boolean }) {
               New Game
             </Button>
           </HStack>
-          <HStack spacing={2} display={{ base: 'block', md: 'none' }}>
+          <HStack
+            spacing={2}
+            display={{ base: 'flex', md: 'none' }}
+            width="full"
+          >
+            <NavBarLogo
+              display={showLogo ? { base: 'flex', md: 'none' } : 'none'}
+            />
             <Menu>
-              <MenuButton as={IconButton} icon={<IoMenu />} variant="outline" />
+              <MenuButton
+                as={IconButton}
+                icon={<IoMenuSharp />}
+                variant="ghost"
+                size="lg"
+              />
               <MenuList color="white">
                 <MenuItem to="/join" as={RouterLink}>
                   Join Game
@@ -100,14 +123,9 @@ export function NavBar({ showLogo = true }: { showLogo?: boolean }) {
           </HStack>
         </Box>
 
-        <RouterLink to="/" className="navbar-logo">
-          <Logo
-            width="auto"
-            height="55px"
-            visibility={showLogo ? 'visible' : 'hidden'}
-            forceColorMode="dark"
-          />
-        </RouterLink>
+        <NavBarLogo
+          display={showLogo ? { base: 'none', md: 'flex' } : 'none'}
+        />
 
         <HStack flex={1} justifyContent="right">
           <IconButton

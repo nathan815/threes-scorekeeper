@@ -66,7 +66,6 @@ export function AuthProvider({ children }) {
   };
 
   useEffect(() => {
-    console.log('UseEffect');
     const savedAuth = readPersistedAuth();
     setAuthData(savedAuth);
 
@@ -90,7 +89,10 @@ export function AuthProvider({ children }) {
               loggedIn: Boolean(loginResponse.user),
               user: loginResponse.user,
             });
-          });
+          })
+          .catch((err) => {
+            console.error('failed guest login', err);
+          })
       } else {
         setAuth({
           loggedIn: Boolean(serverAuth.user),
@@ -99,8 +101,6 @@ export function AuthProvider({ children }) {
       }
     });
   }, []);
-
-  useEffect(() => {}, []);
 
   const finishLogIn: LogInFunction = async (displayName) => {
     if (auth.authFlow.option === 'guest') {
