@@ -78,6 +78,11 @@ export function CurrentRoundCardModal({
                 mb: 5,
                 className: 'no-shadow',
               }}
+              infoContainerProps={{
+                bg: 'blackAlpha.900',
+                padding: '5px',
+                borderRadius: 5,
+              }}
             />
             {game.dealerPerfectCutCards > 0 && (
               <Tag size="lg" textAlign="center">

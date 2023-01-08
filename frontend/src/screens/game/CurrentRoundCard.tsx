@@ -36,11 +36,13 @@ export function CurrentRoundCard({
   state,
   outerContainerProps = {},
   cardContainerProps = {},
+  infoContainerProps: tagContainerProps = {},
 }: {
   game: GameAugmented;
   state: CurrentRoundCardState;
   outerContainerProps?: BoxProps;
   cardContainerProps?: BoxProps;
+  infoContainerProps?: BoxProps
 }) {
   const cardDiv = useRef<HTMLDivElement>(null);
   const round = game?.currentRoundObj;
@@ -69,7 +71,7 @@ export function CurrentRoundCard({
       alignItems="center"
       {...outerContainerProps}
     >
-      <HStack mb={3} flexWrap="wrap">
+      <HStack mb={3} flexWrap="wrap" {...tagContainerProps}>
         <Tag size="lg" display="flex" flexDirection="row">
           {game.endedAt ? (
             <>
