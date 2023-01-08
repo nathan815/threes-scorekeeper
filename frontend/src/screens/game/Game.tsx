@@ -39,18 +39,17 @@ import React, {
   useState,
 } from 'react';
 import { IconBaseProps } from 'react-icons';
-import { BsChevronDoubleRight } from 'react-icons/bs';
 import {
   IoArrowForwardSharp,
-  IoCaretDown,
   IoCheckmark,
+  IoChevronDown,
   IoEllipsisHorizontalOutline,
   IoEnter,
   IoHourglass,
   IoPersonAdd,
   IoPlay,
   IoQrCodeOutline,
-  IoSettings,
+  IoSettingsOutline,
 } from 'react-icons/io5';
 import { MdStars } from 'react-icons/md';
 import QRCode from 'react-qr-code';
@@ -76,14 +75,14 @@ import {
 } from '../../utils/card';
 import { CurrentRoundCardModal } from './modals/CurrentRoundCardModal';
 
+import { LiveTimeAgo } from 'src/components/LiveTimeAgo';
+import { getDurationText } from 'src/utils/time';
+import { CurrentRoundCard, useCurrentRoundCardState } from './CurrentRoundCard';
 import './Game.css';
-import { useCurrentRoundCardState, CurrentRoundCard } from './CurrentRoundCard';
-import { RecordPointsModal } from './modals/RecordPointsModal';
-import { TransferOwnershipModal } from './modals/TransferOwnershipModal';
 import { ChangeGameNameModal } from './modals/ChangeGameNameModal';
 import { JoinGameModal } from './modals/JoinGameModal';
-import { getDurationText } from 'src/utils/time';
-import { LiveTimeAgo } from 'src/components/LiveTimeAgo';
+import { RecordPointsModal } from './modals/RecordPointsModal';
+import { TransferOwnershipModal } from './modals/TransferOwnershipModal';
 
 interface PlayerAvatarProps extends AvatarProps {
   player: PlayerAugmented;
@@ -703,8 +702,8 @@ export function GameScreen() {
                         )}
 
                         <Menu>
-                          <MenuButton as={Button} rightIcon={<IoCaretDown />}>
-                            <IoSettings />
+                          <MenuButton as={Button} rightIcon={<IoChevronDown />}>
+                            <IoSettingsOutline />
                           </MenuButton>
                           <MenuList>
                             {currentPlayer?.isHost && (
