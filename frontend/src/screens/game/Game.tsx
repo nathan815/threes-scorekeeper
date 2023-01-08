@@ -53,9 +53,7 @@ import {
   IoSettings,
 } from 'react-icons/io5';
 import { MdStars } from 'react-icons/md';
-import { SlPencil } from 'react-icons/sl';
 import QRCode from 'react-qr-code';
-import TimeAgo, { Unit } from 'react-timeago';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { ApiError } from '../../api';
 import { AuthUser, useAuthContext } from '../../auth/authContext';
@@ -84,7 +82,8 @@ import { RecordPointsModal } from './modals/RecordPointsModal';
 import { TransferOwnershipModal } from './modals/TransferOwnershipModal';
 import { ChangeGameNameModal } from './modals/ChangeGameNameModal';
 import { JoinGameModal } from './modals/JoinGameModal';
-import { getDurationText, timeDurationFormatter } from 'src/utils/time';
+import { getDurationText } from 'src/utils/time';
+import { LiveTimeAgo } from 'src/components/LiveTimeAgo';
 
 interface PlayerAvatarProps extends AvatarProps {
   player: PlayerAugmented;
@@ -272,7 +271,7 @@ function GameStatusDisplay({ game }: { game: GameAugmented }) {
   if (game.endedAt) {
     status = (
       <>
-        {'Finished '} <TimeAgo date={game.endedAt}></TimeAgo>
+        {'Finished '} <LiveTimeAgo date={game.endedAt} /> ago
       </>
     );
   } else if (game.startedAt) {
@@ -285,12 +284,7 @@ function GameStatusDisplay({ game }: { game: GameAugmented }) {
     status = (
       <>
         {'In progress '}(
-        <TimeAgo
-          date={game.startedAt}
-          formatter={timeDurationFormatter}
-          live={true}
-        ></TimeAgo>
-        )
+        <LiveTimeAgo date={game.startedAt} />)
       </>
     );
   } else if (game.ableToStart) {

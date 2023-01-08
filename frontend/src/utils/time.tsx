@@ -1,25 +1,3 @@
-import buildFormatter from 'react-timeago/lib/formatters/buildFormatter';
-
-export const timeDurationFormatter = buildFormatter({
-  prefixAgo: null,
-  prefixFromNow: null,
-  suffixAgo: '',
-  suffixFromNow: 'from now',
-  seconds: 'just now',
-  minute: '1 minute',
-  minutes: '%d minutes',
-  hour: '1 hour',
-  hours: '%d hours',
-  day: '1 day',
-  days: '%d days',
-  month: '1 month',
-  months: '%d months',
-  year: '1 year',
-  years: '%d years',
-  wordSeparator: ' ',
-  numbers: [],
-});
-
 // in miliseconds
 const units = {
   year: 24 * 60 * 60 * 1000 * 365,
@@ -52,6 +30,7 @@ export function getRelativeTime(d1: Date, d2: Date = new Date()) {
   }
 }
 
+export type UnitDisplay = 'short' | 'long' | 'narrow' | undefined;
 export function getDurationText({
   d1,
   d2 = new Date(),
@@ -60,7 +39,7 @@ export function getDurationText({
 }: {
   d1: Date;
   d2?: Date;
-  unitDisplay?: 'short' | 'long' | 'narrow' | undefined;
+  unitDisplay?: UnitDisplay;
   minimumUnit?: TimeUnit;
 }) {
   const elapsed = Math.abs(d1.valueOf() - d2.valueOf());
@@ -94,7 +73,7 @@ export function milliToHms(d: number): string {
   const m = Math.floor((d % 3600) / 60);
   const s = Math.floor((d % 3600) % 60);
 
-  const hDisplay = h > 0 ? h + '' : '';
+  const hDisplay = h > 0 ? h + '' : undefined;
   const mDisplay = m > 0 ? m + '' : '';
   const sDisplay = s + '';
 
@@ -102,12 +81,10 @@ export function milliToHms(d: number): string {
     return `${s}s`;
   }
 
-  return (
-    [hDisplay, mDisplay, sDisplay]
-      // .filter((v) => v)
-      .map((v) => v.padStart(2, '0'))
-      .join(':')
-  );
+  return [hDisplay, mDisplay, sDisplay]
+    .filter((v) => v !== undefined)
+    .map((v) => v?.padStart(2, '0'))
+    .join(':');
 }
 
 /**

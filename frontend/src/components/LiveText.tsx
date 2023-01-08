@@ -1,3 +1,4 @@
+import { TextProps } from '@chakra-ui/react';
 import React, { useRef, useEffect } from 'react';
 
 /**
@@ -6,10 +7,11 @@ import React, { useRef, useEffect } from 'react';
 export function LiveText({
   generateText,
   nextTickDelay,
+  ...props
 }: {
   generateText: () => string;
   nextTickDelay: () => number;
-}) {
+} & React.HTMLProps<HTMLSpanElement>) {
   const ele = useRef<HTMLSpanElement>(null);
   const timer = useRef<number>();
 
@@ -30,5 +32,5 @@ export function LiveText({
     return () => clearTimeout(timer.current);
   }, [generateText, nextTickDelay]);
 
-  return <span ref={ele}></span>;
+  return <span ref={ele} {...props}></span>;
 }
