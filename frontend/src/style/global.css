@@ -4,7 +4,7 @@ body,
   height: 100%;
 }
 
-.navbar {
+/* .navbar {
   position: fixed;
   top: 0;
   z-index: 1;
@@ -12,9 +12,9 @@ body,
 .navbar .navbar-logo {
   width: auto;
   height: 70%;
-}
+} */
 
-.navbar .navbar-logo img {
+/* .navbar .navbar-logo img {
   width: auto;
   height: 100%;
-}
+} */
