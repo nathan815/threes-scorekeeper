@@ -745,10 +745,14 @@ export function GameScreen() {
                 <CurrentRoundCard
                   game={game}
                   state={currentCardState}
-                  visibility={cardModal.isOpen ? 'hidden' : 'visible'}
-                  maxWidth="310px"
-                  mb={5}
-                  onClick={() => cardModal.onOpen()}
+                  outerContainerProps={{
+                    visibility: cardModal.isOpen ? 'hidden' : 'visible',
+                    mb: 5,
+                  }}
+                  cardContainerProps={{
+                    maxWidth: '310px',
+                    onClick: () => cardModal.onOpen(),
+                  }}
                 />
 
                 <Flex

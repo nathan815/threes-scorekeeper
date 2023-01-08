@@ -72,10 +72,12 @@ export function CurrentRoundCardModal({
             <CurrentRoundCard
               game={game}
               state={cardState}
-              width={`${width}px`}
-              height="auto"
-              mb={5}
-              className="no-shadow"
+              cardContainerProps={{
+                width: `${width}px`,
+                height: 'auto',
+                mb: 5,
+                className: 'no-shadow',
+              }}
             />
             {game.dealerPerfectCutCards > 0 && (
               <Tag size="lg" textAlign="center">

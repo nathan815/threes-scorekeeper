@@ -1,4 +1,12 @@
-import { Box, BoxProps, Text, Tag, HStack } from '@chakra-ui/react';
+import {
+  Box,
+  BoxProps,
+  Text,
+  Tag,
+  HStack,
+  Flex,
+  useColorModeValue,
+} from '@chakra-ui/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { IoCheckmarkCircle, IoTime } from 'react-icons/io5';
 import { LiveTimeSince } from 'src/components/LiveTimeSince';
@@ -26,12 +34,18 @@ export function useCurrentRoundCardState(): CurrentRoundCardState {
 export function CurrentRoundCard({
   game,
   state,
-  className,
-  ...boxProps
-}: { game: GameAugmented; state: CurrentRoundCardState } & BoxProps) {
+  outerContainerProps = {},
+  cardContainerProps = {},
+}: {
+  game: GameAugmented;
+  state: CurrentRoundCardState;
+  outerContainerProps?: BoxProps;
+  cardContainerProps?: BoxProps;
+}) {
   const cardDiv = useRef<HTMLDivElement>(null);
   const round = game?.currentRoundObj;
-  const [height, setHeight] = useState(boxProps.height || 0);
+  const [height, setHeight] = useState(cardContainerProps.height || 0);
+  const opacity = useColorModeValue(1, 0.9);
 
   const setDivHeight = useCallback(() => {
     if (cardDiv?.current?.offsetHeight) {
@@ -49,8 +63,13 @@ export function CurrentRoundCard({
   }
 
   return (
-    <>
-      <HStack mb={3}>
+    <Flex
+      width="full"
+      direction="column"
+      alignItems="center"
+      {...outerContainerProps}
+    >
+      <HStack mb={3} flexWrap="wrap">
         <Tag size="lg" display="flex" flexDirection="row">
           {game.endedAt ? (
             <>
@@ -67,6 +86,7 @@ export function CurrentRoundCard({
             display="flex"
             flexDirection="row"
             fontFamily="Monaco, Consolas, monospace"
+            title={`Round started ${roundStartTime.toLocaleString()}`}
           >
             <IoTime />{' '}
             <Text ml={1}>
@@ -76,8 +96,11 @@ export function CurrentRoundCard({
         )}
       </HStack>
       <Box
-        className={'current-card-container ' + (className || '')}
-        {...boxProps}
+        {...cardContainerProps}
+        className={
+          'current-card-container ' + (cardContainerProps.className || '')
+        }
+        opacity={opacity}
         height={`${height}px`}
         background="white"
         borderRadius={15}
@@ -92,6 +115,6 @@ export function CurrentRoundCard({
           </Box>
         ))}
       </Box>
-    </>
+    </Flex>
   );
 }

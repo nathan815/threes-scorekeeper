@@ -77,10 +77,6 @@ export function milliToHms(d: number): string {
   const mDisplay = m > 0 ? m + '' : '';
   const sDisplay = s + '';
 
-  if (h === 0 && m === 0) {
-    return `${s}s`;
-  }
-
   return [hDisplay, mDisplay, sDisplay]
     .filter((v) => v !== undefined)
     .map((v) => v?.padStart(2, '0'))
