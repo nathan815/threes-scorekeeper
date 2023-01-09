@@ -2,9 +2,9 @@ import axios, { AxiosError } from 'axios';
 
 export interface Player {
   id: string;
-  displayName: string;
+  displayName?: string;
   gravatarHash: string;
-  isGuest: boolean;
+  isPseudo?: boolean;
 }
 
 export interface Game {
@@ -94,6 +94,17 @@ function createGame(name: string): Promise<Game> {
     .then((res) => res.data);
 }
 
+function addPseudoPlayer(
+  gameId: string,
+  newDisplayName: string
+): Promise<Game> {
+  return http
+    .post(`/games/${gameId}/pseudoPlayers`, {
+      displayName: newDisplayName,
+    })
+    .then((res) => res.data);
+}
+
 function joinGame(gameId: string): Promise<Game> {
   return http.post(`/games/${gameId}/join`).then((res) => res.data);
 }
@@ -142,6 +153,7 @@ export const api = {
   createGame,
   getGame,
   joinGame,
+  addPseudoPlayer,
   updateGame,
   startGame,
   completeCurrentRound,
@@ -178,5 +190,6 @@ export class ValidationError extends ApiError {
       const message = `${e.msg.charAt(0).toLowerCase()}${e.msg.substring(1)}`;
       return `${field} ${message}`;
     });
+    this.message = 'Validation failure: ' + this.humanReadableErrors;
   }
 }

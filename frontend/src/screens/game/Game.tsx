@@ -83,6 +83,7 @@ import { ChangeGameNameModal } from './modals/ChangeGameNameModal';
 import { JoinGameModal } from './modals/JoinGameModal';
 import { RecordPointsModal } from './modals/RecordPointsModal';
 import { TransferOwnershipModal } from './modals/TransferOwnershipModal';
+import { AddPlayerModal } from 'src/screens/game/modals/AddPlayerModal';
 
 interface PlayerAvatarProps extends AvatarProps {
   player: PlayerAugmented;
@@ -376,6 +377,7 @@ export function GameScreen() {
   const transferOwnershipModal = useDisclosure();
   const changeNameModal = useDisclosure();
   const cardModal = useDisclosure();
+  const addPlayerModal = useDisclosure();
 
   const [game, setGame] = useState<GameAugmented>();
   const [showQrCode, setShowQrCode] = useState(false);
@@ -568,6 +570,11 @@ export function GameScreen() {
             modalState={transferOwnershipModal}
             onGameUpdate={setGame}
           />
+          <AddPlayerModal
+            game={game}
+            modalState={addPlayerModal}
+            onGameUpdate={setGame}
+          />
         </>
       )}
       <VStack align="flex-start" alignItems="start" width="100%">
@@ -645,7 +652,7 @@ export function GameScreen() {
                               onClick={() => joinGameModal.onOpen()}
                               colorScheme="blue"
                               leftIcon={<IoEnter />}
-                              disabled={game.hasStarted || gameJoining}
+                              disabled={gameJoining}
                               isLoading={gameJoining}
                             >
                               Join
@@ -678,10 +685,11 @@ export function GameScreen() {
 
                             {!game.hasStarted && (
                               <Button
-                                colorScheme="blue"
+                                // colorScheme="blue"
                                 leftIcon={<IoPersonAdd />}
+                                onClick={addPlayerModal.onOpen}
                               >
-                                Add Player
+                                Add
                               </Button>
                             )}
 
@@ -711,7 +719,7 @@ export function GameScreen() {
                                 <MenuItem
                                   onClick={() => changeNameModal.onOpen()}
                                 >
-                                  Rename Game
+                                  Edit Name
                                 </MenuItem>
                                 <MenuItem
                                   onClick={() =>

@@ -1,5 +1,5 @@
 import { CardRank } from './cards';
-import { User } from '../user/user.model';
+import { PseudoUser, User } from '../user/user.model';
 import { generateShortId } from '../../utils/generateShortId';
 
 const MAX_PLAYERS = 8;
@@ -13,10 +13,18 @@ export enum GameStage {
   Done = 'Done',
 }
 
+export interface Player {
+  id: string;
+  displayName?: string;
+  gravatarHash: string;
+  isPseudo?: boolean;
+}
+
 export class Game {
   id!: string;
   stage: GameStage = GameStage.Pre;
-  players: User[] = [];
+  userPlayers: User[] = [];
+  pseudoPlayers: PseudoUser[] = [];
   rounds: GameRound[] = [];
   startedAt?: Date;
   endedAt?: Date;
@@ -27,8 +35,20 @@ export class Game {
     public shortId: string = generateShortId()
   ) {
     if (owner) {
-      this.addPlayer(owner);
+      this.addUserPlayer(owner);
     }
+  }
+
+  get players(): Player[] {
+    return [
+      ...this.userPlayers,
+      ...this.pseudoPlayers.map(({ id, displayName, gravatarHash }) => ({
+        id,
+        displayName,
+        gravatarHash,
+        isPseudo: true,
+      })),
+    ];
   }
 
   get currentRound(): GameRound | undefined {
@@ -45,10 +65,9 @@ export class Game {
   totalPointsByPlayer(includeUnfinished = true): { [userId: string]: number } {
     // console.log('enter totalPointsByPlayer', 'rounds', this.rounds);
     const totals: { [userId: string]: number } = {};
-    for (const player of this.players) {
-      totals[player.id] =
-        (totals[player.id] || 0) +
-        this.getPlayerPoints(player, includeUnfinished);
+    for (const { id } of this.players) {
+      totals[id] =
+        (totals[id] || 0) + this.getPlayerPoints(id, includeUnfinished);
     }
     return totals;
   }
@@ -72,47 +91,67 @@ export class Game {
         minPointsUserIds = [userId];
       }
     }
-    return this.players.filter((u) => minPointsUserIds.includes(u.id));
+    return this.userPlayers.filter((u) => minPointsUserIds.includes(u.id));
   }
 
-  changeOwner(playerId: string) {
-    if (playerId === this.owner.id) {
+  changeOwner(newOwnerId: string) {
+    if (newOwnerId === this.owner.id) {
       return false;
     }
-    const player = this.players.find((u) => u.id === playerId);
-    if (!player) {
-      throw new GameError(`Player ID ${playerId} is not in this game.`);
+    const user = this.userPlayers.find((u) => u.id === newOwnerId);
+    if (!user) {
+      throw new GameError(`No user with ID '${newOwnerId}' is in this game.`);
     }
-    this.owner = player;
+    this.owner = user;
     return true;
   }
 
-  addPlayer(player: User): boolean {
+  addUserPlayer(player: User): boolean {
     if (!(player instanceof User)) {
       throw new GameError(`Invalid player user object: ${player}`);
     }
+    if (this.userPlayers.some((u) => u.id == player.id)) {
+      return true;
+    }
+    this.addPlayerPrechecks();
+    this.userPlayers.push(player);
+    return true;
+  }
+
+  addPseudoPlayer(newPlayer: PseudoUser): boolean {
+    if (!(newPlayer instanceof PseudoUser)) {
+      throw new GameError(`Invalid player user object: ${newPlayer}`);
+    }
+    if (this.pseudoPlayers.some((u) => u.id == newPlayer.id)) {
+      return true;
+    }
+    if (this.players.some((p) => p.displayName == newPlayer.displayName)) {
+      throw new GameError(`Player with name '${newPlayer.displayName}' is already in this game`)
+    }
+    this.addPlayerPrechecks();
+    this.pseudoPlayers.push(newPlayer);
+    return true;
+  }
+
+  private addPlayerPrechecks() {
     if (this.stage != GameStage.Pre) {
       throw new IllegalGameStageError(
         `Cannot add players in stage ${this.stage}`
       );
     }
-    if (this.players.some((u) => u.id == player.id)) {
-      // Player is already in the game. All good.
-      return true;
-    }
     if (this.players.length >= MAX_PLAYERS) {
       throw new GameError(`Maximum of ${MAX_PLAYERS} players reached`);
     }
-    this.players.push(player);
-    return true;
   }
 
-  getPlayerPoints(player: User, includeUnfinished = false): number {
+  getPlayerPoints(id: string, includeUnfinished = false): number {
     return this.rounds
       .filter((round) => includeUnfinished || round.isFinished)
       .map((round) => {
-        const result = round.playerResults[player.id];
-        return result ? (result.cardPoints || 0) + (result.perfectCutBonus || 0) : 0;
+        const result = round.playerResults[id];
+        return result
+          ? (result.cardPoints || 0) + (result.perfectCutBonus || 0)
+          : 0;
       })
       .reduce((prev, cur) => prev + cur, 0);
   }
@@ -148,7 +187,7 @@ export class Game {
   }
 
   recordPlayerRoundResult(
-    player: User,
+    playerId: string,
     points: number,
     cutDeckPerfectly: boolean = false,
     roundNumber?: number
@@ -178,11 +217,12 @@ export class Game {
       round = foundRound;
     }
 
-    if (!this.players.some((u) => u.id == player.id)) {
-      throw new GameError(`No player with ID ${player.id} in this game`);
+    if (!this.players.some((u) => u.id == playerId)) {
+      throw new GameError(`No player with ID ${playerId} in this game`);
     }
+
     return round.recordPlayerResult({
-      userId: player.id,
+      userId: playerId,
       cardPoints: points,
       perfectCutBonus: cutDeckPerfectly ? PERFECT_DECK_CUT_BONUS : 0,
     });

@@ -78,7 +78,7 @@ export function TransferOwnershipModal(props: {
                 onChange={(e) => setSelectedOwner(e.target.value)}
               >
                 {game?.players
-                  .filter((p) => p.id !== game.owner.id)
+                  .filter((p) => p.id !== game.owner.id && !p.isPseudo)
                   .map((player) => (
                     <option value={player.id} key={player.id}>
                       {player.displayName}

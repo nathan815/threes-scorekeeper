@@ -21,6 +21,8 @@ import { TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
 import { GameRepository } from '../domain/game/game.repository';
 import { cloneDeep } from 'lodash';
 import { CardRank } from '../domain/game/cards';
+import { PseudoUser } from '../domain/user/user.model';
+import { plainToClass, plainToInstance } from 'class-transformer';
 
 class GameRoundSchema {
   @prop()
@@ -58,6 +60,9 @@ export class GameSchema extends TimeStamps {
   players: Ref<UserSchema>[] = [];
 
   @prop()
+  pseudoPlayers: PseudoUser[] = [];
+
+  @prop()
   rounds: GameRoundSchema[] = [];
 
   @prop()
@@ -76,9 +81,11 @@ export class GameSchema extends TimeStamps {
     // TODO: better handling for this.owner nullable?
     const game = new Game(this.name!, this.owner!.toDomain(), this.shortId);
     game.id = this._id.toHexString();
-    game.players = this.players.map((p) => {
+    game.userPlayers = this.players.map((p) => {
       return p.toDomain();
     });
+    game.pseudoPlayers =
+      this.pseudoPlayers?.map((p) => plainToInstance(PseudoUser, p)) || [];
     game.stage = GameStage[this.stage! as keyof typeof GameStage];
     game.rounds = this.rounds.map((r) => {
       const round = new GameRound(CardRank.of(r.cardRank!));
@@ -98,7 +105,8 @@ export class GameSchema extends TimeStamps {
     entity._id = game.id
       ? new mongoose.Types.ObjectId(game.id)
       : new mongoose.Types.ObjectId();
-    entity.players = game.players.map(UserSchema.fromDomain);
+    entity.players = game.userPlayers.map(UserSchema.fromDomain);
+    entity.pseudoPlayers = game.pseudoPlayers;
     entity.shortId = game.shortId;
     if (game.owner) {
       entity.owner = UserSchema.fromDomain(game.owner);
@@ -115,6 +123,7 @@ export class GameSchema extends TimeStamps {
     });
     entity.startedAt = game.startedAt;
     entity.endedAt = game.endedAt;
+    console.debug('fromDomain - entity', entity);
     return entity;
   }
 }

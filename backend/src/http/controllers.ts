@@ -14,6 +14,7 @@ import {
   GameError,
   NonOwnerCannotStartGameError,
 } from '../domain/game/game.model';
+import { PseudoUser } from '../domain/user/user.model';
 
 export const router = Router();
 
@@ -27,16 +28,18 @@ router.get('/auth/state', (req, res) => {
   });
 });
 
+const validateDisplayName = v
+  .body('displayName')
+  .isString()
+  .notEmpty()
+  .withMessage('must be a string')
+  .isLength({ min: 3, max: 15 })
+  .withMessage('must be between 3 and 15 chars long');
+
 router.post(
   '/auth/guest/register',
   requiresNoAuth,
-  v
-    .body('displayName')
-    .isString()
-    .notEmpty()
-    .withMessage('must be a string')
-    .isLength({ min: 3, max: 15 })
-    .withMessage('must be between 3 and 15 chars long'),
+  validateDisplayName,
   checkRequestValidation,
   async (req, res) => {
     const user = await req.di.userService.createGuestUser({
@@ -136,11 +139,39 @@ router.post(
       return;
     }
     try {
-      game.addPlayer(req.user!);
+      game.addUserPlayer(req.user!);
     } catch (err) {
       if (err instanceof GameError) {
         return res.status(StatusCodes.CONFLICT).send({
           errorMessage: `Unable to join game: ${err.message}`,
+          errorType: err.constructor.name,
+        });
+      }
+      throw err;
+    }
+    req.di.repositories.game.update(game);
+    res.json(gameToDto(game));
+  }
+);
+
+router.post(
+  '/games/:id/pseudoPlayers',
+  requiresAuth,
+  validateDisplayName,
+  checkRequestValidation,
+  async (req, res) => {
+    const { displayName } = req.body;
+    const game = await getGameOrSendFailure(req, res);
+    if (!game) {
+      return;
+    }
+    try {
+      game.addPseudoPlayer(PseudoUser.make(displayName));
+      console.log('ctrl - addPseudoPlayer - game', game);
+    } catch (err) {
+      if (err instanceof GameError) {
+        return res.status(StatusCodes.CONFLICT).send({
+          errorMessage: `Unable to add player to game: ${err.message}`,
           errorType: err.constructor.name,
         });
       }
@@ -248,20 +279,13 @@ router.put(
   '/games/:id/rounds/:round/playerResult/:userId',
   requiresAuth,
   validateRoundParam,
-  v.param('userId').isMongoId(),
+  v.param('playerId').isMongoId(),
   v.body('points').isInt().toInt(),
   v.body('perfectDeckCut').isBoolean({ strict: true }),
   checkRequestValidation,
   async (req, res) => {
-    const { round, userId } = req.params;
+    const { round, playerId } = req.params;
     const { points, perfectDeckCut } = req.body;
-
-    const subjectUser = await req.di.userService.getUser(userId);
-    if (!subjectUser) {
-      return res.status(StatusCodes.BAD_REQUEST).send({
-        errorMessage: 'Provided userId does not exist',
-      });
-    }
 
     const game = await getGameOrSendFailure(req, res);
     if (!game) {
@@ -271,7 +295,7 @@ router.put(
     try {
       const roundNumber = round === 'current' ? undefined : parseInt(round);
       game.recordPlayerRoundResult(
-        subjectUser,
+        playerId,
         points,
         perfectDeckCut,
         roundNumber
@@ -315,23 +339,11 @@ router.put(
       return;
     }
 
-    const userIds = Object.keys(results);
-    const users = await Promise.all(
-      userIds.map((userId) => req.di.userService.getUser(userId))
-    );
-
     for (const [userId, result] of Object.entries(results)) {
-      const user = users.find((user) => user && user.id === userId);
-      if (!user) {
-        return res.status(StatusCodes.BAD_REQUEST).json({
-          errorMessage: `User ${userId} does not exist`,
-        });
-      }
-
       try {
         const roundNumber = round === 'current' ? undefined : parseInt(round);
         game.recordPlayerRoundResult(
-          user,
+          userId,
           result.points,
           result.perfectDeckCut,
           roundNumber

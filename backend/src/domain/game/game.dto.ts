@@ -1,6 +1,6 @@
 import { UserPublicDto, userToDto } from '../user/user.dto';
 import { CardRank } from './cards';
-import { Game, GameRound, GameStage, PlayerResultMap } from './game.model';
+import { Game, GameRound, GameStage, Player, PlayerResultMap } from './game.model';
 
 export interface GameRoundDto {
   cardRank: number;
@@ -16,7 +16,7 @@ export interface GameDto {
   shortId: string;
   stage: GameStage;
   owner: UserPublicDto;
-  players: UserPublicDto[];
+  players: Player[];
   currentWinnerIds: string[];
   totalPointsByPlayer: { [userId: string]: number };
   startedAt?: Date;
@@ -61,7 +61,7 @@ export function gameToDto(game: Game): GameDto {
     shortId,
     stage,
     owner: userToDto(owner!),
-    players: players.map(userToDto),
+    players,
     currentRound: currentRound?.cardRank.number || null,
     rounds: rounds.map(gameRoundToDto),
     totalPointsByPlayer: game.totalPointsByPlayer(),

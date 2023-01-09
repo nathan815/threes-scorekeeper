@@ -90,10 +90,10 @@ export function NavBar({ showLogo = true }: { showLogo?: boolean }) {
         <Box flex={1}>
           <HStack spacing={2} display={{ base: 'none', md: 'block' }}>
             <Button to="/join" as={RouterLink} variant="ghost">
-              Join Game
+              Join
             </Button>
             <Button to="/new" as={RouterLink} variant="ghost">
-              New Game
+              Create
             </Button>
           </HStack>
           <HStack
