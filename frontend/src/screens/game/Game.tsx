@@ -382,8 +382,9 @@ export function GameScreen() {
   const [game, setGame] = useState<GameAugmented>();
   const [showQrCode, setShowQrCode] = useState(false);
   const [showJsonData, setShowJsonData] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [pollPending, setPollPending] = useState(true);
+  const [firstLoading, setFirstLoading] = useState(true);
+  const [error, setError] = useState({ msg: '', retryable: true });
   const [gameStarting, setGameStarting] = useState(false);
   const [gameJoining, setGameJoining] = useState(false);
   const timerId = useRef<number>();
@@ -412,35 +413,26 @@ export function GameScreen() {
     if (!gameId) {
       return;
     }
+    setPollPending(true);
+    clearTimeout(timerId.current!);
     getGameCached(gameId)
       .then((updatedGame) => {
-        setError('');
+        setError({ msg: '', retryable: true });
         setGame(updatedGame);
-        clearTimeout(timerId.current!);
         timerId.current = window.setTimeout(pollGame, 2_000);
       })
       .catch((err) => {
         const retryable = err instanceof ApiError && err.retryable;
-        clearTimeout(timerId.current!);
         if (retryable) {
-          timerId.current = window.setTimeout(pollGame, 10_000);
+          timerId.current = window.setTimeout(pollGame, 5_000);
         }
-        setError(`${err}`);
-        if (!toast.isActive('game-load-error')) {
-          toast({
-            id: 'game-load-error',
-            title: 'Failed to get game info',
-            description: `${err}` + (retryable ? ' Retrying in 10s...' : ''),
-            status: 'error',
-            position: 'bottom-right',
-            duration: 9_000,
-          });
-        }
+        setError({ msg: `${err}`, retryable });
       })
       .finally(() => {
-        setLoading(false);
+        setFirstLoading(false);
+        setPollPending(false);
       });
-  }, [toast, gameId]);
+  }, [gameId]);
 
   const onJoinGame = useCallback(async () => {
     if (!game) {
@@ -478,14 +470,14 @@ export function GameScreen() {
 
   useEffect(() => {
     // Show the QR code once game data loads if game has not started.
-    setShowQrCode(!loading && !Boolean(game?.startedAt));
-  }, [loading, game?.startedAt]);
+    setShowQrCode(!firstLoading && !Boolean(game?.startedAt));
+  }, [firstLoading, game?.startedAt]);
 
   const openJoinModal = joinGameModal.onOpen;
   useEffect(() => {
     // Open the join modal if URL query params are present
     console.log('join modal effect');
-    if (loading || joinParams.actedOn || currentPlayer) {
+    if (firstLoading || pollPending || joinParams.actedOn || currentPlayer) {
       return;
     }
 
@@ -502,7 +494,8 @@ export function GameScreen() {
 
     setJoinParams((prev) => ({ ...prev, actedOn: true }));
   }, [
-    loading,
+    firstLoading,
+    pollPending,
     joinParams,
     currentUser,
     currentPlayer,
@@ -539,6 +532,7 @@ export function GameScreen() {
       paddingTop={100}
       paddingBottom={20}
     >
+      {/* Modals */}
       {game && (
         <>
           <JoinGameModal
@@ -551,45 +545,65 @@ export function GameScreen() {
             modalState={cardModal}
             cardState={currentCardState}
           />
+          {currentPlayer?.isHost && (
+            <>
+              <RecordPointsModal
+                game={game}
+                modalState={finishRoundModal}
+                onGameUpdate={setGame}
+              />
+              <ChangeGameNameModal
+                game={game}
+                modalState={changeNameModal}
+                onGameUpdate={setGame}
+              />
+              <TransferOwnershipModal
+                game={game}
+                modalState={transferOwnershipModal}
+                onGameUpdate={setGame}
+              />
+              <AddPlayerModal
+                game={game}
+                modalState={addPlayerModal}
+                onGameUpdate={setGame}
+              />
+            </>
+          )}
         </>
       )}
-      {game && currentPlayer?.isHost && (
-        <>
-          <RecordPointsModal
-            game={game}
-            modalState={finishRoundModal}
-            onGameUpdate={setGame}
-          />
-          <ChangeGameNameModal
-            game={game}
-            modalState={changeNameModal}
-            onGameUpdate={setGame}
-          />
-          <TransferOwnershipModal
-            game={game}
-            modalState={transferOwnershipModal}
-            onGameUpdate={setGame}
-          />
-          <AddPlayerModal
-            game={game}
-            modalState={addPlayerModal}
-            onGameUpdate={setGame}
-          />
-        </>
-      )}
+
       <VStack align="flex-start" alignItems="start" width="100%">
-        {loading && <Spinner size="xl" alignSelf="center" />}
+        {firstLoading && <Spinner size="xl" alignSelf="center" />}
 
-        {!loading && !game && <Heading>{gameId}</Heading>}
+        {!firstLoading && !game && <Heading>Game: {gameId}</Heading>}
 
-        {error && (
-          <Alert status="error" mb={5}>
-            <AlertIcon />
-            <AlertDescription>{error}</AlertDescription>
+        {error.msg && (
+          <Alert
+            status="error"
+            mb={5}
+            display="flex"
+            justifyContent="space-between"
+          >
+            <HStack>
+              <AlertIcon />
+              <AlertDescription>
+                {error.msg}
+                {error.retryable ? ' We will retry in a moment...' : ''}
+              </AlertDescription>
+            </HStack>
+            {error.retryable && (
+              <Button
+                alignSelf="right"
+                onClick={pollGame}
+                isLoading={pollPending}
+              >
+                Retry
+              </Button>
+            )}
           </Alert>
         )}
 
-        {!loading && game && (
+        {!firstLoading && game && (
           <>
             <Stack
               direction={{ lg: 'row', base: 'column' }}

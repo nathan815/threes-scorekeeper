@@ -24,6 +24,7 @@ export function LiveText({
     const schedule = () => {
       tick();
       // console.log('nextTickDelay', nextTickDelay());
+      clearTimeout(timer.current);
       timer.current = window.setTimeout(schedule, nextTickDelay());
     };
 

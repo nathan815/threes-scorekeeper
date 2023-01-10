@@ -48,6 +48,7 @@ export function TransferOwnershipModal(props: {
         status: 'success',
         position: 'top',
       });
+      modal.onClose();
     } catch (err) {
       toast({
         description: 'Error transferring ownership',
