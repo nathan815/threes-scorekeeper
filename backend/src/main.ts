@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
 
@@ -43,6 +43,13 @@ async function createApp() {
   app.use(injectDIMiddleware);
   app.use(injectCurrentUser);
   app.use(router);
+  app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    console.error(err, err.stack);
+    res.status(500).json({
+      errorMessage: 'Something went wrong.',
+      exception: { stack: err.stack?.split('\n'), message: err.message, ...err },
+    });
+  });
 
   return app;
 }
