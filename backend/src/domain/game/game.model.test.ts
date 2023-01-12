@@ -227,9 +227,9 @@ describe(Game, () => {
 
         expect(g.addUserPlayer(userC)).toBe(true);
 
-        expect(g.players.map(p => p.id)).not.toContain(fakeUserA.id);
-        expect(g.players.map(p => p.id)).toContain(userA.id);
-        expect(g.players.map(p => p.id)).toContain(userC.id);
+        expect(g.players.map((p) => p.id)).not.toContain(fakeUserA.id);
+        expect(g.players.map((p) => p.id)).toContain(userA.id);
+        expect(g.players.map((p) => p.id)).toContain(userC.id);
       });
     });
 
@@ -441,6 +441,45 @@ describe(Game, () => {
         g.recordPlayerRoundResult(userA.id, 0);
         g.recordPlayerRoundResult(userB.id, 0);
       }).toThrow('No round in progress');
+    });
+  });
+
+  describe('currentWinners', () => {
+    it('handles ties', () => {
+      const g = new Game('test', userA);
+      g.addUserPlayer(userB);
+
+      g.start(userA);
+
+      expect(g.currentWinners).toEqual([]);
+
+      g.recordPlayerRoundResult(userA.id, 5);
+      g.recordPlayerRoundResult(userB.id, 5);
+      g.nextRound();
+
+      expect(g.currentWinners).toEqual([userA, userB]);
+    });
+
+    it('works for both psuedo and user players', () => {
+      const g = new Game('test', userA);
+      const bob = PseudoUser.make('Bob');
+      g.addPseudoPlayer(bob);
+
+      g.start(userA);
+
+      expect(g.currentWinners).toEqual([]);
+
+      g.recordPlayerRoundResult(userA.id, 5);
+      g.recordPlayerRoundResult(bob.id, 1);
+      g.nextRound();
+
+      expect(g.currentWinners[0].id).toEqual(bob.id);
+
+      g.recordPlayerRoundResult(userA.id, 0);
+      g.recordPlayerRoundResult(bob.id, 4);
+      g.nextRound();
+
+      expect(g.currentWinners[0].id).toEqual(userA.id);
     });
   });
 });

@@ -76,7 +76,7 @@ export class Game {
    * The current winner (player with least amount of points) once there is at least one finished
    * Multiple players will be returned when there is a tie.
    * */
-  get currentWinners(): User[] {
+  get currentWinners(): Player[] {
     if (this.stage == GameStage.Pre || this.rounds.length <= 1) {
       return [];
     }
@@ -91,7 +91,7 @@ export class Game {
         minPointsUserIds = [userId];
       }
     }
-    return this.userPlayers.filter((u) => minPointsUserIds.includes(u.id));
+    return this.players.filter((u) => minPointsUserIds.includes(u.id));
   }
 
   changeOwner(newOwnerId: string) {
@@ -174,7 +174,7 @@ export class Game {
     this.startedAt = new Date();
     this.stage = GameStage.InProgress;
     this.nextRound();
-    console.log('End of start - game =', this);
+    // console.log('End of start - game =', this);
   }
 
   finish() {
@@ -246,7 +246,7 @@ export class Game {
     const nextRank = CardRank.of(curRank ? curRank + 1 : START_ROUND_CARD);
     const round = new GameRound(nextRank);
     this.rounds.push(round);
-    console.log('new round', round, 'ROUNDS', this.rounds);
+    // console.log('new round', round, 'ROUNDS', this.rounds);
   }
 
   finishCurrentRound() {
