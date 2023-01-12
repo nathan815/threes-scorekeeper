@@ -1,6 +1,12 @@
 import { UserPublicDto, userToDto } from '../user/user.dto';
 import { CardRank } from './cards';
-import { Game, GameRound, GameStage, Player, PlayerResultMap } from './game.model';
+import {
+  Game,
+  GameRound,
+  GameStage,
+  Player,
+  PlayerResultMap,
+} from './game.model';
 
 export interface GameRoundDto {
   cardRank: number;

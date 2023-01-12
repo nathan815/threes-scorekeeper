@@ -126,7 +126,9 @@ export class Game {
       return true;
     }
     if (this.players.some((p) => p.displayName == newPlayer.displayName)) {
-      throw new GameError(`Player with name '${newPlayer.displayName}' is already in this game`)
+      throw new GameError(
+        `Player with name '${newPlayer.displayName}' is already in this game`
+      );
     }
     this.addPlayerPrechecks();
     this.pseudoPlayers.push(newPlayer);

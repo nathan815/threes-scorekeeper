@@ -50,8 +50,9 @@ export function RecordPointsModal(props: {
   const [dirty, setDirty] = useState(false);
   const [playerPoints, setPlayerPoints] = useState<PlayerPointsMap>({});
   // TODO simplify perfect cut - dont need an obj.
-  const [playerPerfectCut, setPlayerPerfectCut] =
-    useState<PlayerPerfectCutMap>({});
+  const [playerPerfectCut, setPlayerPerfectCut] = useState<PlayerPerfectCutMap>(
+    {}
+  );
 
   const anyPerfectCut = Object.values(playerPerfectCut).some((v) => v === true);
 

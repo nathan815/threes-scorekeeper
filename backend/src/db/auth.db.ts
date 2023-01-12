@@ -1,8 +1,13 @@
-import { getModelForClass, modelOptions, prop, Ref } from "@typegoose/typegoose";
-import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
-import mongoose from "mongoose";
-import { Profile } from "passport-google-oauth20";
-import { UserSchema } from "./user.db";
+import {
+  getModelForClass,
+  modelOptions,
+  prop,
+  Ref,
+} from '@typegoose/typegoose';
+import { TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
+import mongoose from 'mongoose';
+import { Profile } from 'passport-google-oauth20';
+import { UserSchema } from './user.db';
 
 @modelOptions({ options: { customName: 'federated_credentials' } })
 class FederatedCredentialsSchema extends TimeStamps {
@@ -19,8 +24,9 @@ class FederatedCredentialsSchema extends TimeStamps {
   provider!: 'google';
 
   @prop()
-  profile!: Profile
-
+  profile!: Profile;
 }
 
-export const FederatedCredentialsDbModel = getModelForClass(FederatedCredentialsSchema);
+export const FederatedCredentialsDbModel = getModelForClass(
+  FederatedCredentialsSchema
+);

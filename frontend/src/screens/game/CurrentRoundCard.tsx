@@ -42,7 +42,7 @@ export function CurrentRoundCard({
   state: CurrentRoundCardState;
   outerContainerProps?: BoxProps;
   cardContainerProps?: BoxProps;
-  infoContainerProps?: BoxProps
+  infoContainerProps?: BoxProps;
 }) {
   const cardDiv = useRef<HTMLDivElement>(null);
   const round = game?.currentRoundObj;

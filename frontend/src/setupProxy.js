@@ -7,8 +7,8 @@ module.exports = function (app) {
       target: 'http://localhost:3100',
       pathRewrite: { '^/api': '' },
       headers: {
-        'X-Proxy': 'webpack-dev-server'
-      }
+        'X-Proxy': 'webpack-dev-server',
+      },
     })
   );
 };

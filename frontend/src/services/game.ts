@@ -69,7 +69,10 @@ export async function joinGame(id: string): Promise<GameAugmented> {
   return augmentAndCacheGame(await api.joinGame(id));
 }
 
-export async function addPlayerManually(id: string, newDisplayName: string): Promise<GameAugmented> {
+export async function addPlayerManually(
+  id: string,
+  newDisplayName: string
+): Promise<GameAugmented> {
   return augmentAndCacheGame(await api.addPseudoPlayer(id, newDisplayName));
 }
 

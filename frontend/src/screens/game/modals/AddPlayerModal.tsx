@@ -51,7 +51,11 @@ export function AddPlayerModal(props: {
       });
       modal.onClose();
     } catch (error) {
-      toast({ description: `${error.message ? error.message : error}`, status: 'error', position: 'top' });
+      toast({
+        description: `${error.message ? error.message : error}`,
+        status: 'error',
+        position: 'top',
+      });
     } finally {
       setSaving(false);
     }

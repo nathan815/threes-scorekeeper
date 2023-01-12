@@ -26,7 +26,10 @@ type AuthState = {
 };
 
 type CompleteOAuthLoginFn = (user: AuthUser) => void;
-type CompleteOAuthRegisterFn = (user: AuthUser, displayName: string) => Promise<void>;
+type CompleteOAuthRegisterFn = (
+  user: AuthUser,
+  displayName: string
+) => Promise<void>;
 
 type AuthCtx = {
   guestLogin: (displayName: string) => Promise<AuthUser>;
@@ -149,7 +152,7 @@ export function AuthProvider({ children }) {
     await api.logout();
     setAuth({
       ...DEFAULT_AUTH_STATE,
-      initialized: true
+      initialized: true,
     });
   };
 

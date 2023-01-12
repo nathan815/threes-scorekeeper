@@ -113,7 +113,6 @@ export function JoinGame() {
           <br />
 
           <Stack spacing={5}>
-
             {isMobile && (
               <>
                 <Button padding={10} onClick={() => qrModalState.onOpen()}>
@@ -156,7 +155,6 @@ export function JoinGame() {
                 >
                   Join Game
                 </Button>
-
               </Stack>
             </form>
           </Stack>
