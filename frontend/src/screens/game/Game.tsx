@@ -478,10 +478,15 @@ export function GameScreen() {
   }, [firstLoading, game?.startedAt]);
 
   const openJoinModal = joinGameModal.onOpen;
+  const closeJoinModal = joinGameModal.onClose;
   useEffect(() => {
     // Open the join modal if URL query params are present
+
     console.log('join modal effect');
-    if (firstLoading || pollPending || joinParams.actedOn || currentPlayer) {
+    if (currentPlayer) {
+      closeJoinModal();
+    }
+    if (firstLoading || joinParams.actedOn || currentPlayer) {
       return;
     }
 
@@ -499,13 +504,13 @@ export function GameScreen() {
     setJoinParams((prev) => ({ ...prev, actedOn: true }));
   }, [
     firstLoading,
-    pollPending,
     joinParams,
     currentUser,
     currentPlayer,
     game?.hasStarted,
     onJoinGame,
     openJoinModal,
+    closeJoinModal,
   ]);
 
   const onClickGameStart = async () => {
