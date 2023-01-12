@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Please Wait</title>
+    <style>
+      body {
+        font-family: sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    Redirecting...
+
+    <script>
+      if (!window.opener || window.opener == window) {
+        window.location = '/';
+      }
+      const query = new URLSearchParams(location.search);
+      if (window.opener) {
+        window.opener.postMessage({
+          source: 'auth_popup',
+          payload: {
+            provider: query.get('provider'),
+            success: query.get('result') === 'success',
+            error: query.get('error'),
+            isNew: query.get('isNew') === 'true',
+            user: JSON.parse(query.get('user')),
+          },
+        });
+      }
+    </script>
+  </body>
+</html>

@@ -1,12 +1,14 @@
+import MongoStore from 'connect-mongo';
 import express, { NextFunction, Request, Response } from 'express';
 import session from 'express-session';
-import MongoStore from 'connect-mongo';
 
 import './config';
+import config from './config';
 import { configureDb, MONGO_OPTIONS, MONGO_URL } from './db';
 import { injectDIMiddleware } from './di';
+import { mainRouter } from './http';
 import { injectCurrentUser } from './http/middleware';
-import { router } from './http/controllers';
+import { setupPassport } from './passportConfig';
 
 async function createApp() {
   const app = express();
@@ -38,16 +40,32 @@ async function createApp() {
 
   await configureDb();
 
+  app.use(express.static(__dirname + '/http/public'));
   app.use(session(sessionConfig));
   app.use(express.json());
   app.use(injectDIMiddleware);
+
+  setupPassport(app);
+
   app.use(injectCurrentUser);
-  app.use(router);
+  app.use(mainRouter);
+
+  app.use((req, res, next) => {
+    res.status(404).json({
+      errorMessage: `No route defined for ${req.method} ${req.path}`,
+    });
+  });
+
   app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     console.error(err, err.stack);
     res.status(500).json({
       errorMessage: 'Something went wrong.',
-      exception: { stack: err.stack?.split('\n'), message: err.message, ...err },
+      exception: {
+        type: err.name,
+        message: err.message,
+        stack: err.stack?.split('\n'),
+        ...err,
+      },
     });
   });
 
@@ -55,7 +73,7 @@ async function createApp() {
 }
 
 async function main() {
-  const port = process.env.PORT || 8080;
+  const port = config.app.port;
   const app = await createApp();
 
   app.listen(port, () => {

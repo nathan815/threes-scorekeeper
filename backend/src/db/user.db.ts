@@ -9,6 +9,8 @@ export class UserSchema extends TimeStamps {
   @prop()
   _id?: mongoose.Types.ObjectId;
 
+  id?: string;
+
   @prop()
   displayName?: string;
 

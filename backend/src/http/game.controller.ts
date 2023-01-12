@@ -4,90 +4,15 @@ import * as v from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
 
 import { gameToDto } from '../domain/game/game.dto';
-import { userToDto, userToPrivateDto } from '../domain/user/user.dto';
-import {
-  requiresNoAuth,
-  checkRequestValidation,
-  requiresAuth,
-} from './middleware';
+import { checkRequestValidation, requiresAuth } from './middleware';
 import {
   GameError,
   NonOwnerCannotStartGameError,
 } from '../domain/game/game.model';
 import { PseudoUser } from '../domain/user/user.model';
+import { validateDisplayName } from './validators';
 
 export const router = Router();
-
-router.get('/', (req, res) => {
-  res.json('Threes Scorekeeper API');
-});
-
-router.get('/auth/state', (req, res) => {
-  res.json({
-    user: req.user ? userToDto(req.user) : null,
-  });
-});
-
-const validateDisplayName = v
-  .body('displayName')
-  .isString()
-  .notEmpty()
-  .withMessage('must be a string')
-  .isLength({ min: 3, max: 15 })
-  .withMessage('must be between 3 and 15 chars long');
-
-router.post(
-  '/auth/guest/register',
-  requiresNoAuth,
-  validateDisplayName,
-  checkRequestValidation,
-  async (req, res) => {
-    const user = await req.di.userService.createGuestUser({
-      displayName: req.body.displayName,
-    });
-    req.session.userId = user.id;
-    console.log(req.session.userId, req.session);
-    return res.status(StatusCodes.CREATED).json({
-      guestSecret: user.guestSecret,
-      user: userToPrivateDto(user),
-    });
-  }
-);
-
-router.post(
-  '/auth/guest/login',
-  requiresNoAuth,
-  v.body('userId').isString().notEmpty(),
-  v.body('secret').isString().notEmpty(),
-  checkRequestValidation,
-  async (req, res) => {
-    const result = await req.di.userService.checkGuestUserSecret(
-      req.body.userId,
-      req.body.secret
-    );
-    if (result === null) {
-      return res.status(StatusCodes.UNAUTHORIZED).send({
-        errorMessage: 'User not found',
-      });
-    }
-    if (result === false) {
-      return res.status(StatusCodes.UNAUTHORIZED).send({
-        errorMessage: 'Auth failure',
-      });
-    }
-    const user = result;
-    req.session.userId = user.id;
-    return res.status(StatusCodes.OK).json({
-      user: userToPrivateDto(user),
-    });
-  }
-);
-
-router.get('/users', async (req, res) => {
-  const users = await req.di.userService.getUsers();
-  console.log('users', users);
-  return res.json(users.map(userToDto));
-});
 
 router.get('/games', async (req, res) => {
   const games = await req.di.gameService.getGames();

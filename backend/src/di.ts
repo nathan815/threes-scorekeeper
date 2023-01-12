@@ -27,7 +27,7 @@ export function createDIContainer(): DIContainer {
   };
 }
 
-const DI = createDIContainer();
+export const DI = createDIContainer();
 
 export function injectDIMiddleware(
   req: Request,

@@ -11,91 +11,121 @@ import {
 } from '@chakra-ui/react';
 import React, { useState } from 'react';
 import { IoLogoApple, IoLogoGoogle, IoPerson } from 'react-icons/io5';
-import { useAuthContext } from '../auth/authContext';
+import { openAuthPopupWindow } from 'src/auth/authPopup';
+import { AuthUser, useAuthContext } from '../auth/authContext';
 
 export function AuthFlowForm(props: {
   introText: string;
   onComplete?: () => void;
 }) {
-  const auth = useAuthContext();
-  const authFlow = auth?.authFlow;
-  const [displayNameInput, setDisplayNameInput] = useState('');
+  const authCtx = useAuthContext();
   const toast = useToast();
+  const authFlow = authCtx?.authFlow;
+  const [displayNameInput, setDisplayNameInput] = useState('');
+  const [newUser, setNewUser] = useState<AuthUser | null>(null);
 
   const buttonsDisabled = authFlow?.optionInProgress != null;
 
-  function onSelectAuthOption(option) {
-    auth?.setAuthFlow({
+  function selectAuthOption(option) {
+    authCtx?.setAuthFlow({
       option,
     });
   }
 
-  function onLogin(option) {
-    auth?.setAuthFlow({
+  async function initiateProviderAuth(option: any) {
+    if (!authCtx) return;
+
+    authCtx.setAuthFlow({
       optionInProgress: option,
     });
-    setTimeout(() => {
-      // TEMP
-      if (window.confirm('Simulate login success?')) {
-        auth?.setAuthFlow({
+
+    try {
+      const result = await openAuthPopupWindow(option, displayNameInput);
+
+      if (result.success) {
+        authCtx.setAuthFlow({
           option: option,
           optionInProgress: null,
         });
+
+        if (result.isNew) {
+          setNewUser(result.user);
+          if (displayNameInput === '') {
+            setDisplayNameInput(result.user.displayName);
+          }
+        } else {
+          authCtx.completeOauthLogin(result.user);
+        }
       } else {
-        auth?.setAuthFlow({
+        toast({
+          status: 'error',
+          description: 'Error completing sign in',
+        });
+        authCtx.setAuthFlow({
           optionInProgress: null,
         });
       }
-    }, 500);
+    } catch (err) {
+      console.error('provider login failed', err);
+      authCtx.setAuthFlow({
+        optionInProgress: null,
+      });
+    }
   }
 
-  function onSubmitDisplayName(displayName) {
-    if (!displayName) {
+  function completeAuthRegister(displayName) {
+    if (!displayName || !authCtx) {
       return;
     }
-    auth
-      ?.finishLogIn(displayName)
-      .then((user) => {
-        props.onComplete?.();
-      })
-      .catch((err) => {
-        toast({
-          title: 'An error occurred',
-          description: `Failed to save display name. Please try again. (${err})`,
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-          position: 'top-right',
+    if (authCtx?.authFlow.option === 'guest') {
+      authCtx
+        .guestLogin(displayName)
+        .then((user) => {
+          props.onComplete?.();
+        })
+        .catch((err) => {
+          toast({
+            title: 'An error occurred',
+            description: `Failed to save display name. Please try again. (${err})`,
+            status: 'error',
+            duration: 5000,
+            isClosable: true,
+            position: 'top-right',
+          });
         });
-      });
+    } else {
+      if (newUser) {
+        authCtx.completeOauthRegister(newUser, displayNameInput);
+      }
+    }
   }
 
   const signInButtons = (
     <>
       <Button
         mt={4}
-        onClick={() => onLogin('google')}
+        onClick={() => initiateProviderAuth('google')}
         isLoading={authFlow?.optionInProgress === 'google'}
-        loadingText="Signing in with Google..."
+        loadingText="Sign in with Google"
         type="submit"
         size="lg"
-        disabled={buttonsDisabled}
+        disabled={buttonsDisabled && authFlow?.optionInProgress !== 'google'}
         leftIcon={<IoLogoGoogle />}
       >
         Sign in with Google
       </Button>
-      <Button
+      {/* <Button
         mt={4}
-        onClick={() => onLogin('apple')}
+        onClick={() => initiateProviderAuth('apple')}
         isLoading={authFlow?.optionInProgress === 'apple'}
-        loadingText="Signing in with Apple..."
+        loadingText="Sign in with Apple"
         type="submit"
         size="lg"
         disabled={buttonsDisabled}
         leftIcon={<IoLogoApple />}
       >
         Sign in with Apple
-      </Button>
+      </Button> */}
     </>
   );
 
@@ -103,13 +133,13 @@ export function AuthFlowForm(props: {
     authFlow?.option || authFlow?.optionInProgress || ''
   ];
 
-  if (!auth || !auth.initialized) {
+  if (!authCtx || !authCtx.initialized) {
     return <Progress size="xs" isIndeterminate />;
   }
 
   const option = authFlow?.option;
 
-  if (option == null && !auth.user) {
+  if (option == null && !authCtx.user && !newUser) {
     return (
       <Stack spacing={5}>
         <Text>{props.introText}</Text>
@@ -119,7 +149,7 @@ export function AuthFlowForm(props: {
           isLoading={false}
           type="submit"
           size="lg"
-          onClick={() => onSelectAuthOption('guest')}
+          onClick={() => selectAuthOption('guest')}
           disabled={buttonsDisabled}
           leftIcon={<IoPerson />}
         >
@@ -127,7 +157,7 @@ export function AuthFlowForm(props: {
         </Button>
       </Stack>
     );
-  } else if (!auth.user || !auth.user.displayName) {
+  } else if (!authCtx.user || newUser) {
     return (
       <Stack spacing={5}>
         <Text>
@@ -138,7 +168,7 @@ export function AuthFlowForm(props: {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            onSubmitDisplayName(displayNameInput);
+            completeAuthRegister(displayNameInput);
           }}
         >
           <Stack spacing={5}>
@@ -155,14 +185,14 @@ export function AuthFlowForm(props: {
               />
               {option !== 'guest' && (
                 <FormHelperText>
-                  This will be saved in your account.
+                  This will be saved in your Threes account.
                 </FormHelperText>
               )}
             </FormControl>
             <Button
               mt={4}
               colorScheme="blue"
-              isLoading={auth.authFlow.finishLoginLoading}
+              isLoading={authCtx.authFlow.finishLoginLoading}
               type="submit"
               size="lg"
               disabled={buttonsDisabled}

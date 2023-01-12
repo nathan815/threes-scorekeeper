@@ -40,4 +40,19 @@ export class UserService {
     user = await this.userRepo.save(user);
     return user;
   }
+
+  async createUser({
+    displayName,
+    email,
+  }: {
+    displayName?: string;
+    email?: string;
+  }): Promise<User> {
+    let user = new User({
+      displayName,
+      email,
+    });
+    user = await this.userRepo.save(user);
+    return user;
+  }
 }

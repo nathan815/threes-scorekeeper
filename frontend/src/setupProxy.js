@@ -5,8 +5,10 @@ module.exports = function (app) {
     '/api',
     createProxyMiddleware({
       target: 'http://localhost:3100',
-      changeOrigin: true,
       pathRewrite: { '^/api': '' },
+      headers: {
+        'X-Proxy': 'webpack-dev-server'
+      }
     })
   );
 };

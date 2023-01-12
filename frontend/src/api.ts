@@ -69,6 +69,10 @@ function getAuthState() {
   return http.get(`/auth/state`).then((res) => res.data);
 }
 
+function logout() {
+  return http.post(`/auth/logout`).then((res) => res.data);
+}
+
 function guestRegister(displayName: string) {
   return http
     .post('/auth/guest/register', {
@@ -148,6 +152,7 @@ function recordPlayerResults(
 
 export const api = {
   getAuthState,
+  logout,
   guestLogin,
   guestRegister,
   createGame,

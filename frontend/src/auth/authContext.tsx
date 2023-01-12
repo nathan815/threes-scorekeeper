@@ -25,10 +25,13 @@ type AuthState = {
   initialized: boolean;
 };
 
-type LogInFunction = (displayName: string) => Promise<AuthUser>;
+type CompleteOAuthLoginFn = (user: AuthUser) => void;
+type CompleteOAuthRegisterFn = (user: AuthUser, displayName: string) => void;
 
 type AuthCtx = {
-  finishLogIn: LogInFunction;
+  guestLogin: (displayName: string) => Promise<AuthUser>;
+  completeOauthLogin: CompleteOAuthLoginFn;
+  completeOauthRegister: CompleteOAuthRegisterFn;
   logOut: () => void;
   setAuthFlow: (authFlow: Partial<AuthFlowState>) => void;
 } & AuthState;
@@ -92,7 +95,7 @@ export function AuthProvider({ children }) {
           })
           .catch((err) => {
             console.error('failed guest login', err);
-          })
+          });
       } else {
         setAuth({
           loggedIn: Boolean(serverAuth.user),
@@ -102,48 +105,51 @@ export function AuthProvider({ children }) {
     });
   }, []);
 
-  const finishLogIn: LogInFunction = async (displayName) => {
-    if (auth.authFlow.option === 'guest') {
+  const guestLogin = async (displayName) => {
+    setAuth({
+      authFlow: {
+        ...auth.authFlow,
+        finishLoginLoading: true,
+      },
+    });
+    try {
+      const result = await api.guestRegister(displayName);
+      setAuth({
+        loggedIn: true,
+        token: result.guestSecret,
+        user: result.user,
+      });
+      return result.user;
+    } finally {
       setAuth({
         authFlow: {
           ...auth.authFlow,
-          finishLoginLoading: true,
+          finishLoginLoading: false,
         },
       });
-      try {
-        const result = await api.guestRegister(displayName);
-        setAuth({
-          loggedIn: true,
-          token: result.guestSecret,
-          user: result.user,
-        });
-        return result.user;
-      } finally {
-        setAuth({
-          authFlow: {
-            ...auth.authFlow,
-            finishLoginLoading: false,
-          },
-        });
-      }
-    } else {
-      // TODO implement saving of oauth account display name
-      const user = {
-        displayName,
-        isGuest: false,
-        id: '',
-      };
-      setAuth({
-        loggedIn: true,
-        user: user,
-      });
-      return user;
     }
   };
 
-  const logOut = () => {
+  const completeOauthLogin = (user: AuthUser) => {
+    setAuth({
+      loggedIn: true,
+      user: user,
+    });
+  };
+
+  const completeOauthRegister = (user: AuthUser, displayName: string) => {
+    // TODO send request to update display name
+    setAuth({
+      loggedIn: true,
+      user: user,
+    });
+  };
+
+  const logOut = async () => {
+    await api.logout();
     setAuth({
       loggedIn: false,
+      user: null,
     });
   };
 
@@ -157,18 +163,16 @@ export function AuthProvider({ children }) {
     });
   };
 
-  return (
-    <AuthContext.Provider
-      value={{
-        ...auth,
-        finishLogIn,
-        logOut,
-        setAuthFlow,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+  const ctx = {
+    ...auth,
+    guestLogin,
+    completeOauthLogin,
+    completeOauthRegister,
+    logOut,
+    setAuthFlow,
+  };
+
+  return <AuthContext.Provider value={ctx}>{children}</AuthContext.Provider>;
 }
 
 /**

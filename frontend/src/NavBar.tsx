@@ -53,7 +53,7 @@ function AuthOptionMenu() {
         <MenuItem as={RouterLink} to="/dev">
           Developer
         </MenuItem>
-        {!authCtx.user.isGuest && <MenuItem>Logout</MenuItem>}
+        {!authCtx.user.isGuest && <MenuItem onClick={() => authCtx.logOut()}>Logout</MenuItem>}
       </MenuList>
     </Menu>
   ) : null;
