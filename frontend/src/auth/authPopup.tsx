@@ -1,4 +1,4 @@
-import { AuthUser } from "src/auth/authContext";
+import { AuthUser } from 'src/auth/authContext';
 
 type AuthResult = {
   provider: string;
@@ -25,6 +25,7 @@ export function openAuthPopupWindow(
     const url =
       `/api/auth/${provider}` +
       (displayName ? `?displayName=${encodeURIComponent(displayName)}` : '');
+
     const name = 'Sign in';
 
     console.log('opening auth popup', url);

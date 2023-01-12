@@ -12,7 +12,7 @@ export class User {
   guestSecret?: string;
   email?: string;
 
-  get isAnon(): boolean {
+  get isGuest(): boolean {
     return Boolean(this.guestSecret);
   }
 

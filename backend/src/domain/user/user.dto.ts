@@ -12,7 +12,7 @@ export interface UserPrivateDto extends UserPublicDto {
 }
 
 export function userToDto(user: User): UserPublicDto {
-  const { id, displayName, isAnon, gravatarHash } = user;
+  const { id, displayName, isGuest: isAnon, gravatarHash } = user;
   return { id, displayName, isGuest: isAnon, gravatarHash };
 }
 

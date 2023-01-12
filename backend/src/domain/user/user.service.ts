@@ -55,4 +55,8 @@ export class UserService {
     user = await this.userRepo.save(user);
     return user;
   }
+
+  async save(user: User) {
+    return this.userRepo.save(user);
+  }
 }

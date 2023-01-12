@@ -15,7 +15,7 @@ import { openAuthPopupWindow } from 'src/auth/authPopup';
 import { AuthUser, useAuthContext } from '../auth/authContext';
 
 export function AuthFlowForm(props: {
-  introText: string;
+  introText?: string;
   onComplete?: () => void;
 }) {
   const authCtx = useAuthContext();
@@ -55,7 +55,13 @@ export function AuthFlowForm(props: {
           }
         } else {
           authCtx.completeOauthLogin(result.user);
+          toast({
+            status: 'success',
+            description: `Signed in as ${result.user.displayName}`,
+            position: 'bottom-right',
+          });
         }
+        props.onComplete?.();
       } else {
         toast({
           status: 'error',
@@ -73,30 +79,31 @@ export function AuthFlowForm(props: {
     }
   }
 
-  function completeAuthRegister(displayName) {
+  async function completeAuthRegister(displayName) {
     if (!displayName || !authCtx) {
       return;
     }
-    if (authCtx?.authFlow.option === 'guest') {
-      authCtx
-        .guestLogin(displayName)
-        .then((user) => {
-          props.onComplete?.();
-        })
-        .catch((err) => {
-          toast({
-            title: 'An error occurred',
-            description: `Failed to save display name. Please try again. (${err})`,
-            status: 'error',
-            duration: 5000,
-            isClosable: true,
-            position: 'top-right',
-          });
-        });
-    } else {
-      if (newUser) {
-        authCtx.completeOauthRegister(newUser, displayNameInput);
+    try {
+      if (authCtx?.authFlow.option === 'guest') {
+        await authCtx.guestLogin(displayName);
+      } else if (newUser) {
+        await authCtx.completeOauthRegister(newUser, displayNameInput);
       }
+      toast({
+        status: 'success',
+        description: `All done! Welcome, ${displayName}`,
+        position: 'top',
+      });
+      props.onComplete?.();
+    } catch (err) {
+      toast({
+        title: 'An error occurred',
+        description: `Failed to continue auth. Please try again. (${err})`,
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+        position: 'top-right',
+      });
     }
   }
 
@@ -142,7 +149,7 @@ export function AuthFlowForm(props: {
   if (option == null && !authCtx.user && !newUser) {
     return (
       <Stack spacing={5}>
-        <Text>{props.introText}</Text>
+        {props.introText && <Text>{props.introText}</Text>}
         {signInButtons}
         <Button
           mt={4}

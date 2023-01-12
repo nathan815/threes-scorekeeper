@@ -73,13 +73,13 @@ export function RecordPointsModal(props: {
           toast({
             description: 'Round finished',
             status: 'success',
-            position: 'top',
+            position: 'bottom-right',
           });
         } else {
           toast({
             description: 'Points saved',
             status: 'success',
-            position: 'top',
+            position: 'bottom-right',
             duration: 2000,
           });
         }

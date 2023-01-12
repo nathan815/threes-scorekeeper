@@ -2,20 +2,40 @@ import { Request, Response, NextFunction } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import * as v from 'express-validator';
 
-export async function injectCurrentUser(
+export async function injectAuthGuestUser(
   req: Request,
   res: Response,
   next: NextFunction
 ) {
-  if (req.session.userId) {
-    const user = await req.di.userService.getUser(req.session.userId);
-    if (user) {
-      req.user = user;
+  if (req.session.guestUserId) {
+    if (req.user) {
+      console.warn(
+        'User is already injected on the request object, ignoring guestUserId'
+      );
     } else {
-      console.error('User ID in session does not exist: ' + req.session.userId);
+      const user = await req.di.userService.getUser(req.session.guestUserId);
+      if (user) {
+        req.user = user;
+      } else {
+        console.error(
+          'Guest User ID in session does not exist: ' + req.session.guestUserId
+        );
+      }
     }
   }
-  console.log(req.method, req.url, 'Session ID:', req.sessionID, 'User ID:', req.session.userId, 'DisplayName:', req.user?.displayName);
+
+  console.log(
+    req.method,
+    req.url,
+    'Session:',
+    req.sessionID,
+    'User:',
+    req.user?.id,
+    'DisplayName:',
+    req.user?.displayName,
+    'IsGuest:',
+    req.user?.isGuest
+  );
   next();
 }
 

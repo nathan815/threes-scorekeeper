@@ -7,7 +7,7 @@ import config from './config';
 import { configureDb, MONGO_OPTIONS, MONGO_URL } from './db';
 import { injectDIMiddleware } from './di';
 import { mainRouter } from './http';
-import { injectCurrentUser } from './http/middleware';
+import { injectAuthGuestUser } from './http/middleware';
 import { setupPassport } from './passportConfig';
 
 async function createApp() {
@@ -47,7 +47,7 @@ async function createApp() {
 
   setupPassport(app);
 
-  app.use(injectCurrentUser);
+  app.use(injectAuthGuestUser);
   app.use(mainRouter);
 
   app.use((req, res, next) => {

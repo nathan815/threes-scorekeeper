@@ -26,8 +26,8 @@ router.post(
     const user = await req.di.userService.createGuestUser({
       displayName: req.body.displayName,
     });
-    req.session.userId = user.id;
-    console.log(req.session.userId, req.session);
+    req.session.guestUserId = user.id;
+    console.log(req.session.guestUserId, req.session);
     return res.status(StatusCodes.CREATED).json({
       guestSecret: user.guestSecret,
       user: userToPrivateDto(user),
@@ -57,7 +57,7 @@ router.post(
       });
     }
     const user = result;
-    req.session.userId = user.id;
+    req.session.guestUserId = user.id;
     return res.status(StatusCodes.OK).json({
       user: userToPrivateDto(user),
     });
@@ -65,7 +65,7 @@ router.post(
 );
 
 router.post('/auth/logout', (req, res) => {
-  req.session.userId = undefined;
+  req.session.guestUserId = undefined;
   req.logOut({}, () => {
     res.json('success');
   });
@@ -73,11 +73,17 @@ router.post('/auth/logout', (req, res) => {
 
 router.get('/auth/google', (req, res, next) => {
   const { displayName } = req.query;
-  const state = Buffer.from(JSON.stringify({ displayName })).toString(
-    'base64url'
-  );
+
+  const state = Buffer.from(
+    JSON.stringify({
+      displayName,
+      currentUserId: req.user?.id,
+    })
+  ).toString('base64url');
+
   const callbackURL = `${getReqBaseUrl(req)}/auth/google/callback`;
   console.log('google oauth begin: callbackURL', callbackURL);
+
   passport.authenticate('google', {
     callbackURL,
     state,

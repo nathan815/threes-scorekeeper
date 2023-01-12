@@ -19,14 +19,14 @@ export type AuthUser = {
 
 type AuthState = {
   loggedIn: boolean;
-  token: string | null;
+  guestSecret: string | null;
   user: AuthUser | null;
   authFlow: AuthFlowState;
   initialized: boolean;
 };
 
 type CompleteOAuthLoginFn = (user: AuthUser) => void;
-type CompleteOAuthRegisterFn = (user: AuthUser, displayName: string) => void;
+type CompleteOAuthRegisterFn = (user: AuthUser, displayName: string) => Promise<void>;
 
 type AuthCtx = {
   guestLogin: (displayName: string) => Promise<AuthUser>;
@@ -39,7 +39,7 @@ type AuthCtx = {
 const DEFAULT_AUTH_STATE: AuthState = {
   loggedIn: false,
   user: null,
-  token: null,
+  guestSecret: null,
   initialized: false,
   authFlow: {
     option: null,
@@ -79,13 +79,13 @@ export function AuthProvider({ children }) {
         !serverAuth.user &&
         savedAuth.user &&
         savedAuth.user.isGuest &&
-        savedAuth.token
+        savedAuth.guestSecret
       ) {
-        // Guest user: login again if the session ended and we have a guest token saved
+        // Guest user: login again if the session ended and we have a guestSecret saved
         api
           .guestLogin({
             id: savedAuth.user.id,
-            secret: savedAuth.token,
+            secret: savedAuth.guestSecret,
           })
           .then((loginResponse) => {
             setAuth({
@@ -116,7 +116,7 @@ export function AuthProvider({ children }) {
       const result = await api.guestRegister(displayName);
       setAuth({
         loggedIn: true,
-        token: result.guestSecret,
+        guestSecret: result.guestSecret,
         user: result.user,
       });
       return result.user;
@@ -137,7 +137,7 @@ export function AuthProvider({ children }) {
     });
   };
 
-  const completeOauthRegister = (user: AuthUser, displayName: string) => {
+  const completeOauthRegister = async (user: AuthUser, displayName: string) => {
     // TODO send request to update display name
     setAuth({
       loggedIn: true,
@@ -148,8 +148,8 @@ export function AuthProvider({ children }) {
   const logOut = async () => {
     await api.logout();
     setAuth({
-      loggedIn: false,
-      user: null,
+      ...DEFAULT_AUTH_STATE,
+      initialized: true
     });
   };
 
@@ -188,7 +188,7 @@ function readPersistedAuth(): AuthState {
           ...DEFAULT_AUTH_STATE,
           loggedIn: auth.loggedIn || false,
           user: auth.user || null,
-          token: auth.token || null,
+          guestSecret: auth.token || auth.guestSecret || null,
           initialized: true,
         };
       }
@@ -208,7 +208,7 @@ function persistAuth(auth: AuthState) {
     JSON.stringify({
       loggedIn: auth.loggedIn,
       user: auth.user,
-      token: auth.token,
+      guestSecret: auth.guestSecret,
     })
   );
 }

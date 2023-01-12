@@ -1,12 +1,14 @@
+import { isDocument } from '@typegoose/typegoose';
 import { Application, NextFunction, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import config from './config';
 import { FederatedCredentialsDbModel } from './db/auth.db';
-import { UserDbModel } from './db/user.db';
+import { UserDbModel, UserSchema } from './db/user.db';
 import { DI } from './di';
 import { AuthError, AuthUserNotFoundError } from './domain/auth/auth.service';
+import { User } from './domain/user/user.model';
 
 export function setupPassport(app: Application) {
   app.use(passport.session());
@@ -19,7 +21,12 @@ export function setupPassport(app: Application) {
   });
 
   passport.serializeUser((user, done) => {
-    done(null, user.id);
+    const id = user.id;
+    console.log('passport.serializeUser', 'user:', user, 'id:', id);
+    if (!id) {
+      console.error('passport.serializeUser id missing');
+    }
+    done(null, id);
   });
 
   passport.deserializeUser(async (id: string, done) => {
@@ -27,6 +34,7 @@ export function setupPassport(app: Application) {
     if (user) {
       done(null, user);
     } else {
+      console.error('passport.deserializeUser user:', user);
       done(new AuthUserNotFoundError('User not found'));
     }
   });
@@ -56,11 +64,19 @@ export function setupPassport(app: Application) {
           console.log('cred:', cred);
 
           if (cred) {
-            // User has previously signed in with this account.
-            if (!cred.user) {
+            await cred.populate('user');
+            const user = cred.user;
+            console.log(
+              'User has previously signed in with this account. Returning existing user.',
+              'user:',
+              user
+            );
+            if (!user) {
               throw new AuthError('Credential user not loaded or missing');
             }
-            return done(null, new UserDbModel(cred.user).toDomain(), { isNew: false });
+            return done(null, (user as UserSchema).toDomain(), {
+              isNew: false,
+            });
           }
 
           const { state } = req.query;
@@ -74,14 +90,29 @@ export function setupPassport(app: Application) {
           const providerDisplayName =
             profile.name?.givenName || profile.username || profile.displayName;
 
-          console.log('profile.emails[0]', profile.emails?.[0]);
-
           const email = profile.emails?.[0]?.value;
 
-          const user = await DI.userService.createUser({
-            displayName: displayName || providerDisplayName,
-            email,
-          });
+          const existingUser = req.user;
+          let user: User | undefined;
+
+          if (existingUser) {
+            console.log(
+              'User was already logged in as guest. Linking new credential with the existing user.'
+            );
+            user = existingUser;
+            user.guestSecret = '';
+            req.di.userService.save(user);
+            req.user = undefined; // so passport can set the user itself
+          } else {
+            user = await req.di.userService.createUser({
+              displayName: displayName || providerDisplayName,
+              email,
+            });
+          }
+
+          if (!user) {
+            return done(new Error('Unable to get or create user'));
+          }
 
           const newCred = await FederatedCredentialsDbModel.create({
             _id: new mongoose.Types.ObjectId(),
@@ -90,9 +121,10 @@ export function setupPassport(app: Application) {
             subject: profile.id,
             profile,
           });
+
           console.log('google oauth new cred document', newCred);
 
-          return done(null, user, { isNew: true });
+          return done(null, user, { isNew: !existingUser });
         } catch (err: any) {
           return done(err);
         }
