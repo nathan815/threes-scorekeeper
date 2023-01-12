@@ -16,6 +16,12 @@
         window.location = '/';
       }
       const query = new URLSearchParams(location.search);
+
+      let user;
+      try {
+        user = JSON.parse(query.get('user'));
+      } catch {}
+
       if (window.opener) {
         window.opener.postMessage({
           source: 'auth_popup',
@@ -24,7 +30,7 @@
             success: query.get('result') === 'success',
             error: query.get('error'),
             isNew: query.get('isNew') === 'true',
-            user: JSON.parse(query.get('user')),
+            user: user,
           },
         });
       }
