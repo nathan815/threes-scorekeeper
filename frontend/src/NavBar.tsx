@@ -1,39 +1,41 @@
 import {
-  useToast,
-  Menu,
-  MenuButton,
+  Box,
+  BoxProps,
   Button,
-  MenuList,
-  MenuItem,
-  useColorMode,
   DarkMode,
   Flex,
   HStack,
   IconButton,
-  Box,
-  BoxProps,
-  Modal,
-  ModalContent,
-  ModalBody,
-  ModalOverlay,
-  ModalCloseButton,
-  ModalHeader,
-  UseDisclosureProps,
-  useDisclosure,
-  ModalFooter,
+  Menu,
+  MenuButton,
   MenuDivider,
+  MenuItem,
+  MenuList,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  useColorMode,
+  useDisclosure,
+  UseDisclosureProps,
+  useToast,
 } from '@chakra-ui/react';
 import React from 'react';
 import { IoCaretDown, IoMenuSharp } from 'react-icons/io5';
-import { MdLightMode, MdDarkMode } from 'react-icons/md';
+import { MdDarkMode, MdLightMode } from 'react-icons/md';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuthContext } from 'src/auth/authContext';
 import { AuthFlowForm } from 'src/components/AuthFlowForm';
 import { Logo } from 'src/components/Logo';
+import { UserSettingsModal } from 'src/screens/UserSettingsModal';
 import { convertDisclosureProps } from 'src/utils/disclosure';
 
 function AuthOptionMenu({ onSignIn }: { onSignIn: () => void }) {
   const authCtx = useAuthContext();
+  const settingsModalState = useDisclosure();
   const toast = useToast();
 
   if (!authCtx?.user) {
@@ -45,33 +47,42 @@ function AuthOptionMenu({ onSignIn }: { onSignIn: () => void }) {
   }
 
   return (
-    <Menu>
-      <MenuButton as={Button} rightIcon={<IoCaretDown />} variant="ghost">
-        {authCtx.user.displayName}
-      </MenuButton>
-      <MenuList color="white">
-        <MenuItem as={RouterLink} to="/games">
-          My Games
-        </MenuItem>
-        <MenuItem onClick={() => {}}>Settings</MenuItem>
-        {!authCtx.user.isGuest && (
-          <MenuItem onClick={() => authCtx.logOut()}>Sign Out</MenuItem>
-        )}
-        <MenuDivider />
-        <MenuItem
-          title="Copy to clipboard"
-          fontSize="sm"
-          onClick={() =>
-            authCtx?.user && navigator.clipboard.writeText(authCtx.user.id)
-          }
-        >
-          ID: {authCtx.user.id}
-        </MenuItem>
-        <MenuItem as={RouterLink} to="/dev" fontSize="sm">
-          Developer
-        </MenuItem>
-      </MenuList>
-    </Menu>
+    <>
+      <UserSettingsModal modalState={settingsModalState} />
+      <Menu>
+        <MenuButton as={Button} rightIcon={<IoCaretDown />} variant="ghost">
+          {authCtx.user.displayName}
+        </MenuButton>
+        <MenuList color="white">
+          <MenuItem as={RouterLink} to="/games">
+            My Games
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              settingsModalState.onOpen();
+            }}
+          >
+            Settings
+          </MenuItem>
+          {!authCtx.user.isGuest && (
+            <MenuItem onClick={() => authCtx.logOut()}>Sign Out</MenuItem>
+          )}
+          <MenuDivider />
+          <MenuItem
+            title="Copy to clipboard"
+            fontSize="sm"
+            onClick={() =>
+              authCtx?.user && navigator.clipboard.writeText(authCtx.user.id)
+            }
+          >
+            ID: {authCtx.user.id}
+          </MenuItem>
+          <MenuItem as={RouterLink} to="/dev" fontSize="sm">
+            Developer
+          </MenuItem>
+        </MenuList>
+      </Menu>
+    </>
   );
 }
 

@@ -34,6 +34,7 @@ type AuthCtx = {
   guestLogin: (displayName: string) => Promise<AuthUser>;
   completeOauthLogin: CompleteOAuthLoginFn;
   completeOauthRegister: CompleteOAuthRegisterFn;
+  updateUser: (changes: { displayName: string }) => Promise<AuthUser>;
   logOut: () => void;
   setAuthFlow: (authFlow: Partial<AuthFlowState>) => void;
 } & AuthState;
@@ -156,6 +157,12 @@ export function AuthProvider({ children }) {
     });
   };
 
+  const updateUser = async ({ displayName }: { displayName: string }) => {
+    const user = await api.updateUser({ displayName });
+    setAuth({ user });
+    return user;
+  };
+
   const setAuthFlow = (newAuthFlow: AuthFlowState) => {
     console.log('newAuthFlow', newAuthFlow);
     setAuth({
@@ -173,6 +180,7 @@ export function AuthProvider({ children }) {
     completeOauthRegister,
     logOut,
     setAuthFlow,
+    updateUser,
   };
 
   return <AuthContext.Provider value={ctx}>{children}</AuthContext.Provider>;
