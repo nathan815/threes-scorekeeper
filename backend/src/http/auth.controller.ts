@@ -2,6 +2,7 @@ import Router from 'express-promise-router';
 import { StatusCodes } from 'http-status-codes';
 import passport from 'passport';
 
+import { NextFunction, Request, Response } from 'express';
 import * as v from 'express-validator';
 import { userToDto, userToPrivateDto } from '../domain/user/user.dto';
 import { User } from '../domain/user/user.model';
@@ -91,9 +92,7 @@ router.get('/auth/google', (req, res, next) => {
   })(req, res, next);
 });
 
-router.get('/auth/google/callback', (req, res, next) => {
-  console.log('google oauth callback');
-
+function getCallbackParameteres(req: Request) {
   const baseURL = getReqBaseUrl(req);
   const callbackURL = `${baseURL}/auth/google/callback`;
   const basePopupURL = (user?: User) =>
@@ -105,29 +104,54 @@ router.get('/auth/google/callback', (req, res, next) => {
   const failureRedirect = (msg: string) =>
     `${basePopupURL()}&result=failure&error=${encodeURIComponent(msg)}`;
 
-  passport.authenticate(
-    'google',
-    { callbackURL },
-    (err, user, info: { isNew: boolean }) => {
-      console.log('google oauth callback - authenticate');
-      console.log('err', err, 'info', info);
-      if (err) return next(err);
+  return { callbackURL, successRedirect, failureRedirect };
+}
 
-      if (!user) {
-        console.error('google oauth callback: user missing');
-        return res.redirect(failureRedirect('missing user'));
-      }
+router.get(
+  '/auth/google/callback',
+  (req: Request, res: Response, next: NextFunction) => {
+    console.log('google oauth callback');
 
-      req.logIn(user, { callbackURL }, function (err: any) {
-        console.log('google oauth callback - req.logIn');
+    const { callbackURL, successRedirect, failureRedirect } =
+      getCallbackParameteres(req);
 
-        if (err) {
-          console.error('google oauth callback - logIn - failure', err);
-          return res.redirect(failureRedirect(err.message || err));
+    passport.authenticate(
+      'google',
+      { callbackURL },
+      (err, user, info: { isNew: boolean }) => {
+        console.log('google oauth callback - authenticate');
+        console.log('err', err, 'info', info);
+        if (err) return next(err);
+
+        if (!user) {
+          console.error('google oauth callback: user missing');
+          return res.redirect(failureRedirect('missing user'));
         }
 
-        return res.redirect(successRedirect(user, info.isNew));
-      });
-    }
-  )(req, res, next);
-});
+        req.logIn(user, { callbackURL }, function (err: any) {
+          console.log('google oauth callback - req.logIn');
+
+          if (err) {
+            console.error('google oauth callback - logIn - failure', err);
+            return res.redirect(failureRedirect(err.message || err));
+          }
+
+          return res.redirect(successRedirect(user, info.isNew));
+        });
+      }
+    )(req, res, next);
+  },
+
+  (err: Error, req: Request, res: Response, next: NextFunction) => {
+    const { failureRedirect } = getCallbackParameteres(req);
+    res.redirect(
+      failureRedirect(
+        JSON.stringify({
+          name: err.name,
+          message: err.message,
+          stack: err.stack,
+        })
+      )
+    );
+  }
+);
