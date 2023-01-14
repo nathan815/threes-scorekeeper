@@ -49,6 +49,7 @@ export function AddPlayerModal(props: {
         position: 'top',
         duration: 2000,
       });
+      setName('');
       modal.onClose();
     } catch (error) {
       toast({
