@@ -53,9 +53,15 @@ export class UserRepositoryMongo implements UserRepository {
     return ents.map((u) => u.toDomain());
   }
 
-  async save(user: User): Promise<User> {
+  async update(user: User): Promise<User> {
     const ent = new UserDbModel(UserSchema.fromDomain(user));
     ent.isNew = false;
+    const savedEnt = await ent.save();
+    return savedEnt.toDomain();
+  }
+
+  async create(user: User): Promise<User> {
+    const ent = new UserDbModel(UserSchema.fromDomain(user));
     const savedEnt = await ent.save();
     return savedEnt.toDomain();
   }

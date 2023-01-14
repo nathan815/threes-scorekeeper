@@ -1,5 +1,5 @@
-import { User } from './user.model';
 import { generateSecret } from '../../utils/generateSecret';
+import { User } from './user.model';
 import { UserRepository } from './user.repository';
 
 export class UserService {
@@ -37,7 +37,7 @@ export class UserService {
       displayName: displayName,
       guestSecret: secret,
     });
-    user = await this.userRepo.save(user);
+    user = await this.userRepo.update(user);
     return user;
   }
 
@@ -52,11 +52,11 @@ export class UserService {
       displayName,
       email,
     });
-    user = await this.userRepo.save(user);
+    user = await this.userRepo.create(user);
     return user;
   }
 
-  async save(user: User) {
-    return this.userRepo.save(user);
+  async updateUser(user: User) {
+    return this.userRepo.update(user);
   }
 }

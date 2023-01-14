@@ -32,7 +32,7 @@ router.patch(
     const user = req.user!;
     if (user.displayName && user.displayName !== displayName) {
       user.displayName = displayName;
-      await req.di.userService.save(user);
+      await req.di.userService.updateUser(user);
     }
     res.status(200).json(userToPrivateDto(user));
   }

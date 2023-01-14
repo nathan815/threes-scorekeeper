@@ -1,4 +1,3 @@
-import { isDocument } from '@typegoose/typegoose';
 import { Application, NextFunction, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import passport from 'passport';
@@ -101,7 +100,7 @@ export function setupPassport(app: Application) {
             );
             user = existingUser;
             user.guestSecret = '';
-            req.di.userService.save(user);
+            req.di.userService.updateUser(user);
             req.user = undefined; // so passport can set the user itself
           } else {
             user = await req.di.userService.createUser({
