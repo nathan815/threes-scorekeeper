@@ -1,0 +1,15 @@
+START_DIR=$(pwd)
+
+# Switch to repo toplevel directory
+cd $(git rev-parse --show-toplevel)
+
+pushd frontend
+npx lint-staged
+popd
+
+pushd backend
+npx lint-staged
+popd
+
+# Go back to directory when we started
+cd "$START_DIR"
