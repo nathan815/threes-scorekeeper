@@ -1,6 +1,6 @@
-import mongoose from 'mongoose';
 import { getModelForClass, modelOptions, prop } from '@typegoose/typegoose';
 import { TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
+import mongoose from 'mongoose';
 import { User } from '../domain/user/user.model';
 import { UserRepository } from '../domain/user/user.repository';
 
@@ -54,9 +54,9 @@ export class UserRepositoryMongo implements UserRepository {
   }
 
   async save(user: User): Promise<User> {
-    const ent = await UserDbModel.create(UserSchema.fromDomain(user));
+    const ent = new UserDbModel(UserSchema.fromDomain(user));
+    ent.isNew = false;
     const savedEnt = await ent.save();
-    // console.log('ent', ent, 'saved', savedEnt);
     return savedEnt.toDomain();
   }
 }

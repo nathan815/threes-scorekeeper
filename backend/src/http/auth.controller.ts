@@ -20,7 +20,7 @@ router.get('/auth/state', (req, res) => {
 router.post(
   '/auth/guest/register',
   requiresNoAuth,
-  validateDisplayName,
+  validateDisplayName(),
   checkRequestValidation,
   async (req, res) => {
     const user = await req.di.userService.createGuestUser({

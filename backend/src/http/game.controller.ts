@@ -1,15 +1,15 @@
-import { StatusCodes } from 'http-status-codes';
+import { Request, Response } from 'express';
 import Router from 'express-promise-router';
 import * as v from 'express-validator';
-import { Request, Response, NextFunction } from 'express';
+import { StatusCodes } from 'http-status-codes';
 
 import { gameToDto } from '../domain/game/game.dto';
-import { checkRequestValidation, requiresAuth } from './middleware';
 import {
   GameError,
   NonOwnerCannotStartGameError,
 } from '../domain/game/game.model';
 import { PseudoUser } from '../domain/user/user.model';
+import { checkRequestValidation, requiresAuth } from './middleware';
 import { validateDisplayName } from './validators';
 
 export const router = Router();
@@ -82,7 +82,7 @@ router.post(
 router.post(
   '/games/:id/pseudoPlayers',
   requiresAuth,
-  validateDisplayName,
+  validateDisplayName(),
   checkRequestValidation,
   async (req, res) => {
     const { displayName } = req.body;
