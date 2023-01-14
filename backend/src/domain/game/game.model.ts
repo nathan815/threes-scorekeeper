@@ -41,7 +41,11 @@ export class Game {
 
   get players(): Player[] {
     return [
-      ...this.userPlayers,
+      ...this.userPlayers.map(({ id, displayName, gravatarHash }) => ({
+        id,
+        displayName,
+        gravatarHash,
+      })),
       ...this.pseudoPlayers.map(({ id, displayName, gravatarHash }) => ({
         id,
         displayName,
