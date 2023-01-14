@@ -9,11 +9,12 @@ This application fully facilitates the scorekeeping process and displays the cur
 ## Screenshots
 
 ### Pre-start game view (host)
-<img width="1680" alt="image" src="https://user-images.githubusercontent.com/1972782/210937208-1b14e864-491e-4c35-9968-7706fa963714.png">
+<img width="1680" alt="Screen Shot 2023-01-14 at 12 48 42 AM" src="https://user-images.githubusercontent.com/1972782/212457980-55f79abc-6094-42f3-9d5b-8aaf93cbe276.png">
+
 
 
 ### Game view (host)
-<img width="1680" alt="image" src="https://user-images.githubusercontent.com/1972782/210936423-38b546ca-6367-43ba-8bed-500c28818092.png">
+<img width="1680" alt="Screen Shot 2023-01-14 at 12 46 59 AM" src="https://user-images.githubusercontent.com/1972782/212457943-f9b02799-9e7a-4529-a89c-ea024d2aba3a.png">
 
 
 
