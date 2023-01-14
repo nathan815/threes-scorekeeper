@@ -104,7 +104,7 @@ function PlayerAvatar({
   return (
     <Avatar
       name={player.displayName}
-      src={`https://www.gravatar.com/avatar/${player.gravatarHash}?d=robohash&size=1`}
+      src={`https://www.gravatar.com/avatar/${player.gravatarHash}?d=robohash`}
       bg="white"
       boxShadow={showShadow ? shadow : undefined}
       {...props}
