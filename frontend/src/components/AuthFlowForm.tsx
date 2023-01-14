@@ -10,7 +10,7 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import React, { useState } from 'react';
-import { IoLogoApple, IoLogoGoogle, IoPerson } from 'react-icons/io5';
+import { IoLogoGoogle, IoPerson } from 'react-icons/io5';
 import { openAuthPopupWindow } from 'src/auth/authPopup';
 import { AuthUser, useAuthContext } from '../auth/authContext';
 
@@ -60,8 +60,8 @@ export function AuthFlowForm(props: {
             description: `Signed in as ${result.user.displayName}`,
             position: 'bottom-right',
           });
+          props.onComplete?.();
         }
-        props.onComplete?.();
       } else {
         toast({
           status: 'error',
@@ -98,7 +98,7 @@ export function AuthFlowForm(props: {
     } catch (err) {
       toast({
         title: 'An error occurred',
-        description: `Failed to continue auth. Please try again. (${err})`,
+        description: `Failed. Please try again. (${err})`,
         status: 'error',
         duration: 5000,
         isClosable: true,

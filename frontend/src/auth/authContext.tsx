@@ -1,5 +1,4 @@
-import React from 'react';
-import { useContext, useState, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { api } from '../api';
 
 type AuthOption = 'guest' | 'apple' | 'google';
@@ -142,6 +141,7 @@ export function AuthProvider({ children }) {
 
   const completeOauthRegister = async (user: AuthUser, displayName: string) => {
     // TODO send request to update display name
+    user = await api.updateUser({ displayName });
     setAuth({
       loggedIn: true,
       user: user,

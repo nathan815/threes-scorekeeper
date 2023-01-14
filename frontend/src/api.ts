@@ -90,6 +90,10 @@ function guestLogin({ id, secret }: { id: string; secret: string }) {
     .then((res) => res.data);
 }
 
+function updateUser(changes: { displayName: string }) {
+  return http.patch(`/users/me`, changes).then((res) => res.data);
+}
+
 function createGame(name: string): Promise<Game> {
   return http
     .post(`/games`, {
@@ -155,6 +159,7 @@ export const api = {
   logout,
   guestLogin,
   guestRegister,
+  updateUser,
   createGame,
   getGame,
   joinGame,
