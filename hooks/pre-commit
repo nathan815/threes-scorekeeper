@@ -1,3 +1,5 @@
+#!/bin/sh
+
 START_DIR=$(pwd)
 
 # Switch to repo toplevel directory

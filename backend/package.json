@@ -47,6 +47,6 @@
     "ts-node-dev": "^2.0.0"
   },
   "lint-staged": {
-    "*.--write": "prettier --write"
+    "*.{ts,js,json,md}": "prettier --write"
   }
 }

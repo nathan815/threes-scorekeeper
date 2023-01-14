@@ -64,6 +64,6 @@
     "prop-types": "^15.8.1"
   },
   "lint-staged": {
-    "*.--write": "prettier --write"
+    "*.{ts,js,tsx,jsx,json,md}": "prettier --write"
   }
 }
