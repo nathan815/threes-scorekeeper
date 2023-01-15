@@ -8,8 +8,8 @@
     "build": "npm run lint && tsc",
     "test": "jest --runInBand --detectOpenHandles --watch",
     "test:nowatch": "jest  --runInBand --detectOpenHandles",
-    "lint": "eslint . --ext .ts",
-    "format": "npx prettier . --write"
+    "lint": "eslint src",
+    "format": "prettier . --write"
   },
   "author": "",
   "license": "ISC",
@@ -53,6 +53,9 @@
     "ts-node-dev": "^2.0.0"
   },
   "lint-staged": {
-    "*.{ts,js,json,md}": "prettier --write"
+    "*.{ts,js,json,md}": [
+      "eslint",
+      "prettier --write"
+    ]
   }
 }
