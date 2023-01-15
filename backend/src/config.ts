@@ -3,7 +3,7 @@ dotenv.config();
 
 function env(key: string, required = true): string {
   const val = process.env[key];
-  if (!process.env.hasOwnProperty(key) || val === undefined) {
+  if (!Object.hasOwn(process.env, key) || val === undefined) {
     throw new Error('Required environment variable is not defined');
   }
   return val;

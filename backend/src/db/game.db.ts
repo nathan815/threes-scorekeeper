@@ -1,28 +1,28 @@
-import mongoose from 'mongoose';
-import autopopulate from 'mongoose-autopopulate';
 import {
-  GameStage,
-  GameRound,
-  Game,
-  PlayerResultMap,
-} from '../domain/game/game.model';
-import { UserSchema } from './user.db';
-import {
-  getModelForClass,
-  prop,
-  plugin,
-  Ref,
   DocumentType,
-  modelOptions,
+  getModelForClass,
   isDocument,
   isDocumentArray,
+  modelOptions,
+  plugin,
+  prop,
+  Ref,
 } from '@typegoose/typegoose';
 import { TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
-import { GameRepository } from '../domain/game/game.repository';
+import { plainToInstance } from 'class-transformer';
 import { cloneDeep } from 'lodash';
+import mongoose from 'mongoose';
+import autopopulate from 'mongoose-autopopulate';
 import { CardRank } from '../domain/game/cards';
+import {
+  Game,
+  GameRound,
+  GameStage,
+  PlayerResultMap,
+} from '../domain/game/game.model';
+import { GameRepository } from '../domain/game/game.repository';
 import { PseudoUser } from '../domain/user/user.model';
-import { plainToClass, plainToInstance } from 'class-transformer';
+import { UserSchema } from './user.db';
 
 class GameRoundSchema {
   @prop()
@@ -144,7 +144,7 @@ export class GameRepositoryMongo implements GameRepository {
 
   async create(game: Game): Promise<Game> {
     const ent = await GameDbModel.create(GameSchema.fromDomain(game));
-    const saved = await ent.save();
+    await ent.save();
     return game;
   }
 

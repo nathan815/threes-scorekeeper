@@ -1,5 +1,4 @@
 import { UserPublicDto, userToDto } from '../user/user.dto';
-import { CardRank } from './cards';
 import {
   Game,
   GameRound,

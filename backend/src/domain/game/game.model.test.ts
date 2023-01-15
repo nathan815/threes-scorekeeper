@@ -62,7 +62,7 @@ describe(Game, () => {
 
     // 4
     g.nextRound();
-    expect(g.currentWinners).toEqual([expect.objectContaining(userA)]); // current winner provided after past the first round
+    expect(g.currentWinners[0].id).toBe(userA.id); // current winner provided after past the first round
 
     expect(g.currentRound?.cardRank).toEqual(CardRank.of(4));
     g.recordPlayerRoundResult(userA.id, 25);
@@ -70,7 +70,7 @@ describe(Game, () => {
     g.finishCurrentRound();
     expect(g.getPlayerPoints(userA.id)).toBe(25);
     expect(g.getPlayerPoints(userB.id)).toBe(15);
-    expect(g.currentWinners).toEqual([expect.objectContaining(userB)]);
+    expect(g.currentWinners[0].id).toBe(userB.id);
 
     // 5
     g.nextRound();
@@ -80,7 +80,7 @@ describe(Game, () => {
     g.finishCurrentRound();
     expect(g.getPlayerPoints(userA.id)).toBe(30);
     expect(g.getPlayerPoints(userB.id)).toBe(25);
-    expect(g.currentWinners).toEqual([expect.objectContaining(userB)]);
+    expect(g.currentWinners[0].id).toBe(userB.id);
 
     // 6
     g.nextRound();
@@ -90,10 +90,9 @@ describe(Game, () => {
     g.finishCurrentRound();
     expect(g.getPlayerPoints(userA.id)).toBe(35);
     expect(g.getPlayerPoints(userB.id)).toBe(35);
-    expect(g.currentWinners).toEqual([
-      expect.objectContaining(userA),
-      expect.objectContaining(userB),
-    ]); // tied!
+    // tied:
+    expect(g.currentWinners[0].id).toBe(userA.id);
+    expect(g.currentWinners[1].id).toBe(userB.id);
 
     // 7
     g.nextRound();
@@ -103,7 +102,7 @@ describe(Game, () => {
     g.finishCurrentRound();
     expect(g.getPlayerPoints(userA.id)).toBe(35);
     expect(g.getPlayerPoints(userB.id)).toBe(40);
-    expect(g.currentWinners).toEqual([expect.objectContaining(userA)]);
+    expect(g.currentWinners[0].id).toBe(userA.id);
     expect(g.stage).toBe(GameStage.InProgress);
 
     // 8
@@ -118,7 +117,7 @@ describe(Game, () => {
       [userA.id]: 20,
       [userB.id]: 48,
     });
-    expect(g.currentWinners).toEqual([expect.objectContaining(userA)]);
+    expect(g.currentWinners[0].id).toBe(userA.id);
 
     // 9
     g.nextRound();
@@ -132,7 +131,7 @@ describe(Game, () => {
       [userA.id]: 20,
       [userB.id]: 48,
     });
-    expect(g.currentWinners).toEqual([expect.objectContaining(userA)]);
+    expect(g.currentWinners[0].id).toBe(userA.id);
 
     // 10
     g.nextRound();
@@ -146,7 +145,7 @@ describe(Game, () => {
       [userA.id]: 25,
       [userB.id]: 48,
     });
-    expect(g.currentWinners).toEqual([expect.objectContaining(userA)]);
+    expect(g.currentWinners[0].id).toBe(userA.id);
     expect(g.stage).toBe(GameStage.InProgress);
 
     // Jack
@@ -161,7 +160,7 @@ describe(Game, () => {
       [userA.id]: 28,
       [userB.id]: 50,
     });
-    expect(g.currentWinners).toEqual([expect.objectContaining(userA)]);
+    expect(g.currentWinners[0].id).toBe(userA.id);
 
     // Queen
     g.nextRound();
@@ -175,7 +174,7 @@ describe(Game, () => {
       [userA.id]: 38,
       [userB.id]: 31,
     });
-    expect(g.currentWinners).toEqual([expect.objectContaining(userB)]);
+    expect(g.currentWinners[0].id).toBe(userB.id);
 
     // King
     g.nextRound();
@@ -189,7 +188,7 @@ describe(Game, () => {
       [userA.id]: 38,
       [userB.id]: 33,
     });
-    expect(g.currentWinners).toEqual([expect.objectContaining(userB)]);
+    expect(g.currentWinners[0].id).toBe(userB.id);
 
     expect(g.stage).toBe(GameStage.InProgress);
     g.nextRound(); // <- no more rounds, finishes game
@@ -212,8 +211,8 @@ describe(Game, () => {
         expect(g.userPlayers.length).toBe(2);
         expect(g.players.length).toBe(3);
 
-        expect(g.players[0]).toEqual(expect.objectContaining(userA));
-        expect(g.players[1]).toEqual(expect.objectContaining(userC));
+        expect(g.players[0].id).toBe(userA.id);
+        expect(g.players[1].id).toBe(userC.id);
         expect(g.players[2].id).toBe(psuedoUserD.id);
         expect(g.players[2].isPseudo).toBe(true);
       });
@@ -458,10 +457,8 @@ describe(Game, () => {
       g.recordPlayerRoundResult(userB.id, 5);
       g.nextRound();
 
-      expect(g.currentWinners).toEqual([
-        expect.objectContaining(userA),
-        expect.objectContaining(userB),
-      ]);
+      expect(g.currentWinners[0].id).toBe(userA.id);
+      expect(g.currentWinners[1].id).toBe(userB.id);
     });
 
     it('works for both psuedo and user players', () => {

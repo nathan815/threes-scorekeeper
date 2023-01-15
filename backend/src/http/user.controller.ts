@@ -25,7 +25,7 @@ router.patch(
   validateDisplayName({ optional: true }),
   checkRequestValidation,
   async (
-    req: Request<{}, UpdateUserRequest>,
+    req: Request<any, UpdateUserRequest>,
     res: Response<UserPrivateDto>
   ) => {
     const { displayName } = req.body;

@@ -1,6 +1,6 @@
-import { CardRank } from './cards';
-import { PseudoUser, User } from '../user/user.model';
 import { generateShortId } from '../../utils/generateShortId';
+import { PseudoUser, User } from '../user/user.model';
+import { CardRank } from './cards';
 
 const MAX_PLAYERS = 8;
 const START_ROUND_CARD = 3;
@@ -195,7 +195,7 @@ export class Game {
   recordPlayerRoundResult(
     playerId: string,
     points: number,
-    cutDeckPerfectly: boolean = false,
+    cutDeckPerfectly = false,
     roundNumber?: number
   ) {
     let round: GameRound;
@@ -263,7 +263,7 @@ export class Game {
     }
     const missingPlayerIds = this.players
       .map((player) => player.id)
-      .filter((id) => !currentRound.playerResults.hasOwnProperty(id));
+      .filter((id) => !Object.hasOwn(currentRound.playerResults, id));
 
     if (missingPlayerIds.length > 0) {
       throw new ResultNotRecordedForPlayersError(
