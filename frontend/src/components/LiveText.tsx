@@ -1,5 +1,4 @@
-import { TextProps } from '@chakra-ui/react';
-import React, { useRef, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 /**
  * Renders text on provided tick interval without triggering any re-renders.

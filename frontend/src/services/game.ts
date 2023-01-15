@@ -1,13 +1,11 @@
 import {
   api,
   Game,
-  GameRound,
   Player,
   PlayerResult,
   PlayerResultInput,
   UpdateGameChanges,
 } from '../api';
-import { sleep } from '../utils/general';
 
 const START_ROUND = 3;
 const END_ROUND = 13;

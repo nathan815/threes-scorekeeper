@@ -1,10 +1,10 @@
-import { Box, Image, useColorMode, ImageProps } from '@chakra-ui/react';
+import { Box, Image, ImageProps, useColorMode } from '@chakra-ui/react';
 import React, { Link } from 'react-router-dom';
 import logo from '../assets/images/logo_transparent.png';
 import logoDark from '../assets/images/logo_transparent_dark.png';
 
 export function Logo(props: { forceColorMode?: string } & ImageProps) {
-  const { forceColorMode, display, ...restProps } = props;
+  const { forceColorMode, ...restProps } = props;
   const { colorMode } = useColorMode();
   const effectiveColorMode = forceColorMode || colorMode;
   const showLight = effectiveColorMode === 'light';

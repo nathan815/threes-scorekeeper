@@ -2,7 +2,6 @@ import {
   Box,
   Button,
   ButtonGroup,
-  Text,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -10,15 +9,15 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Text,
   useBreakpointValue,
   UseDisclosureProps,
-  useToast,
 } from '@chakra-ui/react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useAuthContext } from 'src/auth/authContext';
-import { GameAugmented, updateGame } from 'src/services/game';
-import { convertDisclosureProps } from 'src/utils/disclosure';
 import { AuthFlowForm } from 'src/components/AuthFlowForm';
+import { GameAugmented } from 'src/services/game';
+import { convertDisclosureProps } from 'src/utils/disclosure';
 
 export function JoinGameModal(props: {
   game: GameAugmented;
@@ -27,7 +26,6 @@ export function JoinGameModal(props: {
 }) {
   const { game, modalState, onJoinGame } = props;
   const authCtx = useAuthContext();
-  const toast = useToast();
   const modal = convertDisclosureProps(modalState);
   const [loading, setLoading] = useState(false);
 

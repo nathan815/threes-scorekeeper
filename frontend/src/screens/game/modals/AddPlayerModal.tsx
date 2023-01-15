@@ -17,11 +17,7 @@ import {
 } from '@chakra-ui/react';
 import React, { useState } from 'react';
 import { IoPersonAdd } from 'react-icons/io5';
-import {
-  addPlayerManually,
-  GameAugmented,
-  updateGame,
-} from 'src/services/game';
+import { addPlayerManually, GameAugmented } from 'src/services/game';
 import { convertDisclosureProps } from 'src/utils/disclosure';
 
 export function AddPlayerModal(props: {

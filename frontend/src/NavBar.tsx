@@ -21,7 +21,6 @@ import {
   useColorMode,
   useDisclosure,
   UseDisclosureProps,
-  useToast,
 } from '@chakra-ui/react';
 import React from 'react';
 import { IoCaretDown, IoMenuSharp } from 'react-icons/io5';
@@ -36,7 +35,6 @@ import { convertDisclosureProps } from 'src/utils/disclosure';
 function AuthOptionMenu({ onSignIn }: { onSignIn: () => void }) {
   const authCtx = useAuthContext();
   const settingsModalState = useDisclosure();
-  const toast = useToast();
 
   if (!authCtx?.user) {
     return (

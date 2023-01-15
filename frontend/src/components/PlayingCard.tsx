@@ -1,6 +1,5 @@
 import { Box, BoxProps } from '@chakra-ui/react';
-import { debounce } from 'lodash';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { IconType } from 'react-icons';
 import {
   BsSuitClubFill,
