@@ -2,6 +2,7 @@
   "include": ["./src", "./@types"],
   "files": ["./src/main.ts"],
   "compilerOptions": {
+    "outDir": "build",
     "strict": true,
     "target": "ES2021",
     "esModuleInterop": true,
