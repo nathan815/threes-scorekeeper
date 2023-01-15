@@ -76,7 +76,7 @@
     "prop-types": "^15.8.1"
   },
   "lint-staged": {
-    "*.{ts,js,tsx,jsx,json,md}": ["eslint", "prettier --write"]
+    "*.{ts,js,tsx,jsx,md}": ["eslint", "prettier --write"]
   },
   "jest": {
     "transform": {
