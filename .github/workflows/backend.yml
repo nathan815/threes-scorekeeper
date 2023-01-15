@@ -13,8 +13,9 @@ on:
 
 jobs:
   build:
-    env:
-      working-directory: backend
+    defaults:
+      run:
+        working-directory: backend
 
     runs-on: ubuntu-latest
 
