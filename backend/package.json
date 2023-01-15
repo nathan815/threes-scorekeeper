@@ -5,7 +5,7 @@
   "scripts": {
     "debug": "ts-node-dev --respawn --inspect=4321 src/main.ts",
     "start": "ts-node-dev --respawn src/main.ts",
-    "build": "tsc",
+    "build": "npm run lint && tsc",
     "test": "jest --runInBand --detectOpenHandles --watch",
     "test:nowatch": "jest  --runInBand --detectOpenHandles",
     "lint": "eslint . --ext .ts",
