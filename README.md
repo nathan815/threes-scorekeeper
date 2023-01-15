@@ -1,5 +1,8 @@
 # Threes Scorekeeper
 
+[![Frontend CI](https://github.com/nathan815/threes-scorekeeper/actions/workflows/frontend.yml/badge.svg)](https://github.com/nathan815/threes-scorekeeper/actions/workflows/frontend.yml)
+[![Backend CI](https://github.com/nathan815/threes-scorekeeper/actions/workflows/backend.yml/badge.svg)](https://github.com/nathan815/threes-scorekeeper/actions/workflows/backend.yml)
+
 Scorekeeping web app for the card game _Threes_. Supports desktop and mobile with a responsive design.
 
 _Built with TypeScript, React, Chakra UI, Node, MongoDB._
