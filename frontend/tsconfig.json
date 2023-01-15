@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "outDir": "./dist",
+    "outDir": "./tsc-dist",
     "module": "esnext",
     "moduleResolution": "node",
     "esModuleInterop": true,

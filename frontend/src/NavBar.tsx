@@ -124,6 +124,8 @@ export function NavBar({ showLogo = true }: { showLogo?: boolean }) {
       <AuthModal modalState={authModalState} />
       <DarkMode>
         <Flex
+          as="nav"
+          role="nav"
           flexDirection="row"
           justifyContent="space-between"
           alignItems="center"

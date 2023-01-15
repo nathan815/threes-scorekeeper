@@ -4,6 +4,9 @@ import App from './App';
 
 test('renders without errors', () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+});
+
+test('renders navbar', () => {
+  render(<App />);
+  expect(screen.getByRole('nav')).toBeInTheDocument();
 });

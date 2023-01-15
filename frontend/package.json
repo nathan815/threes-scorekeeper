@@ -29,6 +29,7 @@
     "start:https": "WDS_SOCKET_PORT=443 npm start",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "test:nowatch": "react-scripts test --watchAll=false",
     "eject": "react-scripts eject",
     "format": "npx prettier . --write"
   },
@@ -66,5 +67,13 @@
   },
   "lint-staged": {
     "*.{ts,js,tsx,jsx,json,md}": "prettier --write"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.[t|j]sx?$": "babel-jest"
+    },
+    "transformIgnorePatterns": [
+      "node_modules/(?!@codemirror)/"
+    ]
   }
 }
