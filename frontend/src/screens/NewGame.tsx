@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Container,
   FormControl,
   FormErrorMessage,
   FormHelperText,
@@ -16,11 +17,11 @@ import React, { useCallback, useState } from 'react';
 import { IoArrowForward } from 'react-icons/io5';
 import { useNavigate } from 'react-router-dom';
 
+import { generateGameName } from 'src/utils/general';
+import { api, ApiError, ValidationError } from '../api';
 import { useAuthContext } from '../auth/authContext';
 import { AuthFlowForm } from '../components/AuthFlowForm';
 import { LogoHeader } from '../components/Logo';
-import { api, ApiError, ValidationError } from '../api';
-import { generateGameName } from 'src/utils/general';
 
 export function NewGame() {
   const bg = useColorModeValue('whiteAlpha.900', 'blackAlpha.100');
@@ -87,59 +88,63 @@ export function NewGame() {
   };
 
   return (
-    <Stack
-      justifyContent="start"
-      alignContent="center"
-      alignItems="center"
-      minHeight="100%"
-      paddingBottom={10}
-    >
-      <LogoHeader width={200} />
+    <Container maxWidth="7xl">
+      <Stack
+        justifyContent="start"
+        alignContent="center"
+        alignItems="center"
+        minHeight="100%"
+        paddingBottom={10}
+      >
+        <LogoHeader width={200} />
 
-      <Box bg={bg} padding={10} borderRadius={10} width={430} maxWidth="100%">
-        <Heading size="lg">New Game</Heading>
-        <br />
+        <Box bg={bg} padding={10} borderRadius={10} width={430} maxWidth="100%">
+          <Heading size="lg">New Game</Heading>
+          <br />
 
-        {!authCtx?.loggedIn && (
-          <AuthFlowForm introText="Please select an option. Your game history will be saved if you sign in." />
-        )}
+          {!authCtx?.loggedIn && (
+            <AuthFlowForm introText="Please select an option. Your game history will be saved if you sign in." />
+          )}
 
-        {authCtx?.loggedIn && (
-          <form onSubmit={handleSubmit}>
-            <Stack spacing={8}>
-              <FormControl isRequired isInvalid={Boolean(error.msg)}>
-                <FormLabel>Name for this game</FormLabel>
-                <Input
-                  id="game-name"
-                  placeholder="Game Name"
-                  minLength={5}
+          {authCtx?.loggedIn && (
+            <form onSubmit={handleSubmit}>
+              <Stack spacing={8}>
+                <FormControl isRequired isInvalid={Boolean(error.msg)}>
+                  <FormLabel>Name for this game</FormLabel>
+                  <Input
+                    id="game-name"
+                    placeholder="Game Name"
+                    minLength={5}
+                    size="lg"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    value={gameName}
+                    onChange={handleGameNameInput}
+                  />
+                  {error.msg && (
+                    <FormErrorMessage>{error.msg}</FormErrorMessage>
+                  )}
+                  <FormHelperText>
+                    Can't think of anything?{' '}
+                    <Link href="#" onClick={handleClickGenerateName}>
+                      Generate a name
+                    </Link>
+                  </FormHelperText>
+                </FormControl>
+                <Button
+                  colorScheme="blue"
+                  isLoading={loading}
+                  type="submit"
                   size="lg"
-                  autoComplete="off"
-                  autoCorrect="off"
-                  value={gameName}
-                  onChange={handleGameNameInput}
-                />
-                {error.msg && <FormErrorMessage>{error.msg}</FormErrorMessage>}
-                <FormHelperText>
-                  Can't think of anything?{' '}
-                  <Link href="#" onClick={handleClickGenerateName}>
-                    Generate a name
-                  </Link>
-                </FormHelperText>
-              </FormControl>
-              <Button
-                colorScheme="blue"
-                isLoading={loading}
-                type="submit"
-                size="lg"
-                rightIcon={<IoArrowForward />}
-              >
-                Create
-              </Button>
-            </Stack>
-          </form>
-        )}
-      </Box>
-    </Stack>
+                  rightIcon={<IoArrowForward />}
+                >
+                  Create
+                </Button>
+              </Stack>
+            </form>
+          )}
+        </Box>
+      </Stack>
+    </Container>
   );
 }

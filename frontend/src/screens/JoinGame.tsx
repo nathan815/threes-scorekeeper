@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Container,
   FormControl,
   FormErrorMessage,
   FormHelperText,
@@ -13,8 +14,8 @@ import {
 } from '@chakra-ui/react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { isMobile } from 'react-device-detect';
-import { IoArrowForward, IoCamera } from 'react-icons/io5';
-import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
+import { IoCamera } from 'react-icons/io5';
+import { useNavigate, useParams } from 'react-router-dom';
 import { getGameCached } from 'src/services/game';
 import { ApiError } from '../api';
 import { JoinGameQrCodeScannerModal } from '../components/JoinGameQrCodeScannerModal';
@@ -92,7 +93,7 @@ export function JoinGame() {
   }
 
   return (
-    <>
+    <Container maxWidth="7xl">
       <JoinGameQrCodeScannerModal
         isOpen={qrModalState.isOpen}
         onClose={qrModalState.onClose}
@@ -160,6 +161,6 @@ export function JoinGame() {
           </Stack>
         </Box>
       </Stack>
-    </>
+    </Container>
   );
 }
