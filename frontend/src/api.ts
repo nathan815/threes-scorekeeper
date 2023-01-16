@@ -66,7 +66,7 @@ function getGame(id: string): Promise<Game> {
 }
 
 function getAuthState() {
-  return http.get(`/auth/state`).then((res) => res.data);
+  return http.get(`/auth`).then((res) => res.data);
 }
 
 function logout() {

@@ -12,7 +12,7 @@ import { validateDisplayName } from './validators';
 
 export const router = Router();
 
-router.get('/auth/state', (req, res) => {
+router.get('/auth', (req, res) => {
   res.json({
     user: req.user ? userToDto(req.user) : null,
   });

@@ -25,7 +25,7 @@ export function JoinGame() {
   const { gameId: gameIdParam } = useParams();
   const navigate = useNavigate();
   const qrModalState = useDisclosure();
-  const bg = useColorModeValue('whiteAlpha.900', 'blackAlpha.300');
+  const bg = useColorModeValue('whiteAlpha.900', 'blackAlpha.100');
   const [gameIdInput, setGameIdInput] = useState(gameIdParam || '');
   const [joinLoading, setJoinLoading] = useState(false);
   const [error, setError] = useState<{
