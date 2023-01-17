@@ -7,23 +7,15 @@ on:
 
 jobs:
   wait-for-tests:
-    name: Wait for test workflows to finish
+    name: Wait for tests to finish
     runs-on: ubuntu-latest
 
     steps:
-      - name: Wait for backend tests
+      - name: Wait for other workflows
         uses: lewagon/wait-on-check-action@v1.2.0
         with:
           ref: ${{ github.ref }}
-          check-name: 'Backend CI'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 10
-
-      - name: Wait for frontend tests
-        uses: lewagon/wait-on-check-action@v1.2.0
-        with:
-          ref: ${{ github.ref }}
-          check-name: 'Frontend CI'
+          running-workflow-name: "Prod Deploy"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 10
 
