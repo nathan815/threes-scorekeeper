@@ -84,13 +84,15 @@ jobs:
 
       - name: Run Deploy Playbook
         uses: dawidd6/action-ansible-playbook@v2
+        env:
+          ssh_user: ${{ secrets.APP_SERVER_USERNAME }}
         with:
           playbook: deploy.yml
           directory: ./infra/ansible
           key: ${{ secrets.APP_SERVER_SSH_PRIVATE_KEY }}
           inventory: |
             [all]
-            ${{ vars.APP_SERVER_HOSTNAME }} ansible_connection=ssh ansible_user=${{ secrets.APP_SERVER_USERNAME }}
+            ${{ vars.APP_SERVER_HOSTNAME }} ansible_connection=ssh ansible_user=${{ env.ssh_user }}
           requirements: galaxy-requirements.yml
           options: |
             --verbose
