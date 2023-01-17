@@ -1,4 +1,7 @@
 {
     "typescript.enablePromptUseWorkspaceTsdk": true,
-    "typescript.inlayHints.parameterTypes.enabled": true
+    "typescript.inlayHints.parameterTypes.enabled": true,
+    "yaml.schemas": {
+        "https://json.schemastore.org/github-workflow.json": ".github/workflows/deploy.yml"
+    }
 }

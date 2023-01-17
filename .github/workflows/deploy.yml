@@ -1,4 +1,6 @@
-name: deploy
+---
+name: Prod Deploy
+
 on:
   push:
     branches: [main]
@@ -6,23 +8,24 @@ on:
 jobs:
   wait-for-tests:
     name: Wait for test workflows to finish
+    runs-on: ubuntu-latest
 
     steps:
       - name: Wait for backend tests
-          uses: lewagon/wait-on-check-action@v1.2.0
-          with:
-            ref: ${{ github.ref }}
-            check-name: 'Backend CI'
-            repo-token: ${{ secrets.GITHUB_TOKEN }}
-            wait-interval: 10
+        uses: lewagon/wait-on-check-action@v1.2.0
+        with:
+          ref: ${{ github.ref }}
+          check-name: 'Backend CI'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 10
 
       - name: Wait for frontend tests
-          uses: lewagon/wait-on-check-action@v1.2.0
-          with:
-            ref: ${{ github.ref }}
-            check-name: 'Frontend CI'
-            repo-token: ${{ secrets.GITHUB_TOKEN }}
-            wait-interval: 10
+        uses: lewagon/wait-on-check-action@v1.2.0
+        with:
+          ref: ${{ github.ref }}
+          check-name: 'Frontend CI'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 10
 
   docker-build:
     name: Build and Push Docker Images
