@@ -43,14 +43,14 @@ jobs:
       - name: Build and push frontend container
         uses: docker/build-push-action@v3
         with:
-          context: '{{defaultContext}}:frontend'
+          context: ../../frontend
           push: true
           tags: "${{ secrets.ACR_SERVER }}/threes-frontend:latest"
 
       - name: Build and push backend container
         uses: docker/build-push-action@v3
         with:
-          context: '{{defaultContext}}:backend'
+          context: ../../backend
           push: true
           tags: "${{ secrets.ACR_SERVER }}/threes-backend:latest"
 
