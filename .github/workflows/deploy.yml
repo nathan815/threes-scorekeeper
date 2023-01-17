@@ -29,7 +29,7 @@ jobs:
       - name: Login to ACR
         uses: azure/docker-login@v1
         with:
-          login-server: $ACR_SERVER
+          login-server: '${{ env.ACR_SERVER }}'
           username: '${{ secrets.ACR_USERNAME }}'
           password: '${{ secrets.ACR_PASSWORD }}'
 
@@ -38,14 +38,14 @@ jobs:
         with:
           context: '{{defaultContext}}:frontend'
           push: true
-          tags: "$ACR_SERVER/threes-frontend:latest"
+          tags: "${{ env.ACR_SERVER }}/threes-frontend:latest"
 
       - name: Build and push backend container
         uses: docker/build-push-action@v3
         with:
           context: '{{defaultContext}}:backend'
           push: true
-          tags: "$ACR_SERVER/threes-backend:latest"
+          tags: "${{ env.ACR_SERVER }}/threes-backend:latest"
 
   deploy:
     name: deploy
@@ -63,7 +63,7 @@ jobs:
           key: ${{ secrets.APP_SERVER_SSH_PRIVATE_KEY }}
           inventory: |
             [all]
-            $APP_SERVER_HOSTNAME
+            ${{ env.APP_SERVER_HOSTNAME }}
           requirements: ansible/galaxy-requirements.yml
           options: |
             --verbose
