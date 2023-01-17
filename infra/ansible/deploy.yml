@@ -16,10 +16,6 @@
         dest: /app/docker-compose.yml
 
     - name: Pull latest images and restart containers
-      community.docker.docker_compose:
-        project_src: /app
-        pull: true
-        state: present
-        profiles:
-          - app
-  
+      shell: docker-compose pull && docker-compose up -d
+      args:
+        chdir: /app
