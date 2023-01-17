@@ -7,15 +7,15 @@ on:
 
 jobs:
   wait-for-tests:
-    name: Wait for tests to finish
+    name: Wait for tests
     runs-on: ubuntu-latest
 
     steps:
-      - name: Wait for other workflows
+      - name: Wait for all other workflows
         uses: lewagon/wait-on-check-action@v1.2.0
         with:
           ref: ${{ github.ref }}
-          running-workflow-name: "Wait for tests to finish"
+          running-workflow-name: "Wait for tests"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 10
 
@@ -40,19 +40,23 @@ jobs:
           username: '${{ secrets.ACR_USERNAME }}'
           password: '${{ secrets.ACR_PASSWORD }}'
 
-      - name: Build and push frontend container
-        uses: docker/build-push-action@v3
-        with:
-          context: '{{defaultContext}}:infra/front-proxy'
-          push: true
-          tags: "${{ secrets.ACR_SERVER }}/threes-frontend:latest"
+      - name: Build, tag, and push frontend image to ACR
+        env:
+          IMAGE_NAME: threes-frontend
+          IMAGE_TAG: latest
+        working-directory: infra/front-proxy
+        run: |
+          docker build -t ${{ secrets.ACR_SERVER }}/$IMAGE_NAME:$IMAGE_TAG .
+          docker push ${{ secrets.ACR_SERVER }}/$IMAGE_NAME:$IMAGE_TAG
 
-      - name: Build and push backend container
-        uses: docker/build-push-action@v3
-        with:
-          context: '{{defaultContext}}:backend'
-          push: true
-          tags: "${{ secrets.ACR_SERVER }}/threes-backend:latest"
+      - name: Build, tag, and push backend image to ACR
+        env:
+          IMAGE_NAME: threes-backend
+          IMAGE_TAG: latest
+        working-directory: backend
+        run: |
+          docker build -t ${{ secrets.ACR_SERVER }}/$IMAGE_NAME:$IMAGE_TAG .
+          docker push ${{ secrets.ACR_SERVER }}/$IMAGE_NAME:$IMAGE_TAG
 
   deploy:
     name: deploy
