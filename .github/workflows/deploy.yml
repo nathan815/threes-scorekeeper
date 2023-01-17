@@ -27,6 +27,8 @@ jobs:
     needs: [wait-for-tests]
 
     steps:
+      - uses: actions/checkout@v2
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
