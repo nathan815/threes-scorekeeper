@@ -7,7 +7,7 @@ on:
 
 jobs:
   wait-for-tests:
-    name: Wait for tests
+    name: Wait for CI
     runs-on: ubuntu-latest
 
     steps:
@@ -15,7 +15,7 @@ jobs:
         uses: lewagon/wait-on-check-action@v1.2.0
         with:
           ref: ${{ github.ref }}
-          running-workflow-name: "Wait for tests"
+          running-workflow-name: Wait for CI
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 10
 
@@ -86,11 +86,11 @@ jobs:
         uses: dawidd6/action-ansible-playbook@v2
         with:
           playbook: deploy.yml
-          directory: ./ansible
+          directory: ./infra/ansible
           key: ${{ secrets.APP_SERVER_SSH_PRIVATE_KEY }}
           inventory: |
             [all]
             ${{ vars.APP_SERVER_HOSTNAME }}
-          requirements: ansible/galaxy-requirements.yml
+          requirements: galaxy-requirements.yml
           options: |
             --verbose
