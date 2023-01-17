@@ -2,6 +2,7 @@
     "typescript.enablePromptUseWorkspaceTsdk": true,
     "typescript.inlayHints.parameterTypes.enabled": true,
     "yaml.schemas": {
-        "https://json.schemastore.org/github-workflow.json": ".github/workflows/deploy.yml"
+        "https://json.schemastore.org/github-workflow.json": ".github/workflows/deploy.yml",
+        "https://raw.githubusercontent.com/ansible/ansible-lint/main/src/ansiblelint/schemas/ansible.json#/$defs/playbook": "infra/ansible/deploy.yml"
     }
 }
