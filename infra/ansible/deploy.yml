@@ -1,0 +1,25 @@
+- hosts: all
+  become: true
+
+  roles:
+    - { role: app-server }
+
+  tasks:
+    - name: Ensure /app directory exists
+      file:
+        path: /app
+        state: directory
+
+    - name: Upload docker-compose.prod.yml to server
+      copy:
+        src: ../docker-compose.prod.yml
+        dest: /app/docker-compose.yml
+
+    - name: Pull latest images and restart containers
+      community.docker.docker_compose:
+        project_src: /app
+        pull: true
+        state: present
+        profiles:
+          - app
+  

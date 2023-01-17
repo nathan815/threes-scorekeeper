@@ -1,14 +1,17 @@
-FROM node:16
+FROM node:18
 
 WORKDIR /app
 
 COPY package.json .
 COPY package-lock.json .
 
-RUN npm install
+RUN npm ci
 
-COPY src .
+COPY ./src .
 
-ENTRYPOINT ["node", "src/index.js"]
+RUN npm run build
 
-EXPOSE 8080
+ENV PORT=80
+EXPOSE 80
+
+ENTRYPOINT ["node", "build/main.js"]
