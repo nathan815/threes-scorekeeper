@@ -90,7 +90,7 @@ jobs:
           key: ${{ secrets.APP_SERVER_SSH_PRIVATE_KEY }}
           inventory: |
             [all]
-            ${{ vars.APP_SERVER_HOSTNAME }} ansible_user=${{ secrets.APP_SERVER_USERNAME }}
+            ${{ vars.APP_SERVER_HOSTNAME }} ansible_connection=ssh ansible_user=${{ secrets.APP_SERVER_USERNAME }}
           requirements: galaxy-requirements.yml
           options: |
             --verbose
