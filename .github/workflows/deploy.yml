@@ -4,20 +4,32 @@ on:
     branches: [main]
 
 jobs:
-  frontend-validate:
-    uses: ./.github/workflows/frontend.yml
+  wait-for-tests:
+    name: Wait for test workflows to finish
 
-  backend-validate:
-    uses: ./.github/workflows/backend.yml
+    steps:
+      - name: Wait for backend tests
+          uses: lewagon/wait-on-check-action@v1.2.0
+          with:
+            ref: ${{ github.ref }}
+            check-name: 'Backend CI'
+            repo-token: ${{ secrets.GITHUB_TOKEN }}
+            wait-interval: 10
+
+      - name: Wait for frontend tests
+          uses: lewagon/wait-on-check-action@v1.2.0
+          with:
+            ref: ${{ github.ref }}
+            check-name: 'Frontend CI'
+            repo-token: ${{ secrets.GITHUB_TOKEN }}
+            wait-interval: 10
 
   docker-build:
     name: Build and Push Docker Images
     runs-on: ubuntu-latest
     environment: production
 
-    needs:
-      - frontend-validate
-      - backend-validate
+    needs: [wait-for-tests]
 
     steps:
       - name: Set up QEMU
