@@ -1,4 +1,8 @@
 ---
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: yes
+
 - include_role:
     name: geerlingguy.pip
   vars:
