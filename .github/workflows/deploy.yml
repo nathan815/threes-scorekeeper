@@ -73,7 +73,7 @@ jobs:
           docker push ${{ secrets.ACR_SERVER }}/$IMAGE_NAME:$IMAGE_TAG
 
   deploy:
-    name: deploy
+    name: Deploy
     runs-on: ubuntu-latest
     environment: production
 
