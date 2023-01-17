@@ -40,4 +40,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: frontend-build
-          path: build
+          path: ./frontend/build
