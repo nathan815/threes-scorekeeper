@@ -35,3 +35,9 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm run test:nowatch
+
+      - name: Upload frontend build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-build
+          path: build

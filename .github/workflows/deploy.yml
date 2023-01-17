@@ -42,7 +42,19 @@ jobs:
           username: '${{ secrets.ACR_USERNAME }}'
           password: '${{ secrets.ACR_PASSWORD }}'
 
+      - name: Download frontend build artifact
+        id: download_frontend_artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          name: frontend-build
+          path: ./frontend-build
+          workflow: frontend.yml
+          workflow_conclusion: success
+          branch: ${{ github.ref_name }}
+          # commit: ${{ github.sha }}
+
       - name: Build, tag, and push frontend image to ACR
+        if: ${{ steps.download_frontend_artifact.outputs }}
         env:
           IMAGE_NAME: threes-frontend
           IMAGE_TAG: latest
@@ -68,6 +80,8 @@ jobs:
     needs: [docker-build]
 
     steps:
+      - uses: actions/checkout@v2
+
       - name: Run Deploy Playbook
         uses: dawidd6/action-ansible-playbook@v2
         with:
