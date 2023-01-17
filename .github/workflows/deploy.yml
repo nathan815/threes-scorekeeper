@@ -43,7 +43,7 @@ jobs:
       - name: Build and push frontend container
         uses: docker/build-push-action@v3
         with:
-          context: ../../frontend
+          context: ../../infra/front-proxy
           push: true
           tags: "${{ secrets.ACR_SERVER }}/threes-frontend:latest"
 
