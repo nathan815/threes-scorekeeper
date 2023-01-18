@@ -1,7 +1,16 @@
 ---
+- name: Ensure /app directory exists
+  file:
+    path: /app
+    state: directory
+
 - name: Update apt cache
   ansible.builtin.apt:
     update_cache: yes
+
+- name: Install Azure CLI
+  include_role:
+    name: darkwizard242.azurecli
 
 - include_role:
     name: geerlingguy.pip

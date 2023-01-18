@@ -93,4 +93,8 @@ jobs:
             ${{ vars.APP_SERVER_HOSTNAME }} ansible_connection=ssh ansible_user=app_server_user
           requirements: galaxy-requirements.yml
           options: |
+            -e AZ_SP_ID=${{ secrets.AZ_SP_ID }}
+            -e AZ_SP_PW=${{ secrets.AZ_SP_PW }}
+            -e AZ_SP_TENANT=${{ secrets.AZ_SP_TENANT }}
+            -e AZ_VAULT=${{ secrets.AZ_VAULT }}
             --verbose

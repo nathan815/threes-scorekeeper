@@ -1,21 +1,46 @@
 - hosts: all
   become: true
+  environment:
+    AZ_SP_ID: "{{ AZ_SP_ID }}"
+    AZ_SP_PW: "{{ AZ_SP_PW }}"
+    AZ_SP_TENANT: "{{ AZ_SP_TENANT }}"
+    AZ_VAULT: "{{ AZ_VAULT }}"
 
   roles:
-    - { role: app-server }
+    - app-server
 
   tasks:
-    - name: Ensure /app directory exists
-      file:
-        path: /app
-        state: directory
-
-    - name: Upload docker-compose.prod.yml to server
+    - name: Upload files to /app
       copy:
-        src: ../docker-compose.prod.yml
-        dest: /app/docker-compose.yml
+        src: "{{ item.src | default(item) }}"
+        dest: "{{ item.dest | default('/app') }}"
+      loop:
+        - ../backend.template.env
+        - ../generate_env.sh
+        - { src: '../docker-compose.prod.yml', dest: '/app/docker-compose.yml' }
 
-    - name: Pull latest images and restart containers
-      shell: docker-compose pull && docker-compose up -d
+    - name: Make generate_env.sh executable
+      file:
+        dest: /app/generate_env.sh
+        mode: a+x
+
+    - name: Generate env files
+      shell: ./generate_env.sh
+      args:
+        chdir: /app
+
+    - name: Login to Azure using az cli
+      shell: az login --service-principal -u $AZ_SP_ID -p $AZ_SP_PW --tenant $AZ_SP_TENANT
+
+    - name: Docker Login ACR
+      shell: az acr login --name threesgame
+
+    - name: Pull latest container images
+      shell: env $(cat backend.env) docker-compose pull
+      args:
+        chdir: /app
+
+    - name: Restart containers
+      shell: env $(cat backend.env) docker-compose up -d
       args:
         chdir: /app

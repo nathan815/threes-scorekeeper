@@ -1,17 +1,16 @@
 version: '3.7'
 services:
   app-frontend:
-    image: threes-frontend
+    image: threesgame.azurecr.io/threes-frontend
     restart: always
-    env_file:
-      - frontend.env
     depends_on:
       - app-backend
-    profiles:
-      - app
+    ports:
+      - 80:80
+      - 443:443
 
   app-backend:
-    image: threes-backend
+    image: threesgame.azurecr.io/threes-backend
     restart: always
     env_file:
       - backend.env
@@ -19,8 +18,6 @@ services:
       PORT: 80
     depends_on:
       - db
-    profiles:
-      - app
 
   db:
     image: mongo
@@ -30,11 +27,4 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: '${DB_PASSWORD}'
       MONGO_INITDB_DATABASE: '${DB_NAME}'
     volumes:
-      - mongodb_data_container:/data/db
-
-volumes:
-  mongodb_data_container:
-    driver: azure_file
-    driver_opts:
-      share_name: threes_mongo_data
-      storage_account_name: threesgamestorage
+      - /var/lib/mongodb/data:/data/db
