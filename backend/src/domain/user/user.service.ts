@@ -37,7 +37,7 @@ export class UserService {
       displayName: displayName,
       guestSecret: secret,
     });
-    user = await this.userRepo.update(user);
+    user = await this.userRepo.create(user);
     return user;
   }
 
