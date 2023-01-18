@@ -88,5 +88,8 @@
     "transformIgnorePatterns": [
       "node_modules/(?!@codemirror)/"
     ]
-  }
+  },
+  "sideEffects": [
+    "*.css"
+  ]
 }
