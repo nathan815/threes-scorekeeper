@@ -28,8 +28,8 @@
     "start": "react-scripts start",
     "start:https": "WDS_SOCKET_PORT=443 npm start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
-    "test:nowatch": "react-scripts test --watchAll=false",
+    "test": "react-scripts test --watchAll=false",
+    "test:watch": "react-scripts test",
     "eject": "react-scripts eject",
     "format": "prettier . --write",
     "lint": "eslint src"

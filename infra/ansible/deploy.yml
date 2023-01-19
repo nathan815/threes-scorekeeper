@@ -16,16 +16,10 @@
         dest: "{{ item.dest | default('/app') }}"
       loop:
         - ../backend.template.env
-        - ../generate_env.sh
         - { src: '../docker-compose.prod.yml', dest: '/app/docker-compose.yml' }
 
-    - name: Make generate_env.sh executable
-      file:
-        dest: /app/generate_env.sh
-        mode: a+x
-
     - name: Generate env files
-      shell: ./generate_env.sh
+      script: ./generate_env.sh
       args:
         chdir: /app
 

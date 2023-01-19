@@ -1,16 +1,31 @@
 version: '3.7'
 services:
-  app-frontend:
-    image: threesgame.azurecr.io/threes-frontend
+  app-front-proxy:
+    image: threesgame.azurecr.io/threes-front-proxy
+    build:
+      context: ../front-proxy
     restart: always
     depends_on:
       - app-backend
+      - app-frontend-bundle
     ports:
       - 80:80
       - 443:443
+    volumes:
+      - ./frontend-www:/var/www
+
+  app-frontend-bundle:
+    image: threesgame.azurecr.io/threes-frontend-bundle
+    build:
+      context: ../frontend
+    restart: never
+    volumes:
+      - ./frontend-www:/var/www
 
   app-backend:
     image: threesgame.azurecr.io/threes-backend
+    build:
+      context: ../backend
     restart: always
     env_file:
       - backend.env

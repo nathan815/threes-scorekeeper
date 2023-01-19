@@ -42,35 +42,15 @@ jobs:
           username: '${{ secrets.ACR_USERNAME }}'
           password: '${{ secrets.ACR_PASSWORD }}'
 
-      - name: Download frontend build artifact
-        id: download_frontend_artifact
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          name: frontend-build
-          path: ./infra/front-proxy/frontend-build
-          workflow: frontend.yml
-          workflow_conclusion: success
-          branch: ${{ github.ref_name }}
-          # commit: ${{ github.sha }}
-
-      - name: Build, tag, and push frontend image to ACR
-        if: ${{ steps.download_frontend_artifact.outputs }}
-        env:
-          IMAGE_NAME: threes-frontend
-          IMAGE_TAG: latest
-        working-directory: infra/front-proxy
+      - name: Build images
+        working-directory: infra
         run: |
-          docker build -t ${{ secrets.ACR_SERVER }}/$IMAGE_NAME:$IMAGE_TAG .
-          docker push ${{ secrets.ACR_SERVER }}/$IMAGE_NAME:$IMAGE_TAG
+          docker-compose -f docker-compose.prod.yml build
 
-      - name: Build, tag, and push backend image to ACR
-        env:
-          IMAGE_NAME: threes-backend
-          IMAGE_TAG: latest
-        working-directory: backend
+      - name: Push images to ACR
+        working-directory: infra
         run: |
-          docker build -t ${{ secrets.ACR_SERVER }}/$IMAGE_NAME:$IMAGE_TAG .
-          docker push ${{ secrets.ACR_SERVER }}/$IMAGE_NAME:$IMAGE_TAG
+          docker-compose -f docker-compose.prod.yml push
 
   deploy:
     name: Deploy
