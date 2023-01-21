@@ -42,12 +42,16 @@ jobs:
           username: '${{ secrets.ACR_USERNAME }}'
           password: '${{ secrets.ACR_PASSWORD }}'
 
-      - name: Build images
+      - name: Enable caching of Docker image layers
+        uses: satackey/action-docker-layer-caching@v0.0.11
+        continue-on-error: true
+
+      - name: Build Docker images
         working-directory: infra
         run: |
           docker-compose -f docker-compose.build.yml build
 
-      - name: Push images to ACR
+      - name: Push Docker images to ACR
         working-directory: infra
         run: |
           docker-compose -f docker-compose.build.yml push
