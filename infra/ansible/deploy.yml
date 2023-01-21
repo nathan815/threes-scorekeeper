@@ -1,6 +1,7 @@
 ---
 - hosts: all
   become: true
+  gather_facts: false
   environment:
     AZ_SP_ID: "{{ AZ_SP_ID }}"
     AZ_SP_PW: "{{ AZ_SP_PW }}"
@@ -8,6 +9,11 @@
     AZ_VAULT: "{{ AZ_VAULT }}"
 
   tasks:
+    - name: Wait for connection
+      ansible.builtin.wait_for_connection:
+        delay: 5
+        timeout: 60
+
     - name: Upload files to /app
       copy:
         src: "{{ item.src | default(item) }}"

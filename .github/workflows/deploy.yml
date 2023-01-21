@@ -76,7 +76,7 @@ jobs:
           azure-credentials: ${{ secrets.AZURE_CREDENTIALS }}
           rule-nsg-resource-group-name: threes-game
           rule-nsg-name: threes-server-nsg
-          rule-inbound-port: 22
+          rule-inbound-port: '22'
 
       - name: Print Created NSG Rule Name
         run: echo "Rule Name ${{ steps.rule.outputs.rule_name }}"
