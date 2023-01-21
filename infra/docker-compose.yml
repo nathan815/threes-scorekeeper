@@ -19,7 +19,7 @@ services:
     extends:
       file: docker-compose.build.yml
       service: app-frontend-bundle
-    restart: no
+    restart: 'no'
     volumes:
       - ./frontend-www:/var/www
 
