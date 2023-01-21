@@ -25,9 +25,9 @@ This application fully facilitates the scorekeeping process and displays the cur
 ## Local Setup
 Nodejs v18+ required.
 
-Install Git hooks: `./hooks/install` 
+Install Git hooks: `./git-hooks/install` 
 
-Prettier will automatically run on any staged files when committing.
+Prettier will automatically run on any staged files while committing.
 
 
 ### Backend
