@@ -18,6 +18,7 @@
         - ../backend.template.env
         - ../docker-compose.build.yml
         - ../docker-compose.yml
+        - ../nginx.conf
 
     - name: Generate env files
       script: ./generate_env.sh
