@@ -66,6 +66,21 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: dig +short myip.opendns.com @resolver1.opendns.com
+        run: dig +short myip.opendns.com @resolver1.opendns.com
+
+      - name: Add NSG Rule
+        uses: venura9/manage-nsg@master
+        id: rule
+        with:
+          azure-credentials: ${{ secrets.AZURE_CREDENTIALS }}
+          rule-nsg-resource-group-name: threes-game
+          rule-nsg-name: threes-server-nsg
+          rule-inbound-port: 22
+
+      - name: Print Created NSG Rule Name
+        run: echo "Rule Name ${{ steps.rule.outputs.rule_name }}"
+
       - name: Run Deploy Playbook
         uses: dawidd6/action-ansible-playbook@v2
         with:
@@ -82,3 +97,11 @@ jobs:
             -e AZ_SP_TENANT=${{ secrets.AZ_SP_TENANT }}
             -e AZ_VAULT=${{ secrets.AZ_VAULT }}
             --verbose
+
+      - name: Remove NSG Rule
+        uses: venura9/manage-nsg@master
+        with:
+          azure-credentials: ${{ secrets.AZURE_CREDENTIALS }}
+          rule-id-for-removal: ${{ steps.rule.outputs.rule_name }}
+          rule-nsg-resource-group-name: threes-game
+          rule-nsg-name: threes-server-nsg
