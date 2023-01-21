@@ -19,49 +19,12 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 10
 
-  docker-build:
-    name: Build and Push Docker Images
-    runs-on: ubuntu-latest
-    environment: production
-
-    needs: [wait-for-tests]
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Login to ACR
-        uses: azure/docker-login@v1
-        with:
-          login-server: '${{ secrets.ACR_SERVER }}'
-          username: '${{ secrets.ACR_USERNAME }}'
-          password: '${{ secrets.ACR_PASSWORD }}'
-
-      - uses: jpribyl/action-docker-layer-caching@v0.1.1
-        # Ignore the failure of a step and avoid terminating the job.
-        continue-on-error: true
-
-      - name: Build Docker images
-        working-directory: infra
-        run: |
-          docker-compose -f docker-compose.build.yml build
-
-      - name: Push Docker images to ACR
-        working-directory: infra
-        run: |
-          docker-compose -f docker-compose.build.yml push
-
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
     environment: production
 
-    needs: [docker-build]
+    needs: [wait-for-tests]
 
     steps:
       - uses: actions/checkout@v2

@@ -7,10 +7,12 @@ on:
     branches: [ main ]
     paths:
       - frontend/**
+      - .github/workflows/frontend.yml
   pull_request:
     branches: [ main ]
     paths:
       - frontend/**
+      - .github/workflows/frontend.yml
 
 jobs:
   build:
@@ -35,3 +37,26 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm run test
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to ACR
+        uses: azure/docker-login@v1
+        with:
+          login-server: '${{ secrets.ACR_SERVER }}'
+          username: '${{ secrets.ACR_USERNAME }}'
+          password: '${{ secrets.ACR_PASSWORD }}'
+
+      - name: Build frontend-bundle image
+        working-directory: infra
+        run: |
+          docker-compose -f docker-compose.build.yml build frontend-bundle
+
+      - name: Push frontend-bundle image to ACR
+        working-directory: infra
+        run: |
+          docker-compose -f docker-compose.build.yml push frontend-bundle
