@@ -21,6 +21,7 @@ jobs:
         working-directory: frontend
 
     runs-on: ubuntu-latest
+    environment: acr
 
     strategy:
       matrix:
