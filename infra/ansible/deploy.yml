@@ -57,6 +57,11 @@
         follow_redirects: none
         status_code: [301]
 
+    - name: Stop test-nginx
+      shell: docker-compose stop test-nginx
+      args:
+        chdir: /app
+
     - name: Reload real nginx config
       include_role:
         name: reload-nginx
@@ -70,3 +75,7 @@
     - name: Validate website is reachable (HTTPS)
       uri:
         url: https://{{ domain }}
+
+    - name: Validate proxied API is reachable
+      uri:
+        url: https://{{ domain }}/api
