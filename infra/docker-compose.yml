@@ -5,8 +5,8 @@ services:
     image: nginx:latest
     restart: always
     depends_on:
-      - app-backend
-      - app-frontend-bundle
+      - backend
+      - frontend-bundle
     ports:
       - 80:80
       - 443:443
@@ -14,18 +14,18 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./frontend-www:/var/www:ro
 
-  app-frontend-bundle:
+  frontend-bundle:
     extends:
       file: docker-compose.build.yml
-      service: app-frontend-bundle
+      service: frontend-bundle
     restart: 'no'
     volumes:
       - ./frontend-www:/var/www
 
-  app-backend:
+  backend:
     extends:
       file: docker-compose.build.yml
-      service: app-backend
+      service: backend
     restart: always
     env_file:
       - backend.env

@@ -3,12 +3,12 @@
 version: '3.7'
 
 services:
-  app-frontend-bundle:
+  frontend-bundle:
     image: threesgame.azurecr.io/threes-frontend-bundle
     build:
       context: ../frontend
 
-  app-backend:
+  backend:
     image: threesgame.azurecr.io/threes-backend
     build:
       context: ../backend
