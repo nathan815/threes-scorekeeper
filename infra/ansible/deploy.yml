@@ -16,7 +16,7 @@
         dest: "{{ item.dest | default('/app') }}"
       loop:
         - ../backend.template.env
-        - { src: '../docker-compose.prod.yml', dest: '/app/docker-compose.yml' }
+        - ../docker-compose.yml
 
     - name: Generate env files
       script: ./generate_env.sh

@@ -1,9 +1,10 @@
 version: '3.7'
+
 services:
   app-front-proxy:
-    image: threesgame.azurecr.io/threes-front-proxy
-    build:
-      context: ../front-proxy
+    extends:
+      file: docker-compose.build.yml
+      service: app-front-proxy
     restart: always
     depends_on:
       - app-backend
@@ -15,17 +16,17 @@ services:
       - ./frontend-www:/var/www
 
   app-frontend-bundle:
-    image: threesgame.azurecr.io/threes-frontend-bundle
-    build:
-      context: ../frontend
+    extends:
+      file: docker-compose.build.yml
+      service: app-frontend-bundle
     restart: never
     volumes:
       - ./frontend-www:/var/www
 
   app-backend:
-    image: threesgame.azurecr.io/threes-backend
-    build:
-      context: ../backend
+    extends:
+      file: docker-compose.build.yml
+      service: app-frontend-bundle
     restart: always
     env_file:
       - backend.env

@@ -45,12 +45,12 @@ jobs:
       - name: Build images
         working-directory: infra
         run: |
-          docker-compose -f docker-compose.prod.yml build
+          docker-compose -f docker-compose.build.yml build
 
       - name: Push images to ACR
         working-directory: infra
         run: |
-          docker-compose -f docker-compose.prod.yml push
+          docker-compose -f docker-compose.build.yml push
 
   deploy:
     name: Deploy

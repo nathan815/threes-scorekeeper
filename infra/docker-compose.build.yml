@@ -1,0 +1,19 @@
+# This is only used for building and pushing the images
+
+version: '3.7'
+
+services:
+  app-front-proxy:
+    image: threesgame.azurecr.io/threes-front-proxy
+    build:
+      context: ../front-proxy
+
+  app-frontend-bundle:
+    image: threesgame.azurecr.io/threes-frontend-bundle
+    build:
+      context: ../frontend
+
+  app-backend:
+    image: threesgame.azurecr.io/threes-backend
+    build:
+      context: ../backend
