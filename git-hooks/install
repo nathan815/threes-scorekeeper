@@ -3,7 +3,7 @@
 # Switch to repo toplevel directory
 pushd $(git rev-parse --show-toplevel)/.git/hooks
 
-echo "Symlinking .hooks/pre-commit into .git/hooks"
-ln -s -f ../../hooks/pre-commit pre-commit
+echo "Symlinking git-hooks/pre-commit into .git/hooks"
+ln -s -f ../../git-hooks/pre-commit pre-commit
 
 popd
