@@ -21,12 +21,14 @@ This application fully facilitates the scorekeeping process and displays the cur
 
 
 
+
 ## Local Setup
 Nodejs v18+ required.
 
 Install Git hooks: `./hooks/install` 
 
 Prettier will automatically run on any staged files when committing.
+
 
 ### Backend
 
