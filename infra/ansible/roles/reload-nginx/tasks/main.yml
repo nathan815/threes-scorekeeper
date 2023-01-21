@@ -1,0 +1,37 @@
+---
+- name: Try to reload {{ nginx_service_name }}
+  shell: docker-compose exec {{ nginx_service_name }} nginx -s reload
+  args:
+    chdir: /app
+  register: test_nginx_reload_output
+  retries: 5
+  delay: 5
+
+- name: Check if {{ nginx_service_name }} is up
+  shell: docker ps -q --no-trunc | grep $(docker-compose ps -q {{ nginx_service_name }})
+  args:
+    chdir: /app
+  register: check_test_nginx_output
+
+- set_fact:
+    is_test_nginx_container_up: "{{ check_test_nginx_output.stdout != '' }}"
+    test_nginx_reload_ok: "{{ test_nginx_reload_output.stderr_lines | length == 1 }}"
+
+- name: Show logs from {{ nginx_service_name }} if not up
+  when: not is_test_nginx_container_up
+  shell: sudo docker-compose logs --tail 100 {{ nginx_service_name }}
+  args:
+    chdir: /app
+  register: test_nginx_logs
+
+- debug: var=test_nginx_logs.stdout
+  when: not is_test_nginx_container_up
+
+- debug: var=test_nginx_reload_output
+  when: not test_nginx_reload_ok
+
+- name: Ensure that {{ nginx_service_name }} is up and no error from reload
+  assert:
+    that:
+      - is_test_nginx_container_up
+      - test_nginx_reload_ok

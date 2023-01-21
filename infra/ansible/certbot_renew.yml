@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Renew Let's Encrypt SSL cert with Certbot
+      shell: docker-compose run --rm certbot renew
+      args:
+        chdir: /app

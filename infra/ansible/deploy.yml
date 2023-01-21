@@ -1,3 +1,4 @@
+---
 - hosts: all
   become: true
   environment:
@@ -5,9 +6,6 @@
     AZ_SP_PW: "{{ AZ_SP_PW }}"
     AZ_SP_TENANT: "{{ AZ_SP_TENANT }}"
     AZ_VAULT: "{{ AZ_VAULT }}"
-
-  # roles:
-  #   - app-server
 
   tasks:
     - name: Upload files to /app
@@ -18,7 +16,7 @@
         - ../backend.template.env
         - ../docker-compose.build.yml
         - ../docker-compose.yml
-        - ../nginx.conf
+        - ../nginx
 
     - name: Generate env files
       script: ./generate_env.sh
@@ -32,11 +30,37 @@
       shell: az acr login --name threesgame
 
     - name: Pull latest container images
-      shell: env $(cat backend.env) docker-compose pull
+      shell: docker-compose pull
       args:
         chdir: /app
 
     - name: Restart containers
-      shell: env $(cat backend.env) docker-compose up -d --remove-orphans
+      shell: docker-compose up -d --remove-orphans
       args:
         chdir: /app
+
+    - name: Reload test-nginx config
+      include_role:
+        name: reload-nginx
+      vars:
+        nginx_service_name: test-nginx
+
+    - name: Validate test-nginx (local) is reachable
+      uri:
+        url: http://localhost:9980
+        follow_redirects: none
+        status_code: [301]
+
+    - name: Reload real nginx config
+      include_role:
+        name: reload-nginx
+      vars:
+        nginx_service_name: nginx
+
+    - name: Validate website is reachable (HTTP)
+      uri:
+        url: http://{{ domain }}
+
+    - name: Validate website is reachable (HTTPS)
+      uri:
+        url: https://{{ domain }}
