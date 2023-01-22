@@ -21,7 +21,11 @@ jobs:
         working-directory: frontend
 
     runs-on: ubuntu-latest
-    environment: acr
+    environment: build
+    env:
+      REACT_APP_NAME: "Threes Scorekeeper"
+      REACT_APP_CLARITY_KEY: "${{ secrets.REACT_APP_CLARITY_KEY }}"
+      REACT_APP_GOOGLE_ANALYTICS_KEY: "${{ secrets.REACT_APP_GOOGLE_ANALYTICS_KEY }}"
 
     strategy:
       matrix:
@@ -55,7 +59,12 @@ jobs:
       - name: Build frontend-bundle image
         working-directory: infra
         run: |
-          docker-compose -f docker-compose.build.yml build frontend-bundle
+          docker-compose -f docker-compose.build.yml \
+            build \
+            --build-arg REACT_APP_NAME="$REACT_APP_NAME" \
+            --build-arg REACT_APP_CLARITY_KEY="$REACT_APP_CLARITY_KEY" \
+            --build-arg REACT_APP_GOOGLE_ANALYTICS_KEY="$REACT_APP_GOOGLE_ANALYTICS_KEY" \
+            frontend-bundle
 
       - name: Push frontend-bundle image to ACR
         working-directory: infra
