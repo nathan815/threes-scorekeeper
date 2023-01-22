@@ -23,7 +23,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: build
     env:
-      REACT_APP_NAME: "Threes Scorekeeper"
       REACT_APP_CLARITY_KEY: "${{ secrets.REACT_APP_CLARITY_KEY }}"
       REACT_APP_GOOGLE_ANALYTICS_KEY: "${{ secrets.REACT_APP_GOOGLE_ANALYTICS_KEY }}"
 

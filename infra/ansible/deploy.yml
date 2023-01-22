@@ -24,7 +24,7 @@
         - ../docker-compose.yml
         - ../nginx
 
-    - name: Generate env files
+    - name: Generate environment vars on server
       script: ./generate_env.sh
       args:
         chdir: /app
@@ -32,7 +32,7 @@
     - name: Login to Azure using az cli
       shell: az login --service-principal -u $AZ_SP_ID -p $AZ_SP_PW --tenant $AZ_SP_TENANT
 
-    - name: Docker Login ACR
+    - name: Login to ACR
       shell: az acr login --name threesgame
 
     - name: Pull latest container images
