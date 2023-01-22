@@ -8,9 +8,9 @@ services:
     build:
       context: ../frontend
       args:
-        REACT_APP_NAME: ${REACT_APP_NAME:-'Threes Scorekeeper'}
-        REACT_APP_CLARITY_KEY: ${REACT_APP_CLARITY_KEY:-''}
-        REACT_APP_GOOGLE_ANALYTICS_KEY: ${REACT_APP_GOOGLE_ANALYTICS_KEY:-''}
+        REACT_APP_NAME: ${REACT_APP_NAME:-Threes Scorekeeper}
+        REACT_APP_CLARITY_KEY: ${REACT_APP_CLARITY_KEY:-}
+        REACT_APP_GOOGLE_ANALYTICS_KEY: ${REACT_APP_GOOGLE_ANALYTICS_KEY:-}
 
   backend:
     image: threesgame.azurecr.io/threes-backend
