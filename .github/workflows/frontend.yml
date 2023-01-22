@@ -58,15 +58,8 @@ jobs:
 
       - name: Build frontend-bundle image
         working-directory: infra
-        run: |
-          docker-compose -f docker-compose.build.yml \
-            build \
-            --build-arg REACT_APP_NAME="$REACT_APP_NAME" \
-            --build-arg REACT_APP_CLARITY_KEY="$REACT_APP_CLARITY_KEY" \
-            --build-arg REACT_APP_GOOGLE_ANALYTICS_KEY="$REACT_APP_GOOGLE_ANALYTICS_KEY" \
-            frontend-bundle
+        run: docker-compose -f docker-compose.build.yml build frontend-bundle
 
       - name: Push frontend-bundle image to ACR
         working-directory: infra
-        run: |
-          docker-compose -f docker-compose.build.yml push frontend-bundle
+        run: docker-compose -f docker-compose.build.yml push frontend-bundle
