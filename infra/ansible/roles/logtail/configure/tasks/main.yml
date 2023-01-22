@@ -1,0 +1,19 @@
+---
+- shell: grep "Forwarding logs to Logtail.com" /etc/vector/vector.toml
+  changed_when: false
+  failed_when: false
+  register: grep_cmd
+
+- block:
+    - name: Add Vector config for Logtail
+      shell: wget -O - >> /etc/vector/vector.toml https://logtail.com/vector-toml/docker/$LOGTAIL_TOKEN
+      environment:
+        LOGTAIL_TOKEN: "{{ logtail_token }}"
+
+    - name: Grant docker access to vector user
+      shell: usermod -a -G docker vector
+
+    - name: Restart Vector
+      shell: systemctl restart vector
+
+  when: grep_cmd.stdout == ''

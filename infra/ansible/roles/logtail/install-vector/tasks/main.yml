@@ -1,0 +1,20 @@
+---
+- name: Gather apt package facts
+  package_facts:
+    manager: apt
+
+- block:
+    - name: Configure the Vector Ubuntu repository
+      shell: |
+        curl -1sLf 'https://repositories.timber.io/public/vector/cfg/setup/bash.deb.sh' \
+          | bash
+
+    - name: Add Vector apt package config
+      shell: "echo 'Package: vector\nPin: version 0.26.0-1\nPin-Priority: 999' > /etc/apt/preferences.d/vector"
+
+    - name: Install Vector
+      apt:
+        name: vector=0.26.0-1
+        state: present
+
+  when: '"vector" not in ansible_facts.packages'
