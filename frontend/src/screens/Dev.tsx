@@ -8,12 +8,18 @@ import {
 } from '@chakra-ui/react';
 import { omit } from 'lodash';
 import React from 'react';
+import { openAuthPopupWindow } from 'src/auth/authPopup';
 import { useAuthContext } from '../auth/authContext';
 import { PlayingCard } from '../components/PlayingCard';
 import { ALL_RANKS, ALL_SUITS } from '../utils/card';
 
 export function DevScreen() {
   const authCtx = useAuthContext();
+
+  const login = async () => {
+    const res = await openAuthPopupWindow('google');
+    console.log('login res', res);
+  };
 
   return (
     <VStack alignItems="left" padding={10}>
@@ -32,6 +38,7 @@ export function DevScreen() {
             >
               Copy ID: {authCtx?.user?.id}
             </Button>
+            <Button onClick={login}>Test Login with Google</Button>
           </VStack>
         </CardBody>
       </Card>
