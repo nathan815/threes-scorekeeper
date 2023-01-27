@@ -1,0 +1,147 @@
+html,
+body,
+#root {
+  height: 100%;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Arbutus+Slab&display=swap');
+
+.playing-card-wrapper {
+  background-color: white;
+  border-radius: 15px;
+}
+
+.playing-card {
+  user-select: none;
+  aspect-ratio: 0.7;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  position: relative;
+  border-radius: 15px;
+}
+.chakra-ui-dark .playing-card {
+  border: 1px solid #111;
+  box-shadow: 2px 3px 8px #111;
+}
+.chakra-ui-light .playing-card {
+  border: 1px solid #bbb;
+  box-shadow: 2px 3px 8px #ddd;
+}
+.playing-card.black {
+  color: #000;
+}
+.playing-card.red {
+  color: #bd2f2f;
+}
+
+.playing-card .card-rank {
+  /* The font size is also dynamically updated based on width by JS */
+  font-size: 10vw;
+  font-weight: bold;
+  font-family: 'Arbutus Slab', serif;
+  line-height: 1;
+  margin-bottom: 20px;
+  pointer-events: none;
+}
+.playing-card .card-suit {
+  position: absolute;
+  width: 30%;
+}
+.playing-card .card-suit.card-suit-1 {
+  left: 15px;
+  top: 15px;
+}
+.playing-card .card-suit.card-suit-2 {
+  right: 15px;
+  bottom: 15px;
+  transform: rotate(180deg);
+}
+
+.chakra-ui-light {
+  --game-table-gradient-end: #fff;
+}
+.chakra-ui-dark {
+  --game-table-gradient-end: var(--chakra-colors-darkGray);
+}
+
+.game-table-wrapper {
+  width: 100%;
+  display: block;
+  position: relative;
+}
+.game-table-wrapper:after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background-image: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0),
+    var(--game-table-gradient-end)
+  );
+  width: 10%;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.game-table-wrapper.shadow:after {
+  opacity: 1;
+}
+
+.game-table tr.status-notStarted {
+  opacity: 0.5;
+}
+.game-table tr.status-inProgress,
+.game-table td.current-user {
+  background: rgba(255, 255, 255, 0.05);
+}
+.chakra-ui-light .game-table tr.status-inProgress,
+.chakra-ui-light .game-table td.current-user {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.spin-infinite {
+  animation: spin 4s ease infinite;
+  animation-delay: 1s;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(-180deg);
+  }
+  25% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+/* Current Card Display */
+
+.current-card-container {
+  width: 100%;
+  position: relative;
+  cursor: pointer;
+}
+.current-card {
+  position: absolute;
+  width: 100%;
+  opacity: 0;
+  margin-top: 0;
+  margin-bottom: 5px;
+  transition: opacity ease-in-out 2s;
+}
+.current-card.active {
+  opacity: 1;
+}
+.current-card-container.no-shadow .playing-card {
+  box-shadow: none;
+  border: none;
+}
