@@ -83,7 +83,7 @@ import { LiveTimeAgo } from 'src/components/LiveTimeAgo';
 import { AddPlayerModal } from 'src/screens/game/modals/AddPlayerModal';
 import { getDurationText } from 'src/utils/time';
 import { CurrentRoundCard, useCurrentRoundCardState } from './CurrentRoundCard';
-import './Game.css';
+// import './Game.css';
 import { ChangeGameNameModal } from './modals/ChangeGameNameModal';
 import { JoinGameModal } from './modals/JoinGameModal';
 import { RecordPointsModal } from './modals/RecordPointsModal';

@@ -3,30 +3,20 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { AuthProvider } from './auth/authContext';
-import './index.css';
+// import './index.css';
 import reportWebVitals from './reportWebVitals';
 import theme from './theme';
 
-import createCache from '@emotion/cache';
-import { CacheProvider } from '@emotion/react';
-
-const emotionCache = createCache({
-  key: 'emotion-css-cache',
-  prepend: true, // ensures styles are prepended to the <head>, instead of appended
-});
-
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <CacheProvider value={emotionCache}>
-    <ChakraProvider theme={theme} value={emotionCache}>
-      <ColorModeScript initialColorMode={theme.config.initialColorMode} />
-      <React.StrictMode>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </React.StrictMode>
-    </ChakraProvider>
-  </CacheProvider>
+  <ChakraProvider theme={theme}>
+    <ColorModeScript initialColorMode={theme.config.initialColorMode} />
+    <React.StrictMode>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </React.StrictMode>
+  </ChakraProvider>
 );
 
 // If you want to start measuring performance in your app, pass a function

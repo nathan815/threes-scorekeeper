@@ -1,10 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Arbutus+Slab&display=swap');
+
 html,
 body,
 #root {
   height: 100%;
 }
-
-@import url('https://fonts.googleapis.com/css2?family=Arbutus+Slab&display=swap');
 
 .playing-card-wrapper {
   background-color: white;

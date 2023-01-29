@@ -8,7 +8,7 @@ import { NewGame } from './screens/NewGame';
 
 import { GameScreen } from './screens/game/Game';
 import { PageNotFound } from './screens/PageNotFound';
-import './style/global.css';
+// import './style/global.css';
 import { NavBar } from 'src/NavBar';
 
 function DefaultScreenContainer() {
