@@ -7,7 +7,7 @@ import { AuthProvider } from './auth/authContext';
 import reportWebVitals from './reportWebVitals';
 import theme from './theme';
 
-const root = ReactDOM.createRoot(document.getElementById('root')!);
+const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <ChakraProvider theme={theme}>
     <ColorModeScript initialColorMode={theme.config.initialColorMode} />
