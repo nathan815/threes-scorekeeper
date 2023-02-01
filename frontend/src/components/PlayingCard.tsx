@@ -14,7 +14,7 @@ import {
   CardSuit,
 } from '../utils/card';
 import { useWindowResizeCallback } from '../utils/hooks/useWindowResizeCallback';
-// import './PlayingCard.css';
+import './PlayingCard.css';
 
 const suits: { [key in CardSuit]: [IconType, string] } = {
   hearts: [BsSuitHeartFill, 'red'],

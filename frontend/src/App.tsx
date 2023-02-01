@@ -6,10 +6,9 @@ import Home from './screens/Home';
 import { JoinGame } from './screens/JoinGame';
 import { NewGame } from './screens/NewGame';
 
+import { NavBar } from 'src/NavBar';
 import { GameScreen } from './screens/game/Game';
 import { PageNotFound } from './screens/PageNotFound';
-// import './style/global.css';
-import { NavBar } from 'src/NavBar';
 
 function DefaultScreenContainer() {
   return (
