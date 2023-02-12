@@ -78,12 +78,13 @@ import {
 } from '../../utils/card';
 import { CurrentRoundCardModal } from './modals/CurrentRoundCardModal';
 
+import { Global } from '@emotion/react';
 import { BsPencil } from 'react-icons/bs';
 import { LiveTimeAgo } from 'src/components/LiveTimeAgo';
 import { AddPlayerModal } from 'src/screens/game/modals/AddPlayerModal';
 import { getDurationText } from 'src/utils/time';
 import { CurrentRoundCard, useCurrentRoundCardState } from './CurrentRoundCard';
-import './Game.css';
+import * as styles from './Game.css';
 import { ChangeGameNameModal } from './modals/ChangeGameNameModal';
 import { JoinGameModal } from './modals/JoinGameModal';
 import { RecordPointsModal } from './modals/RecordPointsModal';
@@ -541,6 +542,7 @@ export function GameScreen() {
       paddingTop={100}
       paddingBottom={20}
     >
+      <Global styles={styles} />
       {/* Modals */}
       {game && (
         <>

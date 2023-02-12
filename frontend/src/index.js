@@ -1,15 +1,17 @@
 import { ChakraProvider, ColorModeScript } from '@chakra-ui/react';
+import { Global } from '@emotion/react';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { AuthProvider } from './auth/authContext';
-import './index.css';
+import * as styles from './index.css';
 import reportWebVitals from './reportWebVitals';
 import theme from './theme';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <ChakraProvider theme={theme}>
+    <Global styles={styles} />
     <ColorModeScript initialColorMode={theme.config.initialColorMode} />
     <React.StrictMode>
       <AuthProvider>
