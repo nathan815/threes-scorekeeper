@@ -90,7 +90,7 @@
     "prettier-plugin-organize-imports": "^3.2.2",
     "prop-types": "^15.8.1",
     "react-app-rewired": "^2.2.1",
-    "webpack": "^5.64.4",
+    "webpack": "^5.76.0",
     "webpack-dev-server": "^4.6.0",
     "webpack-manifest-plugin": "^4.0.2",
     "workbox-webpack-plugin": "^6.4.1"
