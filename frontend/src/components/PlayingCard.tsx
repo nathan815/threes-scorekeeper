@@ -1,5 +1,5 @@
 import { Box, BoxProps } from '@chakra-ui/react';
-import { Global } from '@emotion/react';
+import { css, Global } from '@emotion/react';
 import React, { useCallback, useRef, useState } from 'react';
 import { IconType } from 'react-icons';
 import {
@@ -50,7 +50,7 @@ export function PlayingCard(props: PlayingCardProps & BoxProps) {
 
   return (
     <Box className="playing-card-wrapper" width="100%" {...restProps}>
-      <Global styles={styles} />
+      <Global styles={css(styles)} />
       <Box
         className={`playing-card ${color}`}
         aria-label={`Playing Card: ${rankName} of ${suit}`}
