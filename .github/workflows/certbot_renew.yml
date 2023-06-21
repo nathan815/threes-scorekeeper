@@ -27,6 +27,11 @@ jobs:
       - name: Print Created NSG Rule Name
         run: echo "Rule Name ${{ steps.rule.outputs.rule_name }}"
 
+      - name: Sleep for 30s
+        uses: juliangruber/sleep-action@v2.0.0
+        with:
+          time: 30s
+
       - name: Run playbook on server to renew SSL certificate
         uses: dawidd6/action-ansible-playbook@v2
         with:
