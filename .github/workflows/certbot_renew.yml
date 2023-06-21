@@ -12,6 +12,21 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: dig +short myip.opendns.com @resolver1.opendns.com
+        run: dig +short myip.opendns.com @resolver1.opendns.com
+
+      - name: Add NSG Rule
+        uses: venura9/manage-nsg@master
+        id: rule
+        with:
+          azure-credentials: ${{ secrets.AZURE_CREDENTIALS }}
+          rule-nsg-resource-group-name: threes-game
+          rule-nsg-name: threes-server-nsg
+          rule-inbound-port: '22'
+
+      - name: Print Created NSG Rule Name
+        run: echo "Rule Name ${{ steps.rule.outputs.rule_name }}"
+
       - name: Run playbook on server to renew SSL certificate
         uses: dawidd6/action-ansible-playbook@v2
         with:
@@ -22,3 +37,12 @@ jobs:
             [all]
             ${{ vars.APP_SERVER_HOSTNAME }} ansible_connection=ssh ansible_user=app_server_user
           requirements: galaxy-requirements.yml
+
+      - name: Remove NSG Rule
+        uses: venura9/manage-nsg@master
+        if: always()
+        with:
+          azure-credentials: ${{ secrets.AZURE_CREDENTIALS }}
+          rule-id-for-removal: ${{ steps.rule.outputs.rule_name }}
+          rule-nsg-resource-group-name: threes-game
+          rule-nsg-name: threes-server-nsg
