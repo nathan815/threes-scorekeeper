@@ -8,6 +8,7 @@ on:
 jobs:
   renew_ssl:
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - uses: actions/checkout@v3
 
