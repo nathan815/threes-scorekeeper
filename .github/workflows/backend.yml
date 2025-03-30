@@ -56,9 +56,9 @@ jobs:
       - name: Build backend image
         working-directory: infra
         run: |
-          docker-compose -f docker-compose.build.yml build backend
+          docker compose -f docker-compose.build.yml build backend
 
       - name: Push backend image to ACR
         working-directory: infra
         run: |
-          docker-compose -f docker-compose.build.yml push backend
+          docker compose -f docker-compose.build.yml push backend

@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker-compose exec app npm "$@"
+docker compose exec app npm "$@"

@@ -36,12 +36,12 @@
       shell: az acr login --name threesgame
 
     - name: Pull latest container images
-      shell: docker-compose pull
+      shell: docker compose pull
       args:
         chdir: /app
 
     - name: Restart containers
-      shell: docker-compose up -d --remove-orphans
+      shell: docker compose up -d --remove-orphans
       args:
         chdir: /app
 
@@ -58,7 +58,7 @@
         status_code: [301]
 
     - name: Stop test-nginx
-      shell: docker-compose stop test-nginx
+      shell: docker compose stop test-nginx
       args:
         chdir: /app
 
