@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node scripts/start.js",
     "start:https": "WDS_SOCKET_PORT=443 npm start",
+    "start:ngrok": "ngrok http 3000",
     "build": "node scripts/build.js",
     "test": "node scripts/test.js --watchAll=false",
     "test:watch": "node scripts/test.js",
