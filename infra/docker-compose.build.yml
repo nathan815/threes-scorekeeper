@@ -4,7 +4,7 @@ version: '3.7'
 
 services:
   frontend-bundle:
-    image: threesgame.azurecr.io/threes-frontend-bundle
+    image: nathan815/threes-frontend-bundle
     build:
       context: ../frontend
       args:
@@ -13,6 +13,6 @@ services:
         REACT_APP_GOOGLE_ANALYTICS_KEY: ${REACT_APP_GOOGLE_ANALYTICS_KEY:-}
 
   backend:
-    image: threesgame.azurecr.io/threes-backend
+    image: nathan815/threes-backend
     build:
       context: ../backend
