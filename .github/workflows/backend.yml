@@ -56,8 +56,13 @@ jobs:
         working-directory: infra
         run: |
           docker compose -f docker-compose.build.yml build backend
+          IMAGE_SHA=${{ github.sha }}
+          docker tag nathan815/threes-backend nathan815/threes-backend:${IMAGE_SHA:0:7}
+          docker tag nathan815/threes-backend nathan815/threes-backend:latest
 
       - name: Push backend image to Docker Hub
         working-directory: infra
         run: |
           docker compose -f docker-compose.build.yml push backend
+          docker push nathan815/threes-backend:${{ github.sha }}
+          docker push nathan815/threes-backend:latest

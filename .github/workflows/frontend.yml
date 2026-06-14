@@ -56,8 +56,15 @@ jobs:
 
       - name: Build frontend-bundle image
         working-directory: infra
-        run: docker compose -f docker-compose.build.yml build frontend-bundle
+        run: |
+          docker compose -f docker-compose.build.yml build frontend-bundle
+          IMAGE_SHA=${{ github.sha }}
+          docker tag nathan815/threes-frontend-bundle nathan815/threes-frontend-bundle:${IMAGE_SHA:0:7}
+          docker tag nathan815/threes-frontend-bundle nathan815/threes-frontend-bundle:latest
 
       - name: Push frontend-bundle image to Docker Hub
         working-directory: infra
-        run: docker compose -f docker-compose.build.yml push frontend-bundle
+        run: |
+          docker compose -f docker-compose.build.yml push frontend-bundle
+          docker push nathan815/threes-frontend-bundle:${{ github.sha }}
+          docker push nathan815/threes-frontend-bundle:latest
