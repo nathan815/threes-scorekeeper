@@ -29,12 +29,6 @@
       args:
         chdir: /app
 
-    - name: Login to Azure using az cli
-      shell: az login --service-principal -u $AZ_SP_ID -p $AZ_SP_PW --tenant $AZ_SP_TENANT
-
-    - name: Login to ACR
-      shell: az acr login --name threesgame
-
     - name: Pull latest container images
       shell: docker compose pull
       args:
