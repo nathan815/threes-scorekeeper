@@ -1,12 +1,12 @@
 import { ChakraProvider, ColorModeScript } from '@chakra-ui/react';
 import createCache from '@emotion/cache';
-import { CacheProvider, Global } from '@emotion/react';
+import { CacheProvider } from '@emotion/react';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { prefixer } from 'stylis';
 import App from './App';
 import { AuthProvider } from './auth/authContext';
-import * as styles from './index.css';
+import './index.css';
 import reportWebVitals from './reportWebVitals';
 import theme from './theme';
 
@@ -19,7 +19,6 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <CacheProvider value={myCache}>
     <ChakraProvider theme={theme}>
-      <Global styles={styles} />
       <ColorModeScript initialColorMode={theme.config.initialColorMode} />
       <React.StrictMode>
         <AuthProvider>

@@ -1,5 +1,4 @@
 import { Box, BoxProps } from '@chakra-ui/react';
-import { css, Global } from '@emotion/react';
 import React, { useCallback, useRef, useState } from 'react';
 import { IconType } from 'react-icons';
 import {
@@ -15,7 +14,7 @@ import {
   CardSuit,
 } from '../utils/card';
 import { useWindowResizeCallback } from '../utils/hooks/useWindowResizeCallback';
-import * as styles from './PlayingCard.css';
+import './PlayingCard.css';
 
 const suits: { [key in CardSuit]: [IconType, string] } = {
   hearts: [BsSuitHeartFill, 'red'],
@@ -50,7 +49,6 @@ export function PlayingCard(props: PlayingCardProps & BoxProps) {
 
   return (
     <Box className="playing-card-wrapper" width="100%" {...restProps}>
-      <Global styles={css(styles)} />
       <Box
         className={`playing-card ${color}`}
         aria-label={`Playing Card: ${rankName} of ${suit}`}
